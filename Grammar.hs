@@ -55,7 +55,7 @@ NOTE: Compiler directives above
 import FPPrac.Trees       -- Contains now also the function toRoseTree. Re-install it!
 import GHC.Generics       -- Necessary for correct function of FPPrac
 
-import FP_TypesEtc           -- Extend the file TypesEtc with your own alphabet
+import Types           -- Extend the file TypesEtc with your own alphabet
 import FP_ParserGen (parse)  -- Touching this file leaves you at your own devices
 -- import Tokenizer       -- You'll have to write a file for tokenizing yourself
 
