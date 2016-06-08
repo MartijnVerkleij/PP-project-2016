@@ -1,0 +1,21 @@
+As copied from the Blackboard page for this project:
+
+Here are the Haskell files with the code for the final project:
+
+- BasicFunctions.hs: some elementary functions used in teh various files below
+
+- HardwareTypes.hs: the type definitions, including the instruction set
+
+- Sprockell.hs: the code for the Sprockell processor
+
+- System.hs: the code for the shared memory system, including the communication with the sprockells
+
+- Simulation.hs: some functions to simulate a sprockell and the full system
+
+- DemoMultipleSprockells.hs: contains example with 4 Sprockells
+
+- ParseBasis: with types and additional functions for the Haskell parser generator
+
+- ParserGen: the Haskell parser generator
+
+- slides.pdf: slides with a sketch of the architecture
