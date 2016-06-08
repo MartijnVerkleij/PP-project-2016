@@ -45,7 +45,7 @@
 {-# LANGUAGE FlexibleInstances, DeriveGeneric, DeriveAnyClass #-}
         -- Necessary for function toRoseTree
 
-module FP_Grammar where
+module Grammar where
 
 {- ===========================================================================
 Contains example grammar + examples of test definitions
