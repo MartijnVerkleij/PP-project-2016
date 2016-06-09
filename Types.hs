@@ -35,12 +35,18 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               -- punctuation
               | Op                            -- Infix operator
               | Unary                         -- Unary (for now prefix) operator
+              | Par                           -- Parentheses
+              | Brace                         -- Braces
+              | Comma                         -- Comma
+              | Semi                          -- Semicolon
               
               -- expressions
               | Expr                          -- Expression 
+              
               | Ass                           -- Assignment espression
               -- Statements
               | Stat                          -- Statement
+              
               | Decl                          -- Declaration statement
               | If                            -- If statement
               | While                         -- While statement
