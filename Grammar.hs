@@ -118,7 +118,7 @@ grammar nt = case nt of
 
         IntType     ->  [[ intType ]]
 
-        BoolType    -> [[ boolType ]]    
+        BoolType    ->  [[ boolType ]]    
 
         Op          ->  [[ op ]]
 
@@ -149,7 +149,7 @@ comma       = Symbol ","
 
 var         = SyntCat Var
 pid         = SyntCat Pid
-intType     = SyntCat Itg
+intType     = SyntCat IntType
 boolType    = SyntCat BoolType
 op          = SyntCat Op
 unary       = SyntCat Unary
