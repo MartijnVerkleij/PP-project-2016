@@ -1,0 +1,7 @@
+procedure fib(int i, int res) {
+    if (i < 3) {
+        res = i;
+    } else {
+        res = fib(i-1) + fib(i-2);
+    }
+}
