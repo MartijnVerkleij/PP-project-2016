@@ -114,7 +114,7 @@ grammar nt = case nt of
 
         Var         ->  [[ var ]]
 
-        Pid         ->  [[ pid ]]
+        Pid         ->  [[ Var ]]
 
         IntType     ->  [[ intType ]]
 
