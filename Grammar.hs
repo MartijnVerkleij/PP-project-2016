@@ -77,20 +77,23 @@ grammar nt = case nt of
 
         -- Statements
 
-        Stat        ->  [[ (?:) [global], Type, Var, (?:) [ass, Expr], eol ]
-                        ,[ ifStr, lPar, Expr, rPar, Stat, (?:) [elseStr, Stat], eol ]
-                        ,[ while, lPar, Expr, rPar, Stat, eol ]
+        Stat        ->  [[ (?:) [global], (?:) [Type], Var, (?:) [ass, Expr], eol ]
+                        ,[ ifStr, lPar, Expr, rPar, Stat, (?:) [elseStr, Stat] ]
+                        ,[ while, lPar, Expr, rPar, Stat ]
                         ,[ fork, Pid, lPar, (?:) [Expr, (*:) [comma, Expr]], rPar, eol ]
                         ,[ join, eol ]
                         ,[ Pid, lPar, (?:) [Expr, (*:) [comma, Expr]], rPar, eol ]
-                        ,[ rBrace, (*:) [Stat], lBrace ]]
+                        ,[ Expr, eol ]
+                        ,[ lBrace, (*:) [Stat], rBrace ]]
         -- Expressions
 
         Expr        ->  [[ lPar, Expr, rPar ]
-                        ,[ Ass ]
-                        ,[ Expr, Op, Expr ]
-                        ,[ Unary, Expr ]
-                        ,[ Var, ass, Expr ]]
+                        ,[ Var, ass, Expr ]
+                        ,[ Var ]
+                        ,[ IntType ]
+                        ,[ BoolType ]
+                        ,[ lPar, Expr, Op, Expr, rPar ]
+                        ,[ Unary, Expr ]]
 
         -- Other
 
