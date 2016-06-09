@@ -1,0 +1,14 @@
+procedure naivePrime(int number, bool output) {
+    output = false;
+    int i = 2;
+    while (i < (number / 2)) {
+        if (number % i == 0) {
+            output = true;
+        }
+        i = i + 1;
+    }
+}
+
+int number = 4931;
+bool output;
+naivePrime(number, output);
