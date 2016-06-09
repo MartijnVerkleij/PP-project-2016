@@ -24,8 +24,8 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Rep1  [Alphabet]              -- One or more repetitions
 
               -- Types
-              | Int                           -- Integer value
-              | Bool                          -- Boolean value
+              | IntType                       -- Integer value
+              | BoolType                      -- Boolean value
               
               | Var                           -- Variable name
               | Pid                           -- Procedure name
@@ -40,6 +40,7 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Expr                          -- Expression 
               | Ass                           -- Assignment espression
               -- Statements
+              | Stat                          -- Statement
               | Decl                          -- Declaration statement
               | If                            -- If statement
               | While                         -- While statement
@@ -50,7 +51,7 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Join                          -- Join statement
               
               | Program                       -- Program
-              | Procedure                     -- Procedure
+              | Proc                          -- Procedure
                 deriving (Eq,Ord,Show,Generic,ToRoseTree)
 
 -- ===================================================================
