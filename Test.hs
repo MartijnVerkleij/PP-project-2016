@@ -1,4 +1,4 @@
-module TestFib where
+module Test where
 
 import Tokenizer
 import Types
@@ -15,7 +15,7 @@ prprTestFib = do
         toTokenList $ 
         tokenizer a
 
-roseTestPrime = do
+roseTestFib = do
     a <- readFile "test/fib.txt"
     showTree $
         toRoseTree $
@@ -37,3 +37,5 @@ roseTestPrime = do
         parse grammar Program $
         toTokenList $
         tokenizer a
+
+tokenizePrime = show $ toTokenList $  tokenizer "procedure fib(int i, int res) {    if ((i < 3)) {        res = i;    } else {        int a;        int b;        fib((i-1), a);        fib((i-2), b);        res = (a + b);    }}"
