@@ -62,6 +62,28 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Proc                          -- Procedure
                 deriving (Eq,Ord,Show,Generic,ToRoseTree)
 
+type TypeTable = [(Alphabet, String)]
+
+data AST = ASTProgram [AST] TypeTable
+         | ASTProc [AST] AST TypeTable
+         | ASTArg [AST] TypeTable
+         | ASTBlock [AST] TypeTable
+         | ASTDecl Alphabet AST (Maybe AST) TypeTable
+         | ASTIf AST AST (Maybe AST) TypeTable
+         | ASTWhile AST AST TypeTable
+         | ASTFork String [AST] TypeTable
+         | ASTJoin TypeTable
+         | ASTCall String [AST] TypeTable
+         | ASTPar AST TypeTable
+         | ASTAss String AST TypeTable
+         | ASTVar String TypeTable
+         | ASTNum String TypeTable
+         | ASTBool String TypeTable
+         | ASTOp AST String AST TypeTable
+         | ASTUnary String AST TypeTable
+            deriving Show
+
+
 -- ===================================================================
 -- Symbolic notation for EBNF constructors
 
