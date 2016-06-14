@@ -1,4 +1,4 @@
-module Test where
+module TestFib where
 
 import Tokenizer
 import Types
