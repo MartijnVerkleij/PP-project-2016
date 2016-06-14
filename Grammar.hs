@@ -73,7 +73,7 @@ grammar nt = case nt of
 
         -- Procedures
 
-        Proc        ->  [[ procedure, Pid, lPar, (?:) [Type, Var, (*:) [comma, Type, Expr]], rPar, Stat ]]
+        Proc        ->  [[ procedure, Pid, lPar, (?:) [Type, Var, (*:) [comma, Type, Var]], rPar, Stat ]]
 
         -- Statements
 
