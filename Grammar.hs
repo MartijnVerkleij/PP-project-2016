@@ -113,11 +113,11 @@ grammar nt = case nt of
 
 
 -- shorthand names can be handy, such as:
-lPar        = Terminal "("           -- Terminals WILL be shown in the parse tree
-rPar        = Terminal ")"
+lPar        = Symbol "("           -- Terminals WILL be shown in the parse tree
+rPar        = Symbol ")"
 lBrace      = Terminal "{"
-rBrace      = Terminal "}"
-procedure   = Terminal "procedure"
+rBrace      = Symbol "}"
+procedure   = Symbol "procedure"
 ifStr       = Terminal "if"
 elseStr     = Terminal "else"
 while       = Terminal "while"
