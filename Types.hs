@@ -62,10 +62,10 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Proc                          -- Procedure
                 deriving (Eq,Ord,Show,Generic,ToRoseTree)
 
-type TypeTable = [(Alphabet, String)]
+type TypeTable = [(String, [AST{-Var-}])]
 
 data AST = ASTProgram [AST] TypeTable
-         | ASTProc [AST] AST TypeTable
+         | ASTProc String [AST] AST TypeTable
          | ASTArg [AST] TypeTable
          | ASTBlock [AST] TypeTable
          | ASTDecl Alphabet AST (Maybe AST) TypeTable
