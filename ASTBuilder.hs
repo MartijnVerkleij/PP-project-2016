@@ -2,19 +2,41 @@
 
 pTreeToAst :: ParseTree -> AST
 pTreeToAst (PNode Program l)
-    = ASTProgram (map pTreeToAst l) []
-        where 
+    = ASTProgram (map pTreeToAst l) 
+        where
             procAsts = map pTreeToAst procs
             --(procs,stats) = span $ isProcedure l
             isProcedure (PNode Proc _) = True
             isProcedure = False
             --getPRecord = (\(x,y) -> (ASTProc x y _ _)) 
-            
+
 pTreeToAst (PNode Proc (pid:args_expr))
-    = ASTProc (getstr pid) 
+    = ASTProc (getStr pid) (makeAstArg $ init args_expr) expr
         where
-            expr  
-            
+            expr = pTreeToAst $ tail args_expr
+            makeAstArg [] = []
+            makeAstArg [x] = error "This Proc is incorrectly parsed"
+            makeAstArg (x:y:xs) = (ASTArg (pTreeToAst x) (pTreeToAst x)) : makeAstArg
+
+pTreeToAst node@(PNode Type _)
+    = ASTType (getStr node)
+
+pTreeToAst node@(PNode Var _)
+    = ASTVar (getStr node)
+
+-- DeclStat (global, no assign)
+pTreeToAst (PNode Stat ((PLeaf (Global,_,_)):typ@(PNode Type _):var:[]) )
+-- DeclStat (no global, no assign)
+pTreeToAst (PNode Stat (typ@(PNode Type _):var:[]))
+-- DeclStat (global, assign)
+pTreeToAst (PNode Stat ((PLeaf (Global,_,_)):typ@(PNode Type _):var:(PLeaf (Ass,_,_):stat:[]) )
+-- DeclStat (no global, assign)
+pTreeToAst (PNode Stat (typ@(PNode Type _):var:(PLeaf (Ass,_,_):stat:[]))
+
+
+pTreeToAst (PNode Pid _) 
+    = error "No AST for Pid"
+
 ptreeToAst (PNode Stat (st@(PLeaf (Rep,_,_)):e:bl:_))
     = ASTStat "repeat" (ptreeToAst e) [(ptreeToAst bl)] []
 ptreeToAst (PNode Stat (st@(PLeaf (If,_,_)):e:(PLeaf (Then,_,_)):th:(PLeaf (Else,_,_)):el:_))

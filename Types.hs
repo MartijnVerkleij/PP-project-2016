@@ -64,23 +64,24 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
 
 type TypeTable = [(String, [AST{-Var-}])]
 
-data AST = ASTProgram [AST] TypeTable
-         | ASTProc String [AST] AST TypeTable
-         | ASTArg [AST] TypeTable
-         | ASTBlock [AST] TypeTable
-         | ASTDecl Alphabet AST (Maybe AST) TypeTable
-         | ASTIf AST AST (Maybe AST) TypeTable
-         | ASTWhile AST AST TypeTable
-         | ASTFork String [AST] TypeTable
-         | ASTJoin TypeTable
-         | ASTCall String [AST] TypeTable
-         | ASTPar AST TypeTable
-         | ASTAss String AST TypeTable
-         | ASTVar String TypeTable
-         | ASTNum String TypeTable
-         | ASTBool String TypeTable
-         | ASTOp AST String AST TypeTable
-         | ASTUnary String AST TypeTable
+data AST = ASTProgram [AST]
+         | ASTProc String [AST] AST
+         | ASTArg AST AST
+         | ASTBlock [AST]
+         | ASTDecl Alphabet AST (Maybe AST)
+         | ASTIf AST AST (Maybe AST)
+         | ASTWhile AST AST
+         | ASTFork String [AST]
+         | ASTJoin
+         | ASTCall String [AST]
+         | ASTPar AST
+         | ASTAss String AST
+         | ASTVar String
+         | ASTNum String
+         | ASTBool String
+         | ASTType String
+         | ASTOp AST String AST
+         | ASTUnary String AST
             deriving Show
 
 
