@@ -55,3 +55,14 @@ ptreeToAst (PNode Expr [(PNode Var [PLeaf (_,n,_)])])
     = ASTExpr n []
 ptreeToAst e
     = ASTLeaf
+
+
+
+getStr :: AST -> String
+getStr (PLeaf (_,str,_))    = str
+getStr (PNode Var x)        = getStr x
+getStr (PNode Pid x)        = getStr x
+getStr (PNode BoolType x)   = getStr x
+getStr (PNode IntType x)    = getStr x 
+getStr (PNode Op x)         = getStr x
+getStr (PNode Expr _)       = error "Cannot return the string of an expression this way."
