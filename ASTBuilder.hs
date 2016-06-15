@@ -25,14 +25,19 @@ pTreeToAst node@(PNode Var _)
     = ASTVar (getStr node)
 
 -- DeclStat (global, no assign)
-pTreeToAst (PNode Stat ((PLeaf (Global,_,_)):typ@(PNode Type _):var:[]) )
+pTreeToAst (PNode Stat ((PLeaf (Global,_,_)):typ@(PNode Type _):var:[]))
+    = ASTDecl True (getType $ getStr typ) pTreeToAst var Nothing
 -- DeclStat (no global, no assign)
 pTreeToAst (PNode Stat (typ@(PNode Type _):var:[]))
+    = ASTDecl False (getType $ getStr typ) pTreeToAst var Nothing
 -- DeclStat (global, assign)
 pTreeToAst (PNode Stat ((PLeaf (Global,_,_)):typ@(PNode Type _):var:(PLeaf (Ass,_,_):stat:[]) )
+    = ASTDecl True (getType $ getStr typ) pTreeToAst var (Just pTreeToAst stat)
 -- DeclStat (no global, assign)
 pTreeToAst (PNode Stat (typ@(PNode Type _):var:(PLeaf (Ass,_,_):stat:[]))
+    = ASTDecl False (getType $ getStr typ) pTreeToAst var (Just pTreeToAst stat)
 
+pTreeToAst (PNode Stat((PLeaf (If,_,_)))
 
 pTreeToAst (PNode Pid _) 
     = error "No AST for Pid"
@@ -66,3 +71,8 @@ getStr (PNode BoolType x)   = getStr x
 getStr (PNode IntType x)    = getStr x 
 getStr (PNode Op x)         = getStr x
 getStr (PNode Expr _)       = error "Cannot return the string of an expression this way."
+
+getAlphabet :: String -> Alphabet
+getAlphabet "int" = IntType
+getAlphabet "bool" = BoolType
+getAlphabet _ = error "Type not recognised."

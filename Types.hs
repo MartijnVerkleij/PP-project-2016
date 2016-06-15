@@ -68,7 +68,7 @@ data AST = ASTProgram [AST]
          | ASTProc String [AST] AST
          | ASTArg AST AST
          | ASTBlock [AST]
-         | ASTDecl Alphabet AST (Maybe AST)
+         | ASTDecl Bool Alphabet AST (Maybe AST)
          | ASTIf AST AST (Maybe AST)
          | ASTWhile AST AST
          | ASTFork String [AST]
