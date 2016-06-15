@@ -1,5 +1,5 @@
 procedure fib(int i, int res) {
-    if ((i < 3)) {
+    if ((i < (-3))) {
         res = i;
     } else {
         int a;

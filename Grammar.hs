@@ -109,7 +109,7 @@ grammar nt = case nt of
 
         Op          ->  [[ op ]]            -- operator
 
-        Unary       ->  [[ unary ]]         -- unary operator
+        Unary       ->  [[ Op ]]         -- unary operator
 
 
 -- shorthand names can be handy, such as:
