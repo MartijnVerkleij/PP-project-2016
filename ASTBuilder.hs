@@ -13,6 +13,10 @@ pTreeToAst (PNode Program l)
             isProcedure _ = False
             --getPRecord = (\(x,y) -> (ASTProc x y _ _)) 
 
+pTreeToAst (PNode Global (typ:var:[]))
+    = ASTGlobal (getAlphabet (getStr typ)) (pTreeToAst var) Nothing
+pTreeToAst (PNode Global (typ:var:(PLeaf (Ass,_,_)):expr:[]))
+    = ASTGlobal (getAlphabet (getStr typ)) (pTreeToAst var) (Just (pTreeToAst expr))
 pTreeToAst (PNode Proc (pid:args_expr))
     = ASTProc (getStr pid) (makeAstArg $ init args_expr) expr
         where
@@ -27,18 +31,12 @@ pTreeToAst node@(PNode Type _)
 pTreeToAst node@(PNode Var _)
     = ASTVar (getStr node)
 
--- DeclStat (global, no assign)
-pTreeToAst (PNode Stat ((PLeaf (Global,_,_)):typ@(PNode Type _):var:[]))
-    = ASTDecl True (getAlphabet (getStr typ)) (pTreeToAst var) Nothing
--- DeclStat (no global, no assign) 
+-- DeclStat (no assign) 
 pTreeToAst (PNode Stat (typ@(PNode Type _):var:[]))
-    = ASTDecl False (getAlphabet (getStr typ)) (pTreeToAst var) Nothing
--- DeclStat (global, assign)
-pTreeToAst (PNode Stat ((PLeaf (Global,_,_)):typ@(PNode Type _):var:(PLeaf (Ass,_,_)):stat:[]) )
-    = ASTDecl True (getAlphabet (getStr typ)) (pTreeToAst var) (Just $ pTreeToAst stat)
--- DeclStat (no global, assign)
-pTreeToAst (PNode Stat (typ@(PNode Type _):var:(PLeaf (Ass,_,_)):stat:[]))
-    = ASTDecl False (getAlphabet (getStr typ)) (pTreeToAst var) (Just $ pTreeToAst stat)
+    = ASTDecl (getAlphabet (getStr typ)) (pTreeToAst var) Nothing
+-- DeclStat (assign)
+pTreeToAst (PNode Stat (typ@(PNode Type _):var:(PLeaf (Ass,_,_)):expr:[]))
+    = ASTDecl (getAlphabet (getStr typ)) (pTreeToAst var) (Just $ pTreeToAst expr)
 -- If statement
 pTreeToAst (PNode Stat ((PLeaf (If,_,_)):expr:stat1:[]))
     = ASTIf (pTreeToAst expr) (pTreeToAst stat1) Nothing
@@ -90,20 +88,20 @@ pTreeToAst (PNode Expr (op@(PNode Unary _):expr:[]))
 astToRose :: AST -> RoseTree
 astToRose (ASTProgram asts) 
     = RoseNode "program" (map astToRose asts)
+astToRose (ASTGlobal typeStr ast Nothing)
+    =  RoseNode ("global " ++ (getTypeStr typeStr)) [(astToRose ast)]
+astToRose (ASTGlobal typeStr ast1 (Just ast2))
+    =  RoseNode ("global " ++ (getTypeStr typeStr)) $ map astToRose [ast1, ast2]
 astToRose (ASTProc str asts ast)
     = RoseNode ("procedure " ++ str) $ map astToRose $ asts ++ [ast]
 astToRose (ASTArg ast1 ast2)
     = RoseNode "arg" $ map astToRose [ast1, ast2]
 astToRose (ASTBlock asts)
     = RoseNode "block" $ map astToRose asts
-astToRose (ASTDecl False typeStr ast Nothing)
+astToRose (ASTDecl typeStr ast Nothing)
     = RoseNode (getTypeStr typeStr) [(astToRose ast)]
-astToRose (ASTDecl True typeStr ast Nothing)
-    = RoseNode ("global " ++ (getTypeStr typeStr)) [(astToRose ast)]
-astToRose (ASTDecl False typeStr ast1 (Just ast2))
+astToRose (ASTDecl typeStr ast1 (Just ast2))
     = RoseNode (getTypeStr typeStr) $ map astToRose [ast1, ast2]
-astToRose (ASTDecl True typeStr ast1 (Just ast2))
-    = RoseNode ("global " ++ (getTypeStr typeStr)) $ map astToRose [ast1, ast2]
 astToRose (ASTIf ast1 ast2 Nothing)
     = RoseNode "if" $ map astToRose [ast1, ast2]
 astToRose (ASTIf ast1 ast2 (Just ast3))
