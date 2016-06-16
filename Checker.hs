@@ -7,28 +7,39 @@ import Types
 checker1 :: AST -> CheckTree
 
 
+checker1 (ASTProgram asts) 
+    = CheckTree ASTProgram [functions] [] []
+        where
+            functions   = $ map checkTree asts
+checker1 (ASTProc str asts ast) 
+    = 
+checker1 (ASTArg ast1 ast2) 
+    = 
+checker1 ast
+    = ast [] [] []
 
+checker2 :: CheckTree -> CheckTree
 
-checker1 (ASTProgram asts) = 
-checker1 (ASTProc str asts ast) =
-checker1 (ASTArg ast1 ast2) = 
-checker1 (ASTBlock asts) =
-checker1 (ASTDecl global {-global :: Bool-} type ast (Nothing) 
+checker2 (self@(ASTProgram asts) functions globals variables) = 
+checker2 (self@(ASTProc str asts ast) functions globals variables) =
+checker2 (self@(ASTArg ast1 ast2) functions globals variables) = 
+checker2 (self@(ASTBlock asts) functions globals variables) =
+checker2 (self@(ASTDecl global {-global :: Bool-} type ast (Nothing)) functions globals variables)
     | global    =
     | otherwise =
-checker1 (ASTDecl global {-global :: Bool-} type ast1 (Just ast2)
+checker2 (self@(ASTDecl global {-global :: Bool-} type ast1 (Just ast2)) functions globals variables)
     | global    =
     | otherwise =
-checker1 (ASTIf ast1 ast2 (Nothing))) = 
-checker1 (ASTIf ast1 ast2 (Just ast3))) = 
-checker1 (ASTWhile ast ast)) = 
-checker1 (ASTFork str asts)) = 
-checker1 (ASTJoin)) = 
-checker1 (ASTCall str asts) = 
-checker1 (ASTAss ast1 ast2) = 
-checker1 (ASTVar str) = 
-checker1 (ASTInt str) = 
-checker1 (ASTBool str) = 
-checker1 (ASTType str) = 
-checker1 (ASTOp ast1 str ast2) = 
-checker1 (ASTUnary str ast) = 
+checker2 (self@(ASTIf ast1 ast2 (Nothing)) functions globals variables) = 
+checker2 (self@(ASTIf ast1 ast2 (Just ast3)) functions globals variables) = 
+checker2 (self@(ASTWhile ast ast) functions globals variables) = 
+checker2 (self@(ASTFork str asts) functions globals variables) = 
+checker2 (self@(ASTJoin) functions globals variables) = 
+checker2 (self@(ASTCall str asts) functions globals variables) = 
+checker2 (self@(ASTAss ast1 ast2) functions globals variables) = 
+checker2 (self@(ASTVar str) functions globals variables) = 
+checker2 (self@(ASTInt str) functions globals variables) = 
+checker2 (self@(ASTBool str) functions globals variables) = 
+checker2 (self@(ASTType str) functions globals variables) = 
+checker2 (self@(ASTOp ast1 str ast2) functions globals variables) = 
+checker2 (self@(ASTUnary str ast) functions globals variables) = 
