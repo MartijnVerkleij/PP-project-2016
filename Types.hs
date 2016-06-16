@@ -68,7 +68,7 @@ type FunctionType = (String, [Alphabet{- Must be of either IntType or BoolType -
 
 
 -- CheckType [Functions] [Globals] [Variables]
-type CheckType = ([FunctionType], [VariableType], [VariableType])
+type CheckType = ([FunctionType], [VariableType], [[VariableType]])
 
 data AST = ASTProgram [AST] CheckType
     | ASTGlobal Alphabet AST (Maybe AST) CheckType

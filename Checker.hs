@@ -3,12 +3,14 @@ module Checker where
 import FPPrac.Trees
 import Types
 
--- First pass
-checker1 :: AST -> CheckTree
-checker1 self@(ASTProgram asts) 
-    =  (functions, [], [])
+{--- First pass
+checker1 :: AST -> AST
+checker1 (ASTProgram asts _) 
+    =  ASTProgram asts (functions, globals, [])
     where
-        functions   = concat (map (\(ast, f, g, v) -> f) (map checkTree asts))
+        asts        = map checkTree asts
+        combined    = concat $ map (\_ (f,_,_)) asts
+        globals     = concat $ map (\_ (_,g,_)) asts
 checker1 self@(ASTProc str asts ast) 
     = (self, [(str,types)], [], [])
     where
@@ -82,3 +84,4 @@ checker2 (self@(ASTBool str) functions globals variables) =
 checker2 (self@(ASTType str) functions globals variables) = 
 checker2 (self@(ASTOp ast1 str ast2) functions globals variables) = 
 checker2 (self@(ASTUnary str ast) functions globals variables) = 
+-}
