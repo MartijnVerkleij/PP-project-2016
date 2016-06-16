@@ -5,20 +5,8 @@ import Types
 
 -- First pass
 checker1 :: AST -> CheckTree
-
-
-checker1 (ASTProgram asts) 
-    = CheckTree ASTProgram [functions] [] []
-        where
-            functions   = $ map checkTree asts
-checker1 (ASTProc str asts ast) 
-    = 
-checker1 (ASTArg ast1 ast2) 
-    = 
-=======
-checker1 :: AST -> CheckTree
 checker1 self@(ASTProgram asts) 
-    = (self, functions, [], [])
+    =  (functions, [], [])
     where
         functions   = concat (map (\(ast, f, g, v) -> f) (map checkTree asts))
 checker1 self@(ASTProc str asts ast) 
@@ -36,6 +24,34 @@ getAlphabet :: String -> Alphabet
 getAlphabet "int"   = IntType
 getAlphabet "bool"  = BoolType
 getAlphabet _       = error "Type not recognised."
+
+
+checker1 (ASTProgram asts) 
+    = CheckTreeProgram (map checker1 ) (functions, [], [])
+    where
+        functions   = concat (map (\(ast, f, g, v) -> f) (map checkTree asts))
+checker1 (ASTProc str asts ast) =
+checker1 (ASTArg ast1 ast2) = 
+checker1 (ASTBlock asts) =
+checker1 (ASTDecl global {-global :: Bool-} type ast (Nothing) 
+    | global    =
+    | otherwise =
+checker1 (ASTDecl global {-global :: Bool-} type ast1 (Just ast2)
+    | global    =
+    | otherwise =
+checker1 (ASTIf ast1 ast2 (Nothing))) = 
+checker1 (ASTIf ast1 ast2 (Just ast3))) = 
+checker1 (ASTWhile ast ast)) = 
+checker1 (ASTFork str asts)) = 
+checker1 (ASTJoin)) = 
+checker1 (ASTCall str asts) = 
+checker1 (ASTAss ast1 ast2) = 
+checker1 (ASTVar str) = 
+checker1 (ASTInt str) = 
+checker1 (ASTBool str) = 
+checker1 (ASTType str) = 
+checker1 (ASTOp ast1 str ast2) = 
+checker1 (ASTUnary str ast) = 
 
 
 

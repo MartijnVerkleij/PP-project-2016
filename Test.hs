@@ -33,6 +33,15 @@ astFib = do
         toTokenList $
         tokenizer a
 
+astFibDebug = do
+    a <- readFile "test/fib.txt"
+    showTree $
+        astToRoseDebug $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 prprPrime = do 
     a <- readFile "test/prime.txt"
     prpr $ 
@@ -52,6 +61,15 @@ astPrime = do
     a <- readFile "test/prime.txt"
     showTree $
         astToRose $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+astPrimeDebug = do
+    a <- readFile "test/prime.txt"
+    showTree $
+        astToRoseDebug $
         pTreeToAst $
         parse grammar Program $
         toTokenList $

@@ -62,53 +62,34 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Proc                          -- Procedure
                 deriving (Eq,Ord,Show,Generic,ToRoseTree)
 
-type TypeTable = [(String, [AST{-Var-}])]
-
-data AST = ASTProgram [AST]
-    | ASTGlobal Alphabet AST (Maybe AST)
-    | ASTProc String [AST] AST
-    | ASTArg AST AST
-    | ASTBlock [AST]
-    | ASTDecl Alphabet AST (Maybe AST)
-    | ASTIf AST AST (Maybe AST)
-    | ASTWhile AST AST
-    | ASTFork String [AST]
-    | ASTJoin
-    | ASTCall String [AST]
-    | ASTAss AST AST
-    | ASTVar String
-    | ASTInt String
-    | ASTBool String
-    | ASTType String
-    | ASTOp AST String AST
-    | ASTUnary String AST
-    deriving Show
-
+--type TypeTable = [(String, [AST{-Var-}])]
 type VariableType = (String, Alphabet{- Must be of either IntType or BoolType -})
 type FunctionType = (String, [Alphabet{- Must be of either IntType or BoolType -}])
 
 
 -- CheckType [Functions] [Globals] [Variables]
 type CheckType = ([FunctionType], [VariableType], [VariableType])
-data CheckTree = CheckTreeProgram [CheckTree] CheckType
-    | CheckTreeGlobal Alphabet CheckTree (Maybe CheckTree) CheckType
-    | CheckTreeProc String [CheckTree] CheckTree CheckType
-    | CheckTreeArg CheckTree CheckTree CheckType
-    | CheckTreeBlock [CheckTree] CheckType
-    | CheckTreeDecl Alphabet CheckTree (Maybe CheckTree) CheckType
-    | CheckTreeIf CheckTree CheckTree (Maybe CheckTree) CheckType
-    | CheckTreeWhile CheckTree CheckTree CheckType
-    | CheckTreeFork String [CheckTree] CheckType
-    | CheckTreeJoin CheckType
-    | CheckTreeCall String [CheckTree] CheckType
-    | CheckTreeAss CheckTree CheckTree CheckType
-    | CheckTreeVar String CheckType
-    | CheckTreeInt String CheckType
-    | CheckTreeBool String CheckType
-    | CheckTreeType String CheckType
-    | CheckTreeOp CheckTree String CheckTree CheckType
-    | CheckTreeUnary String CheckTree CheckType
+
+data AST = ASTProgram [AST] CheckType
+    | ASTGlobal Alphabet AST (Maybe AST) CheckType
+    | ASTProc String [AST] AST CheckType
+    | ASTArg AST AST CheckType
+    | ASTBlock [AST] CheckType
+    | ASTDecl Alphabet AST (Maybe AST) CheckType
+    | ASTIf AST AST (Maybe AST) CheckType
+    | ASTWhile AST AST CheckType
+    | ASTFork String [AST] CheckType
+    | ASTJoin CheckType
+    | ASTCall String [AST] CheckType
+    | ASTAss AST AST CheckType
+    | ASTVar String CheckType
+    | ASTInt String CheckType
+    | ASTBool String CheckType
+    | ASTType String CheckType
+    | ASTOp AST String AST CheckType
+    | ASTUnary String AST CheckType
     deriving Show
+
 
 
 -- ===================================================================
