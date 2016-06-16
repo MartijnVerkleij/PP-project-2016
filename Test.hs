@@ -8,6 +8,7 @@ import FPPrac.Trees
 import Debug.Trace
 import System.FilePath
 import ASTBuilder
+import Checker
 
 prprFib = do 
     a <- readFile "test/fib.txt"
@@ -70,6 +71,16 @@ astPrimeDebug = do
     a <- readFile "test/prime.txt"
     showTree $
         astToRoseDebug $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkPrime = do
+    a <- readFile "test/prime.txt"
+    showTree $
+        astToRoseDebug $
+        checker1 $
         pTreeToAst $
         parse grammar Program $
         toTokenList $

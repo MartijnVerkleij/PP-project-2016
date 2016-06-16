@@ -2,33 +2,34 @@ module Checker where
 
 import FPPrac.Trees
 import Types
+import Data.List
 import qualified Data.Map.Strict as Map
 
 -- First pass
 checker1 :: AST -> AST
 checker1 (ASTProgram asts _) 
-    = foldr function (ASTProgram [] ([],[],[[]])) asts
+    = foldl' function (ASTProgram [] ([],[],[[]])) asts
     where
         function :: AST -> AST -> AST
-        function (ASTGlobal varType varName ass _) (ASTProgram asts checks) 
+        function (ASTProgram asts checks) (ASTGlobal varType varName ass _) 
             = ASTProgram (asts ++ [global]) mergedChecks
             where
                 mergedChecks    = mergeGlobal (getStr varName, varType) checks
                 global          = ASTGlobal varType varName ass mergedChecks
-        function (ASTProc pid args stat _) (ASTProgram asts checks)
+        function (ASTProgram asts checks) (ASTProc pid args stat _)
             = ASTProgram (asts ++ [procedure]) mergedChecks
             where
                 argTypes        = map getType args
                 mergedChecks    = mergeFunction (pid, argTypes) checks
                 procedure       = ASTProc pid args stat mergedChecks
-        function ast (ASTProgram asts checks)
+        function (ASTProgram asts checks) ast
             = ASTProgram (asts ++ [ast]) checks
 
 
 
 getStr:: AST -> String
 getStr (ASTVar str _)   = str
-getStr x                = error "Cannot get string of: " ++ (show x)
+getStr x                = error $ "Cannot get string of: " ++ (show x)
 
 getType :: AST -> Alphabet
 getType (ASTArg (ASTType typeStr _) _ _)  
