@@ -69,7 +69,11 @@ grammar nt = case nt of
 
         -- Program
 
-        Program     ->  [[ (*:) [Proc], (*:) [Stat] ]]
+        Program     ->  [[ (*:) [Global], (*:) [Proc], (*:) [Stat] ]]
+
+        -- Globals
+
+        Global      ->  [[ global, Type, Var, (?:) [ass, Expr], eol ]]
 
         -- Procedures
 
@@ -77,7 +81,7 @@ grammar nt = case nt of
 
         -- Statements
 
-        Stat        ->  [[ (?:) [global], Type, Var, (?:) [ass, Expr], eol ]                -- declaration
+        Stat        ->  [[ Type, Var, (?:) [ass, Expr], eol ]                               -- declaration
                         ,[ ifStr, lPar, Expr, rPar, Stat, (?:) [elseStr, Stat] ]            -- if
                         ,[ while, lPar, Expr, rPar, Stat ]                                  -- while
                         ,[ fork, Pid, lPar, (?:) [Expr, (*:) [comma, Expr]], rPar, eol ]    -- fork
@@ -124,7 +128,7 @@ while       = Terminal "while"
 ass         = Terminal "="
 fork        = Terminal "fork"
 join        = Terminal "join"
-global      = Terminal "global"
+global      = Symbol "global"
 
 
 eol         = Symbol ";"

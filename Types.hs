@@ -65,29 +65,30 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
 type TypeTable = [(String, [AST{-Var-}])]
 
 data AST = ASTProgram [AST]
-         | ASTProc String [AST] AST
-         | ASTArg AST AST
-         | ASTBlock [AST]
-         | ASTDecl Bool Alphabet AST (Maybe AST)
-         | ASTIf AST AST (Maybe AST)
-         | ASTWhile AST AST
-         | ASTFork String [AST]
-         | ASTJoin
-         | ASTCall String [AST]
-         | ASTAss AST AST
-         | ASTVar String
-         | ASTInt String
-         | ASTBool String
-         | ASTType String
-         | ASTOp AST String AST
-         | ASTUnary String AST
-            deriving Show
+    | ASTGlobal Alphabet AST (Maybe AST)
+    | ASTProc String [AST] AST
+    | ASTArg AST AST
+    | ASTBlock [AST]
+    | ASTDecl Alphabet AST (Maybe AST)
+    | ASTIf AST AST (Maybe AST)
+    | ASTWhile AST AST
+    | ASTFork String [AST]
+    | ASTJoin
+    | ASTCall String [AST]
+    | ASTAss AST AST
+    | ASTVar String
+    | ASTInt String
+    | ASTBool String
+    | ASTType String
+    | ASTOp AST String AST
+    | ASTUnary String AST
+    deriving Show
 
 type VariableType = (String, Alphabet{- Must be of either IntType or BoolType -})
 type FunctionType = (String, [Alphabet{- Must be of either IntType or BoolType -}])
 
 -- AST [Functions] [Globals] [Variables]
-type CheckTree = AST [FunctionType] [VariableType] [VariableType]
+type CheckTree = (AST, [FunctionType], [VariableType], [VariableType])
 
 
 -- ===================================================================
