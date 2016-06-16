@@ -67,7 +67,8 @@ type VariableType = (String, Alphabet{- Must be of either IntType or BoolType -}
 type FunctionType = (String, [Alphabet{- Must be of either IntType or BoolType -}])
 
 
--- CheckType [Functions] [Globals] [Variables]
+-- CheckType [Functions] [Globals] [Scopes[Variables]]
+-- Scopes are defined in the following manner: [deepest scope,...,shallowest scope]
 type CheckType = ([FunctionType], [VariableType], [[VariableType]])
 
 data AST = ASTProgram [AST] CheckType
