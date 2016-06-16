@@ -7,15 +7,16 @@ import FP_ParserGen         -- Touching this file leaves you at your own devices
 import FPPrac.Trees
 import Debug.Trace
 import System.FilePath
+import ASTBuilder
 
-prprTestFib = do 
+prprFib = do 
     a <- readFile "test/fib.txt"
     prpr $ 
         parse grammar Program $ 
         toTokenList $ 
         tokenizer a
 
-roseTestFib = do
+parseFib = do
     a <- readFile "test/fib.txt"
     showTree $
         toRoseTree $
@@ -23,17 +24,35 @@ roseTestFib = do
         toTokenList $
         tokenizer a
 
-prprTestPrime = do 
+astFib = do
+    a <- readFile "test/fib.txt"
+    showTree $
+        astToRose $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+prprPrime = do 
     a <- readFile "test/prime.txt"
     prpr $ 
         parse grammar Program $ 
         toTokenList $ 
         tokenizer a
 
-roseTestPrime = do
+parsePrime = do
     a <- readFile "test/prime.txt"
     showTree $
         toRoseTree $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+astPrime = do
+    a <- readFile "test/prime.txt"
+    showTree $
+        astToRose $
+        pTreeToAst $
         parse grammar Program $
         toTokenList $
         tokenizer a

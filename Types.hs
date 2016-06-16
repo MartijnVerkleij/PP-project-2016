@@ -74,10 +74,9 @@ data AST = ASTProgram [AST]
          | ASTFork String [AST]
          | ASTJoin
          | ASTCall String [AST]
-         | ASTPar AST
-         | ASTAss String AST
+         | ASTAss AST AST
          | ASTVar String
-         | ASTNum String
+         | ASTInt String
          | ASTBool String
          | ASTType String
          | ASTOp AST String AST
