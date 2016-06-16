@@ -87,8 +87,27 @@ data AST = ASTProgram [AST]
 type VariableType = (String, Alphabet{- Must be of either IntType or BoolType -})
 type FunctionType = (String, [Alphabet{- Must be of either IntType or BoolType -}])
 
--- AST [Functions] [Globals] [Variables]
-type CheckTree = (AST, [FunctionType], [VariableType], [VariableType])
+-- CheckType [Functions] [Globals] [Variables]
+type CheckType = ([FunctionType], [VariableType], [VariableType])
+data CheckTree = CheckTreeProgram [CheckTree] CheckType
+    | CheckTreeGlobal Alphabet CheckTree (Maybe CheckTree) CheckType
+    | CheckTreeProc String [CheckTree] CheckTree CheckType
+    | CheckTreeArg CheckTree CheckTree CheckType
+    | CheckTreeBlock [CheckTree] CheckType
+    | CheckTreeDecl Alphabet CheckTree (Maybe CheckTree) CheckType
+    | CheckTreeIf CheckTree CheckTree (Maybe CheckTree) CheckType
+    | CheckTreeWhile CheckTree CheckTree CheckType
+    | CheckTreeFork String [CheckTree] CheckType
+    | CheckTreeJoin CheckType
+    | CheckTreeCall String [CheckTree] CheckType
+    | CheckTreeAss CheckTree CheckTree CheckType
+    | CheckTreeVar String CheckType
+    | CheckTreeInt String CheckType
+    | CheckTreeBool String CheckType
+    | CheckTreeType String CheckType
+    | CheckTreeOp CheckTree String CheckTree CheckType
+    | CheckTreeUnary String CheckTree CheckType
+    deriving Show
 
 
 -- ===================================================================
