@@ -3,7 +3,12 @@ module Checker where
 import FPPrac.Trees
 import Types
 import Data.List
+import Data.Char
 import qualified Data.Map.Strict as Map
+
+-- Wrapper
+checker :: AST -> AST
+checker ast = {-checker2 (-}checker1 ast{-) ([],[],[[]])-}
 
 -- First pass
 checker1 :: AST -> AST
@@ -25,6 +30,47 @@ checker1 (ASTProgram asts _)
         function (ASTProgram asts checks) ast
             = ASTProgram (asts ++ [ast]) checks
 
+{--- Second pass
+checker2 :: AST -> CheckType -> AST
+
+checker2 (ASTProgram asts check) _ 
+    = ASTProgram (foldl' function [] asts) check
+    where
+        function :: [AST] -> AST -> [AST]
+        function xs x   = xs ++ [(checker2 x check)]
+checker2 self@(ASTGlobal varType varName Nothing _) _
+    = self
+checker2 self@(ASTGlobal varType varName (Just expr) (f,g,_)) _
+    | varType == (getStrType $ checker2 expr)   = self
+    | otherwise = error "Types do not match, type: " ++ (show varType) ++ " and expression: " ++ (show expr)-}
+
+
+
+
+{-    
+checker2 ((ASTProc str asts ast), functions, globals, variables) = 
+checker2 ((ASTArg ast1 ast2), functions, globals, variables) = 
+checker2 ((ASTBlock asts), functions, globals, variables) =
+checker2 ((ASTDecl global {-global :: Bool-} type ast (Nothing)), functions, globals, variables)
+    | global    =
+    | otherwise =
+checker2 (self@(ASTDecl global {-global :: Bool-} type ast1 (Just ast2)), functions, globals, variables)
+    | global    =
+    | otherwise =
+checker2 ((ASTIf ast1 ast2 (Nothing)) functions globals variables) = 
+checker2 ((ASTIf ast1 ast2 (Just ast3)) functions globals variables) = 
+checker2 ((ASTWhile ast ast) functions globals variables) = 
+checker2 ((ASTFork str asts) functions globals variables) = 
+checker2 ((ASTJoin) functions globals variables) = 
+checker2 ((ASTCall str asts) functions globals variables) = 
+checker2 ((ASTAss ast1 ast2) functions globals variables) = 
+checker2 ((ASTVar str) functions globals variables) = 
+checker2 ((ASTInt str) functions globals variables) = 
+checker2 ((ASTBool str) functions globals variables) = 
+checker2 ((ASTType str) functions globals variables) = 
+checker2 ((ASTOp ast1 str ast2) functions globals variables) = 
+checker2 ((ASTUnary str ast) functions globals variables) = 
+-}
 
 
 getStr:: AST -> String
@@ -36,6 +82,12 @@ getType (ASTArg (ASTType typeStr _) _ _)
     = getAlphabet typeStr
 getType _ 
     = error "Shouldn't reach this. In Checker.getType" 
+
+getStrType :: String -> Alphabet
+getStrType str  | length str == 0   = error "Variable length equals zero in Checker.getStrType"
+                | all (== True) $ map (isDigit) str     = IntType
+                | (str == "true") || (str == "false")   = BoolType
+                | otherwise         = error $ "invalid type in Checker.getStrType, var: " ++ str
 
 mergeFunction :: FunctionType -> CheckType -> CheckType
 mergeFunction f@(pid,_) (fs,gs,vs)  
@@ -62,61 +114,3 @@ getAlphabet :: String -> Alphabet
 getAlphabet "int"   = IntType
 getAlphabet "bool"  = BoolType
 getAlphabet _       = error "Type not recognised in Checker.getAlphabet"
-
-
---checker1 (ASTProgram asts) 
---    = CheckTreeProgram (map checker1 ) (functions, [], [])
---    where
---        functions   = concat (map (\(ast, f, g, v) -> f) (map checkTree asts))
---checker1 (ASTProc str asts ast) =
---checker1 (ASTArg ast1 ast2) = 
---checker1 (ASTBlock asts) =
---checker1 (ASTDecl global {-global :: Bool-} type ast (Nothing) 
---    | global    =
---    | otherwise =
---checker1 (ASTDecl global {-global :: Bool-} type ast1 (Just ast2)
---    | global    =
---    | otherwise =
---checker1 (ASTIf ast1 ast2 (Nothing))) = 
---checker1 (ASTIf ast1 ast2 (Just ast3))) = 
---checker1 (ASTWhile ast ast)) = 
---checker1 (ASTFork str asts)) = 
---checker1 (ASTJoin)) = 
---checker1 (ASTCall str asts) = 
---checker1 (ASTAss ast1 ast2) = 
---checker1 (ASTVar str) = 
---checker1 (ASTInt str) = 
---checker1 (ASTBool str) = 
---checker1 (ASTType str) = 
---checker1 (ASTOp ast1 str ast2) = 
---checker1 (ASTUnary str ast) = 
-
-
-
-
---checker2 :: CheckTree -> CheckTree
-
---checker2 (self@(ASTProgram asts), functions, globals, variables) 
---    = tail $ map checker2 $ map (\x -> (x, functions, globals, variables)) asts
---checker2 (self@(ASTProc str asts ast), functions, globals, variables) = 
---checker2 (self@(ASTArg ast1 ast2), functions, globals, variables) = 
---checker2 (self@(ASTBlock asts), functions, globals, variables) =
---checker2 (self@(ASTDecl global {-global :: Bool-} type ast (Nothing)), functions, globals, variables)
---    | global    =
---    | otherwise =
---checker2 (self@(ASTDecl global {-global :: Bool-} type ast1 (Just ast2)), functions, globals, variables)
---    | global    =
---    | otherwise =
---checker2 (self@(ASTIf ast1 ast2 (Nothing)) functions globals variables) = 
---checker2 (self@(ASTIf ast1 ast2 (Just ast3)) functions globals variables) = 
---checker2 (self@(ASTWhile ast ast) functions globals variables) = 
---checker2 (self@(ASTFork str asts) functions globals variables) = 
---checker2 (self@(ASTJoin) functions globals variables) = 
---checker2 (self@(ASTCall str asts) functions globals variables) = 
---checker2 (self@(ASTAss ast1 ast2) functions globals variables) = 
---checker2 (self@(ASTVar str) functions globals variables) = 
---checker2 (self@(ASTInt str) functions globals variables) = 
---checker2 (self@(ASTBool str) functions globals variables) = 
---checker2 (self@(ASTType str) functions globals variables) = 
---checker2 (self@(ASTOp ast1 str ast2) functions globals variables) = 
---checker2 (self@(ASTUnary str ast) functions globals variables) = 
