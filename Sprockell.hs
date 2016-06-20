@@ -32,15 +32,17 @@ sprockell instrs sprState reply = (sprState', request)
         SprState{..} = sprState
         MachCode{..} = decode (instrs!pc)
 
-        (x,y)        = (regbank!regX , regbank!regY)
+        x            = regbank!regX
+        y            = regbank!regY
         aluOutput    = alu aluCode x y
+        aluIOutput   = alu aluCode x immValue
 
         pc'          = nextPC branch tgtCode (x,reply) (pc,immValue,y)
         sp'          = nextSP spCode sp
 
         address      = agu aguCode (addrImm,x,sp)
 
-        loadValue    = load ldCode (immValue, aluOutput, localMem!address, pc, reply)
+        loadValue    = load ldCode (immValue, aluOutput, aluIOutput, localMem!address, pc, reply)
         regbank'     = regbank <~! (loadReg, loadValue)
 
         localMem'    = store localMem stCode (address,y)
@@ -80,6 +82,8 @@ decode instr = case instr of
 
   Compute c rx ry toReg       -> nullcode {ldCode=LdAlu, aluCode=c, regX=rx, regY=ry, loadReg=toReg}
 
+  ComputeI c rx vy toReg       -> nullcode {ldCode=LdAluI, aluCode=c, regX=rx, immValue=vy, loadReg=toReg}
+                                -- PP26: Added computing with immediate values
   Jump target                 -> case target of
                                    Abs n       -> nullcode {tgtCode=TAbs, immValue=n}
                                    Rel n       -> nullcode {tgtCode=TRel, immValue=n}
@@ -170,6 +174,8 @@ alu :: Operator -> Value -> Value -> Value
 alu op x y = case op of
         Incr   -> x + 1
         Decr   -> x - 1
+        Incr4  -> x + 4
+        Decr4  -> x - 4
         Add    -> x + y
         Sub    -> x - y
         Mul    -> x * y
@@ -200,10 +206,11 @@ agu aguCode (addrImm,x,sp) = case aguCode of
 -- =====================================================================================
 -- load: calculates the value that has to be put in a register
 -- =====================================================================================
-load :: LdCode -> (Value, Value, Value, Value, Reply) -> Value
-load ldCode (immval,aluOutput,memval,pc,reply) = case (ldCode, reply) of
+load :: LdCode -> (Value, Value, Value, Value, Value, Reply) -> Value
+load ldCode (immval,aluOutput,aluIOutput,memval,pc,reply) = case (ldCode, reply) of
         (LdImm, Nothing) -> immval
         (LdAlu, Nothing) -> aluOutput
+        (LdAluI, Nothing) -> aluIOutput               -- PP26: Immediate compute
         (LdMem, Nothing) -> memval
         (LdPC , Nothing) -> pc
 

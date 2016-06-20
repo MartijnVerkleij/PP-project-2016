@@ -75,11 +75,13 @@ data SystemState = SystemState
 data Operator    = Add   | Sub | Mul -- | Div | Mod             -- Computational operations -- No Div, Mod because of hardware complexity
                  | Equal | NEq | Gt  | Lt     | GtE | LtE       -- Comparison operations
                  | And   | Or  | Xor | LShift | RShift          -- Logical operations
-                 | Decr  | Incr                                 -- Decrement (-1), Increment (+1)
+                 | Decr  | Incr | Decr4 | Incr4                 -- Decrement (-1), Increment (+1), PP26: Decrement (-4), Increment (+4)
                  deriving (Eq,Show,Read)
 
 data Instruction = Compute Operator RegAddr RegAddr RegAddr     -- Compute op r0 r1 r2: go to "alu",
                                                                 --      do "op" on regs r0, r1, and put result in reg r2
+                 | ComputeI Operator RegAddr Value RegAddr      -- Compute op r0 v r2: go to "alu",
+                                                                --      do "op" on regs r0, value, and put result in reg r2
                  | Jump Target                                  -- Jump t: jump to target t (absolute, relative, indirect)
                  | Branch RegAddr Target                        -- Branch r t: conditional jump, depending on register r
                                                                 --      if r contains 0: don't jump; otherwise: jump
@@ -137,6 +139,7 @@ data AguCode    = AguDir                                        -- code to tell 
 
 data LdCode     = LdImm                                         -- code that indicates which value to load in register
                 | LdAlu
+                | LdAluI                                        -- PP26: immediate compute
                 | LdMem
                 | LdPC
                 | LdInp
