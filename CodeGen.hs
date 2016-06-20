@@ -16,23 +16,28 @@ codeGen (ASTProgram asts
     checkType@(functions, globals, variables)) threads
         =   threadControl ++ procsCode ++ exprsCode
         where
-            begin_of_code = len (threadControl ++ procsCode) + 1
-            (procs, exprs) = span $ isProcedure asts
-            procsCode = concat $ map codeGen procs
-            exprsCode = concat $ map codeGen exprs
+            begin_of_code = length (threadControl ++ procsCode) + 1
+            (procs, exprs) = span isProcedure asts
+            procsCode = concat $ map (\x -> codeGen x threads) procs
+            exprsCode = concat $ map (\x -> codeGen x threads) exprs
             
             threadControl = 
                 [ Compute Equal regSprID reg0 regE
-                , Branch (IndAddr regE) (Rel 2)
+                , Branch regE (Rel 2)
                 , Jump (Rel 2)
                 , Jump (Abs begin_of_code)
-                , Compute Decr regSprID reg0 regA
-                , Load (ImmValue 3) (IndAddr regB)
-                , Compute Mul regA regB regA
-                --, TestAndSet 
-                --, Receive regE
-                --, 
+                , Load (ImmValue threadControlAddr)  regA
+                , TestAndSet (IndAddr regA)
+                , Receive regE
+                , Branch regE (Rel 2)
+                , Jump (Rel (-3))
+                , Compute Incr regA reg0 regA
+                , ReadInstr (IndAddr regA)
+                , Receive regB
+                
                 ]
+                where
+                    threadControlAddr = (length globals) * global_record_size
             
             isProcedure :: AST -> Bool
             isProcedure (ASTProc _ _ _ _) = True
@@ -40,38 +45,37 @@ codeGen (ASTProgram asts
             
 codeGen (ASTGlobal varType astVar Nothing 
     checkType@(functions, globals, variables)) threads
-        =   [ Load (ImmValue addr) (IndAddr regA)   -- Load memory address of global's lock
-            , TestAndSet (IndAddr regA)             -- Lock on ready bit
-            , ReadInstr (IndAddr regA)              -- 
-            , Receive (IndAddr regB)                --
-            , Branch (IndAddr regB) (Rel -4)        -- Retry if lock fails
+        =   [ Load (ImmValue addr) regA         -- Load memory address of global's lock
+            , TestAndSet (IndAddr regA)         -- Lock on ready bit
+            , Receive regB                      --
+            , Branch regB (Rel (-4))            -- Retry if lock fails
             , Load (ImmValue (addr + global_record_value)) 
-                (IndAddr regC)                      -- Load memory address of global value
-            , WriteInstr reg0 (IndAddr regC)        -- Write value
-            , WriteInstr reg0 (IndAddr regA)        -- Unlock value
+                regC                            -- Load memory address of global value
+            , WriteInstr reg0 (IndAddr regC)    -- Write value
+            , WriteInstr reg0 (IndAddr regA)    -- Unlock value
             ]
         where
-            addr = (global_record_size * (globalIndex $ getStr astVar))
+            addr = (global_record_size * (globalIndex (getStr astVar) globals))
             
 codeGen (ASTGlobal varType astVar (Just astExpr) 
     checkType@(functions, globals, variables)) threads
-        =   codeGen astExpr ++
-            [ Pop (regE)                            -- pop value from expression
-            , Load (ImmValue addr) (IndAddr regA)   -- Load memory address of global's lock
-            , TestAndSet (IndAddr regA)             -- Lock on ready bit
-            , ReadInstr (IndAddr regA)              -- 
-            , Receive (IndAddr regB)                --
-            , Branch (IndAddr regB) (Rel -4)        -- Retry if lock fails
+        =   (codeGen astExpr threads) ++
+            [ Pop (regE)                        -- pop value from expression
+            , Load (ImmValue addr) regA         -- Load memory address of global's lock
+            , TestAndSet (IndAddr regA)         -- Lock on ready bit
+            , ReadInstr (IndAddr regA)          -- 
+            , Receive regB                      --
+            , Branch regB (Rel (-4))            -- Retry if lock fails
             , Load (ImmValue (addr + global_record_value)) 
-                (IndAddr regC)                      -- Load memory address of global value
-            , WriteInstr regE (IndAddr regC)        -- Write value
-            , WriteInstr reg0 (IndAddr regA)        -- Unlock value
+                regC                            -- Load memory address of global value
+            , WriteInstr regE (IndAddr regC)    -- Write value
+            , WriteInstr reg0 (IndAddr regA)    -- Unlock value
             ]
         where
-            addr = (global_record_size * (globalIndex $ getStr astVar))
+            addr = (global_record_size * (globalIndex (getStr astVar) globals))
 codeGen (ASTProc pName astArgs astStat 
     checkType@(functions, globals, variables)) threads
-        = 
+        = [Nop]
 codeGen (ASTArg astType astVar 
     checkType@(functions, globals, variables)) threads
         = [Nop]
@@ -125,7 +129,7 @@ codeGen (ASTUnary op astV
         = [Nop]
 
 -- Find the index of a given Global. Used to calculate global address in memory.
-globalIndex :: String -> VariableType -> Int
-globalIndex var [] = error "Global \""+ var +"\" is not defined."
+globalIndex :: String -> [VariableType] -> Int
+globalIndex var [] = error $ "Global \"" ++ (show var) ++ "\" is not defined."
 globalIndex var ((xStr,_):xs)   | var == xStr   = 0
                                 | otherwise     = 1 + globalIndex var xs
