@@ -71,10 +71,14 @@ type FunctionType = (String, [Alphabet{- Must be of either IntType or BoolType -
 -- Scopes are defined in the following manner: [deepest scope,...,shallowest scope]
 type CheckType = ([FunctionType], [VariableType], [[VariableType]])
 
+-- An Alphabet, in this context, is equivalent to a type
 data AST = ASTProgram [AST] CheckType
+    -- Globals
     | ASTGlobal Alphabet AST (Maybe AST) CheckType
+    -- Procedures and arguments
     | ASTProc String [AST] AST CheckType
     | ASTArg AST AST CheckType
+    -- Statements
     | ASTBlock [AST] CheckType
     | ASTDecl Alphabet AST (Maybe AST) CheckType
     | ASTIf AST AST (Maybe AST) CheckType
@@ -82,13 +86,14 @@ data AST = ASTProgram [AST] CheckType
     | ASTFork String [AST] CheckType
     | ASTJoin CheckType
     | ASTCall String [AST] CheckType
-    | ASTAss AST AST CheckType
+    -- Expressions
+    | ASTAss AST AST (Maybe Alphabet) CheckType
     | ASTVar String CheckType
     | ASTInt String CheckType
     | ASTBool String CheckType
     | ASTType String CheckType
-    | ASTOp AST String AST CheckType
-    | ASTUnary String AST CheckType
+    | ASTOp AST String AST (Maybe Alphabet) CheckType
+    | ASTUnary String AST (Maybe Alphabet) CheckType
     deriving Show
 
 

@@ -67,7 +67,7 @@ pTreeToAst (PNode Expr (expr@(PNode Expr _):[]))
     = pTreeToAst expr
 -- Assignment expression
 pTreeToAst (PNode Expr (var:(PLeaf (Ass,_,_)):expr:[]))
-    = ASTAss (pTreeToAst var) (pTreeToAst expr) ([],[],[])
+    = ASTAss (pTreeToAst var) (pTreeToAst expr) Nothing ([],[],[])
 -- Variable expression
 pTreeToAst (PNode Expr (var@(PNode Var _):[]))
     = ASTVar (getStr var) ([],[],[])
@@ -79,10 +79,10 @@ pTreeToAst (PNode Expr (boolType@(PNode BoolType _):[]))
     = ASTBool (getStr boolType) ([],[],[])
 -- Operation expression
 pTreeToAst (PNode Expr (expr1:op@(PNode Op _):expr2:[]))
-    = ASTOp (pTreeToAst expr1) (getStr op) (pTreeToAst expr2) ([],[],[])
+    = ASTOp (pTreeToAst expr1) (getStr op) (pTreeToAst expr2) Nothing ([],[],[])
 -- Unary operation expression
 pTreeToAst (PNode Expr (op@(PNode Unary _):expr:[]))
-    = ASTUnary (getStr op) (pTreeToAst expr) ([],[],[])
+    = ASTUnary (getStr op) (pTreeToAst expr) Nothing ([],[],[])
 
 
 astToRoseDebug :: AST -> RoseTree
@@ -114,8 +114,8 @@ astToRoseDebug (ASTJoin (f,g,v))
     = RoseNode ("join" ++ " -> " ++ (show f) ++ (show g) ++ (show v)) []
 astToRoseDebug (ASTCall str asts (f,g,v))
     = RoseNode ("call "++ " -> " ++ (show f) ++ (show g) ++ (show v)) $ map astToRoseDebug asts
-astToRoseDebug (ASTAss ast1 ast2 (f,g,v))
-    = RoseNode ("=" ++ " -> " ++ (show f) ++ (show g) ++ (show v)) $ map astToRoseDebug [ast1, ast2]
+astToRoseDebug (ASTAss ast1 ast2 typeStr (f,g,v))
+    = RoseNode ("= " ++ (show typeStr) ++ " -> " ++ (show f) ++ (show g) ++ (show v)) $ map astToRoseDebug [ast1, ast2]
 astToRoseDebug (ASTVar str (f,g,v))
     = RoseNode (str ++ " -> " ++ (show f) ++ (show g) ++ (show v)) []
 astToRoseDebug (ASTInt str (f,g,v))
@@ -124,10 +124,10 @@ astToRoseDebug (ASTBool str (f,g,v))
     = RoseNode (str ++ " -> " ++ (show f) ++ (show g) ++ (show v)) []
 astToRoseDebug (ASTType str (f,g,v))
     = RoseNode (str ++ " -> " ++ (show f) ++ (show g) ++ (show v)) []
-astToRoseDebug (ASTOp ast1 str ast2 (f,g,v))
-    = RoseNode (str ++ " -> " ++ (show f) ++ (show g) ++ (show v)) $ map astToRoseDebug [ast1, ast2]
-astToRoseDebug (ASTUnary str ast (f,g,v))
-    = RoseNode (str ++ " -> " ++ (show f) ++ (show g) ++ (show v)) [(astToRoseDebug ast)]
+astToRoseDebug (ASTOp ast1 str ast2 typeStr (f,g,v))
+    = RoseNode (str ++ " " ++ (show typeStr) ++ " -> " ++ (show f) ++ (show g) ++ (show v)) $ map astToRoseDebug [ast1, ast2]
+astToRoseDebug (ASTUnary str ast typeStr (f,g,v))
+    = RoseNode (str ++ " " ++ (show typeStr) ++ " -> " ++ (show f) ++ (show g) ++ (show v)) [(astToRoseDebug ast)]
 
 
 astToRose :: AST -> RoseTree
@@ -159,7 +159,7 @@ astToRose (ASTJoin _)
     = RoseNode "join" []
 astToRose (ASTCall str asts _)
     = RoseNode ("call " ++ str) $ map astToRose asts
-astToRose (ASTAss ast1 ast2 _)
+astToRose (ASTAss ast1 ast2 _ _)
     = RoseNode "=" $ map astToRose [ast1, ast2]
 astToRose (ASTVar str _)
     = RoseNode str []
@@ -169,9 +169,9 @@ astToRose (ASTBool str _)
     = RoseNode str []
 astToRose (ASTType str _)
     = RoseNode str []
-astToRose (ASTOp ast1 str ast2 _)
+astToRose (ASTOp ast1 str ast2 _ _)
     = RoseNode str $ map astToRose [ast1, ast2]
-astToRose (ASTUnary str ast _)
+astToRose (ASTUnary str ast _ _)
     = RoseNode str [(astToRose ast)]
 
 
