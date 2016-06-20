@@ -26,15 +26,39 @@ codeGen (ASTProgram asts
                 , Branch regE (Rel 2)
                 , Jump (Rel 2)
                 , Jump (Abs begin_of_code)
-                , Load (ImmValue threadControlAddr)  regA
-                , TestAndSet (IndAddr regA)
+                , Load (ImmValue threadControlAddr) regA
+                , TestAndSet (IndAddr regA)     -- Grab rd lock
                 , Receive regE
-                , Branch regE (Rel 2)
+                , Branch regE (Rel 2)           -- successful lock -> +2
                 , Jump (Rel (-3))
-                , Compute Incr regA reg0 regA
-                , ReadInstr (IndAddr regA)
+                , Compute Incr4 regA reg0 regA
+                , Compute Incr4 regA reg0 regA
+                , ReadInstr (IndAddr regA)      -- Read jump address
+                , Receive regB                  -- 
+                , Push regB                     -- Need dem registers...
+                , Compute Incr4 regA reg0 regA
+                , Load (IndAddr regARP) regC    -- Load ARP (now 0) = regC
+                , ReadInstr (IndAddr regA)      -- Read argcount = regD
+                , Receive regD
+                , Compute Equal regD reg0 regE  -- while still args left
+                , Branch regE (Rel 9)           
+                , Compute Incr4 regA reg0 regA
+                , ReadInstr (IndAddr regA)      -- Read argument
                 , Receive regB
-                
+                , Store regB (IndAddr regC)     -- Store in local memory
+                , Load (ImmValue 4) regE
+                , Compute Add regC regE regC    -- regC += 4;
+                , Compute Decr regD reg0 regD   -- regD--;
+                , Jump (Rel (-9))               -- Back to while
+                , Load (ImmValue 4) regE
+                , Compute Add regC regE regC
+                , Load (ImmValue 5) regD        -- return address
+                , Store regD (IndAddr regC)
+                , Compute Add regC regE regC
+                , Store reg0 (IndAddr regC)     -- Caller's ARP
+                , Load (IndAddr regC) regARP    -- Set ARP to new scope
+                , Pop regA                      -- pop procedure address
+                , Jump (Ind regA)           -- jump to procedure
                 ]
                 where
                     threadControlAddr = (length globals) * global_record_size
@@ -106,7 +130,7 @@ codeGen (ASTJoin
 codeGen (ASTCall fName astArgs 
     checkType@(functions, globals, variables)) threads
         = [Nop]
-codeGen (ASTAss astVar astExpr 
+codeGen (ASTAss astVar astExpr _
     checkType@(functions, globals, variables)) threads
         = [Nop]
 codeGen (ASTVar varName 
@@ -121,10 +145,10 @@ codeGen (ASTBool value
 codeGen (ASTType typeStr 
     checkType@(functions, globals, variables)) threads
         = [Nop]
-codeGen (ASTOp astL op astR
+codeGen (ASTOp astL op astR _
     checkType@(functions, globals, variables)) threads
         = [Nop]
-codeGen (ASTUnary op astV 
+codeGen (ASTUnary op astV _
     checkType@(functions, globals, variables)) threads
         = [Nop]
 

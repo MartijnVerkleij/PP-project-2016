@@ -10,6 +10,7 @@ regB          = 3    :: Int
 regC          = 4    :: Int
 regD          = 5    :: Int
 regE          = 6    :: Int
+regARP        = 7    :: Int                                 -- PP26: self-defined ARP register
 
 intBool True  = 1                                               -- Bool-to-Int
 intBool False = 0
