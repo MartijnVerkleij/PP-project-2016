@@ -1,3 +1,6 @@
+global int ftw;
+global bool maybe = true;
+
 procedure naivePrime(int number, bool output) {
     output = false;
     int i = 2;

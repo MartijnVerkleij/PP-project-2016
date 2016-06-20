@@ -177,16 +177,16 @@ astToRose (ASTUnary str ast _)
 
 
 getStr :: ParseTree -> String
-getStr (PLeaf (_,str,_))        = str
-getStr (PNode Var [x])        = getStr x
-getStr (PNode Pid [x])        = getStr x
-getStr (PNode BoolType [x])   = getStr x
-getStr (PNode IntType [x])    = getStr x 
-getStr (PNode Op [x])         = getStr x
-getStr (PNode Unary [x])      = getStr x
-getStr (PNode Type [x])       = getStr x
-getStr (PNode Expr _)           = error "Cannot return the string of an expression this way."
-getStr a                        = error (show a)
+getStr (PLeaf (_,str,_))    = str
+getStr (PNode Var [x])      = getStr x
+getStr (PNode Pid [x])      = getStr x
+getStr (PNode BoolType [x]) = getStr x
+getStr (PNode IntType [x])  = getStr x 
+getStr (PNode Op [x])       = getStr x
+getStr (PNode Unary [x])    = getStr x
+getStr (PNode Type [x])     = getStr x
+getStr (PNode Expr _)       = error "Cannot return the string of an expression this way."
+getStr a                    = error (show a)
 
 getAlphabet :: String -> Alphabet
 getAlphabet "int"   = IntType
