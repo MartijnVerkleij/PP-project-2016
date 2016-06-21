@@ -3,7 +3,7 @@ module Constants where
 
 -- global_mem_size = 1023
 
-var_size = 4
+var_size = 1
 
 -- Thread record
 thread_record_size = 14 * var_size
