@@ -59,10 +59,16 @@ codeGen (ASTProgram asts
                 , Store regARP (IndAddr regC)   -- Caller's ARP
                 , Load (IndAddr regC) regARP    -- Set ARP to new scope
                 , Pop regA                      -- pop procedure address
+                , ComputeI Add regSprID thread_record_size regB 
+                                                -- compute thread occupation bit 
+                , TestAndSet (IndAddr regB)     -- Grab occupation bit
+                , Receive regE
+                , Branch regE (Rel 2)           -- successfully set -> +2
+                , Jump (Rel (-3))               -- otherwise try again
                 , Jump (Ind regA)               -- jump to procedure
                 ]
                 where
-                    threadControlAddr = (length globals) * global_record_size
+                    threadControlAddr = 1
             
             isProcedure :: AST -> Bool
             isProcedure (ASTProc _ _ _ _) = True
@@ -97,7 +103,8 @@ codeGen (ASTGlobal varType astVar (Just astExpr)
             , WriteInstr reg0 (IndAddr regA)    -- Unlock value
             ]
             where
-                addr = (global_record_size * (globalIndex (getStr astVar) globals))
+                addr = thread_record_size + threads 
+                    + (global_record_size * (globalIndex (getStr astVar) globals))
 codeGen (ASTProc pName astArgs astStat 
     checkType@(functions, globals, variables)) threads
         = codeGen astStat threads ++ 
@@ -154,7 +161,7 @@ codeGen (ASTWhile astExpr astStat
                     bodyGen = codeGen astStat threads
 codeGen (ASTFork pName astArgs 
     checkType@(functions, globals, variables)) threads
-        = [Nop]
+        = [ Nop]
 codeGen (ASTJoin 
     checkType@(functions, globals, variables)) threads
         = [Nop]
