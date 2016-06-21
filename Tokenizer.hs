@@ -39,12 +39,14 @@ tokenizer input@(x:xs)
     | isPrefixOf "<>" input = (Op, "<>") : tokenizer (input \\ "<>")
     | isPrefixOf "<=" input = (Op, "<=") : tokenizer (input \\ "<=")
     | isPrefixOf ">=" input = (Op, ">=") : tokenizer (input \\ ">=")
+
+    | isPrefixOf "//" input = tokenizer $ endOfLine (input \\ "//")
+    | isPrefixOf "/*" input = tokenizer $ endOfBlock (input \\ "/*")
+    
     | elem x "!+-^*/%<>"    = (Op, [x]) : tokenizer xs
     
     | x ==  '='              = (Ass, [x]) : tokenizer xs
     
-    | isPrefixOf "//" input = tokenizer $ endOfLine input \\ "//"
-    | isPrefixOf "/*" input = tokenizer $ endOfBlock input \\ "/*"
     
     | int /= ""             = (IntType, int) : tokenizer intRest
     | word /= ""            = (Var, word) : tokenizer wordRest
@@ -59,7 +61,7 @@ tokenizer input@(x:xs)
                                 | otherwise         = endOfLine xs
             endOfBlock :: String -> String
             endOfBlock []       = []
-            endOfBlock (x:y:xs) | ([x,y]) == "*/"     = xs
+            endOfBlock (x:y:xs) | [x,y] == "*/"     = xs
                                 | otherwise         = endOfBlock (y:xs)
 
 -- From series6a

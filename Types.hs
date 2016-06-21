@@ -64,7 +64,7 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
 
 --type TypeTable = [(String, [AST{-Var-}])]
 type VariableType = (String, Alphabet{- Must be of either IntType or BoolType -})
-type FunctionType = (String, [Alphabet{- Must be of either IntType or BoolType -}])
+type FunctionType = (String, [(String, Alphabet{- Must be of either IntType or BoolType -})])
 
 
 -- CheckType [Functions] [Globals] [Scopes[Variables]]
