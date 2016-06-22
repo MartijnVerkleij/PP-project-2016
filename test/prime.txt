@@ -1,10 +1,5 @@
-// not really prime, but more like some kind of test function.
-global int ftw;
-global bool maybe = true;
-
 procedure naivePrime(int number, bool output) {
     output = false;
-    int j;
     int i = 2;
     while ((i < (number / 2))) {
         if (((number % i) == 0)) {
@@ -13,6 +8,7 @@ procedure naivePrime(int number, bool output) {
         i = (i + 1);
     }
 }
+
 
 int number = 4931;
 bool output;

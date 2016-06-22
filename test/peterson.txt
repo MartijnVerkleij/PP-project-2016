@@ -1,0 +1,23 @@
+global bool flag_0 = false;
+global bool flag_1 = false;
+global int turn = 0;
+
+procedure p_0() {
+	flag_0 = true;
+	turn = 1;
+	while ((flag_1 && (turn == 1))) {
+		// wait
+	}
+	// critical section
+	flag_0 = false;
+}
+
+procedure p_1() {
+	flag_1 = true;
+	turn = 0;
+	while ((flag_0 && (turn == 0))) {
+		// wait
+	}
+	// critical section
+	flag_1 = false;
+}

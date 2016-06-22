@@ -29,15 +29,7 @@ astFib = do
     a <- readFile "test/fib.txt"
     showTree $
         astToRose $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astFibDebug = do
-    a <- readFile "test/fib.txt"
-    showTree $
-        astToRoseDebug $
+        checker$
         pTreeToAst $
         parse grammar Program $
         toTokenList $
@@ -72,15 +64,7 @@ astPrime = do
     a <- readFile "test/prime.txt"
     showTree $
         astToRose $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astPrimeDebug = do
-    a <- readFile "test/prime.txt"
-    showTree $
-        astToRoseDebug $
+        checker $
         pTreeToAst $
         parse grammar Program $
         toTokenList $
@@ -96,4 +80,52 @@ checkPrime = do
         toTokenList $
         tokenizer a
 
-tokenizePrime = show $ toTokenList $  tokenizer "procedure fib(int i, int res) {    if ((i < 3)) {        res = i;    } else {        int a;        int b;        fib((i-1), a);        fib((i-2), b);        res = (a + b);    }}"
+astBanking = do
+    a <- readFile "test/banking.txt"
+    showTree $
+        astToRose $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkBanking = do
+    a <- readFile "test/banking.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+astPeterson = do
+    a <- readFile "test/peterson.txt"
+    showTree $
+        astToRose $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkPeterson = do
+    a <- readFile "test/peterson.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkPrint = do
+    a <- readFile "test/print.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a

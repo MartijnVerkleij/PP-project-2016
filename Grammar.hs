@@ -88,7 +88,8 @@ grammar nt = case nt of
                         ,[ join, eol ]                                                      -- join
                         ,[ Pid, lPar, (?:) [Expr, (*:) [comma, Expr]], rPar, eol ]          -- call
                         ,[ Expr, eol ]                                                      -- expression
-                        ,[ lBrace, (*:) [Stat], rBrace ]]                                   -- block
+                        ,[ lBrace, (*:) [Stat], rBrace ]                                    -- block
+                        ,[ printStr, lPar, Expr, (*:) [comma, Expr], rPar, eol ]]           -- print
         -- Expressions
 
         Expr        ->  [[ lPar, Expr, rPar ]               -- parentheses
@@ -129,6 +130,9 @@ ass         = Terminal "="
 fork        = Terminal "fork"
 join        = Terminal "join"
 global      = Symbol "global"
+lock        = Terminal "lock"
+unlock      = Terminal "unlock"
+printStr    = Terminal "print"
 
 
 eol         = Symbol ";"

@@ -57,6 +57,7 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Fork                          -- Fork statement
               | Join                          -- Join statement
               | Global                        -- Global keyword
+              | Print
               
               | Program                       -- Program
               | Proc                          -- Procedure
@@ -86,6 +87,7 @@ data AST = ASTProgram [AST] CheckType
     | ASTFork String [AST] CheckType
     | ASTJoin CheckType
     | ASTCall String [AST] CheckType
+    | ASTPrint [AST] CheckType
     -- Expressions
     | ASTAss AST AST (Maybe Alphabet) CheckType
     | ASTVar String CheckType
