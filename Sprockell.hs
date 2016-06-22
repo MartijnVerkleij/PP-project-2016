@@ -82,7 +82,7 @@ decode instr = case instr of
 
   Compute c rx ry toReg       -> nullcode {ldCode=LdAlu, aluCode=c, regX=rx, regY=ry, loadReg=toReg}
 
-  ComputeI c rx vy toReg       -> nullcode {ldCode=LdAluI, aluCode=c, regX=rx, immValue=vy, loadReg=toReg}
+  ComputeI c rx vy toReg       -> nullcode {ldCode=LdAluI, aluCode=c, regX=rx, regY=vy, immValue=vy, loadReg=toReg}
                                 -- PP26: Added computing with immediate values
   Jump target                 -> case target of
                                    Abs n       -> nullcode {tgtCode=TAbs, immValue=n}

@@ -9,7 +9,16 @@ import Debug.Trace
 import System.FilePath
 import ASTBuilder
 import Checker
+import CodeGen
 
+import BasicFunctions
+import HardwareTypes
+import Sprockell
+import System
+import Simulation
+
+
+-- ==================== Fib ====================
 prprFib = do 
     a <- readFile "test/fib.txt"
     prpr $ 
@@ -45,6 +54,8 @@ checkFib = do
         toTokenList $
         tokenizer a
 
+
+-- ==================== Prime ====================
 prprPrime = do 
     a <- readFile "test/prime.txt"
     prpr $ 
@@ -79,7 +90,20 @@ checkPrime = do
         parse grammar Program $
         toTokenList $
         tokenizer a
+        
+runPrime = do
+    a <- readFile "test/prime.txt"
+    sysTest $
+        replicate 3 $
+        codeGen' 3 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
 
+
+-- ==================== Banking ====================
 astBanking = do
     a <- readFile "test/banking.txt"
     showTree $
@@ -94,12 +118,14 @@ checkBanking = do
     a <- readFile "test/banking.txt"
     showTree $
         astToRoseDebug $
-        checker $
+        checker1 $
         pTreeToAst $
         parse grammar Program $
         toTokenList $
         tokenizer a
 
+
+-- ==================== Peterson ====================
 astPeterson = do
     a <- readFile "test/peterson.txt"
     showTree $
@@ -112,16 +138,6 @@ astPeterson = do
 
 checkPeterson = do
     a <- readFile "test/peterson.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkPrint = do
-    a <- readFile "test/print.txt"
     showTree $
         astToRoseDebug $
         checker $
