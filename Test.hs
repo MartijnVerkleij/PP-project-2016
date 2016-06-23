@@ -58,7 +58,6 @@ genFib = do
     a <- readFile "test/fib.txt"
     putStr $
         sprILprpr $
-        replicate 1 $
         codeGen' 1 $
         checker $
         pTreeToAst $
@@ -118,7 +117,6 @@ genPrime = do
     a <- readFile "test/prime.txt"
     putStr $
         sprILprpr $
-        replicate 1 $
         codeGen' 1 $
         checker $
         pTreeToAst $
@@ -178,7 +176,6 @@ genBanking = do
     a <- readFile "test/banking.txt"
     putStr $
         sprILprpr $
-        replicate 4 $
         codeGen' 4 $
         checker $
         pTreeToAst $
@@ -238,7 +235,6 @@ genPeterson = do
     a <- readFile "test/peterson.txt"
     putStr $
         sprILprpr $
-        replicate 3 $
         codeGen' 3 $
         checker $
         pTreeToAst $
@@ -357,7 +353,6 @@ genWhile = do
     a <- readFile "test/while.txt"
     putStr $
         sprILprpr $
-        replicate 1 $
         codeGen' 1 $
         checker $
         pTreeToAst $
@@ -416,7 +411,6 @@ genNested = do
     a <- readFile "test/nested_procedures.txt"
     putStr $
         sprILprpr $
-        replicate 1 $
         codeGen' 1 $
         checker $
         pTreeToAst $
@@ -476,7 +470,6 @@ genRecursion = do
     a <- readFile "test/recursion.txt"
     putStr $
         sprILprpr $
-        replicate 1 $
         codeGen' 1 $
         checker $
         pTreeToAst $
@@ -536,7 +529,6 @@ genIfElse = do
     a <- readFile "test/ifelse.txt"
     putStr $
         sprILprpr $
-        replicate 1 $
         codeGen' 1 $
         checker $
         pTreeToAst $
@@ -558,14 +550,14 @@ runIfElse = do
 
 -- ==================== Deep Expression ====================
 prprDeep = do 
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     prpr $ 
         parse grammar Program $ 
         toTokenList $ 
         tokenizer a
 
 parseDeep = do
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     showTree $
         toRoseTree $
         parse grammar Program $
@@ -573,7 +565,7 @@ parseDeep = do
         tokenizer a
 
 astDeep = do
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     showTree $
         astToRose $
         checker $
@@ -583,7 +575,7 @@ astDeep = do
         tokenizer a
 
 checkDeep = do
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     showTree $
         astToRoseDebug $
         checker $
@@ -593,10 +585,9 @@ checkDeep = do
         tokenizer a
 
 genDeep = do
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     putStr $
         sprILprpr $
-        replicate 1 $
         codeGen' 1 $
         checker $
         pTreeToAst $
@@ -605,7 +596,184 @@ genDeep = do
         tokenizer a
 
 runDeep = do
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
+    sysTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+
+-- ==================== Division by Zero ====================
+prprZero = do 
+    a <- readFile "test/division_zero.txt"
+    prpr $ 
+        parse grammar Program $ 
+        toTokenList $ 
+        tokenizer a
+
+parseZero = do
+    a <- readFile "test/division_zero.txt"
+    showTree $
+        toRoseTree $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+astZero = do
+    a <- readFile "test/division_zero.txt"
+    showTree $
+        astToRose $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkZero = do
+    a <- readFile "test/division_zero.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+genZero = do
+    a <- readFile "test/division_zero.txt"
+    putStr $
+        sprILprpr $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+runZero = do
+    a <- readFile "test/division_zero.txt"
+    sysTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+
+-- ==================== Infinite Empty Loop ====================
+prprInfEmpty = do 
+    a <- readFile "test/infinite_loop.txt"
+    prpr $ 
+        parse grammar Program $ 
+        toTokenList $ 
+        tokenizer a
+
+parseInfEmpty = do
+    a <- readFile "test/infinite_loop.txt"
+    showTree $
+        toRoseTree $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+astInfEmpty = do
+    a <- readFile "test/infinite_loop.txt"
+    showTree $
+        astToRose $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkInfEmpty = do
+    a <- readFile "test/infinite_loop.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+genInfEmpty = do
+    a <- readFile "test/infinite_loop.txt"
+    putStr $
+        sprILprpr $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+runInfEmpty = do
+    a <- readFile "test/infinite_loop.txt"
+    sysTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+
+-- ==================== Infinite Busy Loop ====================
+prprInfBusy = do 
+    a <- readFile "test/infinite_busy_loop.txt"
+    prpr $ 
+        parse grammar Program $ 
+        toTokenList $ 
+        tokenizer a
+
+parseInfBusy = do
+    a <- readFile "test/infinite_busy_loop.txt"
+    showTree $
+        toRoseTree $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+astInfBusy = do
+    a <- readFile "test/infinite_busy_loop.txt"
+    showTree $
+        astToRose $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkInfBusy = do
+    a <- readFile "test/infinite_busy_loop.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+genInfBusy = do
+    a <- readFile "test/infinite_busy_loop.txt"
+    putStr $
+        sprILprpr $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+runInfBusy = do
+    a <- readFile "test/infinite_busy_loop.txt"
     sysTest $
         replicate 1 $
         codeGen' 1 $
