@@ -1,0 +1,2 @@
+bool condition = true;
+if (condition) print(1); else print(2);

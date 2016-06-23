@@ -210,24 +210,24 @@ runPeterson = do
         tokenizer a
 
 
-{--- ==================== Lock ====================
-prpr = do 
-    a <- readFile "test/.txt"
+-- ==================== Lock ====================
+prprIf = do 
+    a <- readFile "test/if.txt"
     prpr $ 
         parse grammar Program $ 
         toTokenList $ 
         tokenizer a
 
-parse = do
-    a <- readFile "test/.txt"
+parseIf = do
+    a <- readFile "test/if.txt"
     showTree $
         toRoseTree $
         parse grammar Program $
         toTokenList $
         tokenizer a
 
-ast = do
-    a <- readFile "test/.txt"
+astIf = do
+    a <- readFile "test/if.txt"
     showTree $
         astToRose $
         checker $
@@ -236,8 +236,8 @@ ast = do
         toTokenList $
         tokenizer a
 
-check = do
-    a <- readFile "test/.txt"
+checkIf = do
+    a <- readFile "test/if.txt"
     showTree $
         astToRoseDebug $
         checker $
@@ -246,8 +246,8 @@ check = do
         toTokenList $
         tokenizer a
 
-run = do
-    a <- readFile "test/.txt"
+runIf = do
+    a <- readFile "test/if.txt"
     sysTest $
         replicate 3 $
         codeGen' 3 $
@@ -255,7 +255,7 @@ run = do
         pTreeToAst $
         parse grammar Program $
         toTokenList $
-        tokenizer a-}
+        tokenizer a
 
 
 -- ==================== Checker checks ====================
