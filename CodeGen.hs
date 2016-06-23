@@ -17,9 +17,9 @@ codeGen :: AST -> Int -> [Instruction]
 
 codeGen (ASTProgram asts 
     checkType@(functions, globals, variables)) threads
-        =   threadControl ++ procsCode ++ exprsCode
+        =   threadControl ++ procsCode ++ exprsCode ++ [EndProg]
         where
-            begin_of_code = length (threadControl ++ procsCode) - 3
+            begin_of_code = length (threadControl ++ procsCode) - 7
             (procs, exprs) = span isProcedure asts
             procsCode = concat $ map (\x -> codeGen x threads) procs
             exprsCode = concat $ map (\x -> codeGen x threads) exprs
@@ -35,10 +35,15 @@ codeGen (ASTProgram asts
                 , Jump (Rel begin_of_code)
                 , Load (ImmValue threadControlAddr) regA 
                                                 -- Begin of thread control loop
+                , ReadInstr (DirAddr fork_record_endp)
+                , Receive regB                  -- Read end of program address
+                , Compute Equal regB reg0 regE
+                , Branch regE (Rel 2)           -- jump over endprog if not done
+                , EndProg                       -- Endprog if done bit is set by main thread
                 , TestAndSet (IndAddr regA)     -- Grab rd lock
                 , Receive regE
                 , Branch regE (Rel 2)           -- successful lock -> +2
-                , Jump (Rel (-3))               -- otherwise try again
+                , Jump (Rel (-8))               -- otherwise try again
                 , Compute Incr regA reg0 regA
                 , Compute Incr regA reg0 regA
                 , ReadInstr (IndAddr regA)      -- Read jump address
@@ -71,6 +76,8 @@ codeGen (ASTProgram asts
                 , Branch regE (Rel 2)           -- successfully set -> +2
                 , Jump (Rel (-3))               -- otherwise try again
                 , Jump (Ind regA)               -- jump to procedure
+                , Nop
+                , Nop
                 ]
                 where
                     threadControlAddr = global_record_size * (length globals)
@@ -150,7 +157,7 @@ codeGen (ASTIf astExpr astThen (Just astElse)
             [ Pop regE
             , Branch regE (Rel (length thenGen))] ++
             thenGen
-            ++ [ Jump (Rel (length elseGen))]
+            ++ [ Jump (Rel ((length elseGen) + 1))]
             ++ elseGen
                 where   thenGen = codeGen astThen threads
                         elseGen = codeGen astElse threads
@@ -354,7 +361,8 @@ globalIndex var ((xStr,_):xs)   | var == xStr   = 0
 -- Find the memory location of a given variable in local memory and store it in regE.
 getMemAddr :: String -> [[VariableType]] -> [Instruction]
 getMemAddr varStr variables 
-    = (replicate x (Load (IndAddr regARP) regE) ) ++ (trace (show variables) 
+    = [ Compute Add regARP reg0 regE] ++
+      (replicate x (Load (IndAddr regARP) regE) ++
       [ ComputeI Add regE (y*4) regE
       , Load (IndAddr regE) regE ])
         where 
@@ -369,3 +377,7 @@ findVar (x,y) str ([]:scopes) = findVar (x+1,0) str scopes
 findVar (x,y) str (scope@(var@(str2,_):vars):scopes)
     | str == str2   = (x,y)
     | otherwise     = findVar (x,y+1) str (vars:scopes)
+
+sprILprpr :: [Instruction] -> String
+sprILprpr [] = ""
+sprILprpr (x:xs) = "    " ++ show x ++ "\n" ++ sprILprpr xs
