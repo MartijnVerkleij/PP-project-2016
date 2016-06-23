@@ -20,26 +20,34 @@ procedure transfer(int sender, int target, int amount) {
 }
 
 procedure test1() {
+	print(john, jane, martijn);
 	fork deposit(jane, 100);
 	fork deposit(john, 100);
 	fork deposit(martijn, 1);
 	join;
+	print(john, jane, martijn);
 	fork deposit(jane, 200);
 	fork withdraw(john, 200);
 	fork deposit(martijn, 2000000);
 	join;
+	print(john, jane, martijn);
 	fork withdraw(jane, 10);
 	fork withdraw(john, 20);
 	fork deposit(martijn, 100000);
 	join;
+	print(john, jane, martijn);
 	fork withdraw(jane, 300);
 	fork withdraw(john, 3);
 	fork withdraw(martijn, 50000);
 	join;
+	print(john, jane, martijn);
 	fork withdraw(jane, 35);
 	fork transfer(martijn, john, 1000000);
 	join;
+	print(john, jane, martijn);
 	fork transfer(martijn, jane, 100000);
+	join;
+	print(john, jane, martijn);
 }
 
 test1();

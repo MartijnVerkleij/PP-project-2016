@@ -12,6 +12,9 @@ checker :: AST -> AST
 checker ast = checker2 (checker1 ast) ([],[],[[]])
 
 -- First pass
+-- Checks declarations
+-- Stores globals
+-- Stores functions and their arguments
 checker1 :: AST -> AST
 checker1 (ASTProgram asts _) 
     = foldl function (ASTProgram [] ([],[],[[]])) asts
@@ -32,7 +35,9 @@ checker1 (ASTProgram asts _)
             = ASTProgram (asts ++ [ast]) checks
 
 -- Second pass
+-- Checks the correctness of types and declarations/usage
 checker2 :: AST -> CheckType -> AST
+-- Checks all individual parts of the program in order
 checker2 (ASTProgram asts check) _
     = foldl' function (ASTProgram prePart check) stats
     where
@@ -47,19 +52,26 @@ checker2 (ASTProgram asts check) _
             = ASTProgram (asts ++ [astCheck]) (getCheck astCheck)
             where
                 astCheck = checker2 ast check
+-- No checks
 checker2 self@(ASTGlobal varType varName Nothing _) _
     = self
-checker2 (ASTGlobal varType varName@(ASTVar varId _) (Just expr) _) check -- TODO: nameCheck
+-- Checks the type of the expression
+-- Makes sure the variable itself is not in the expression
+checker2 (ASTGlobal varType varName@(ASTVar varId _) (Just expr) _) check
     | varType == (getExprType exprCheck) && (nameCheck expr varId)
         = (ASTGlobal varType varName (Just exprCheck) check)
     | otherwise     = error $ "Types do not match, type: " ++ (show varType) ++ " and expression: " ++ (show expr)
     where
         exprCheck   = checker2 expr check
+-- Opens new scope and puts its arguments in it as variables
+-- Checks its body
 checker2 (ASTProc pid args body check@(f,_,_)) _
     = ASTProc pid args bodyCheck newCheck
     where
         bodyCheck   = checker2 body newCheck
         newCheck    = foldl' addToScope (openScope check) ((Map.fromList f)Map.!pid)
+-- Opens new scope
+-- Checks its body in order
 checker2 (ASTBlock asts _) check
     = foldl' function (ASTBlock [] newCheck) asts
     where
@@ -69,24 +81,32 @@ checker2 (ASTBlock asts _) check
             = ASTBlock (asts ++ [astCheck]) (getCheck astCheck)
             where
                 astCheck    = checker2 ast check
+-- Adds variable to scope (see addToScope)
 checker2 (ASTDecl varType var@(ASTVar varName _) Nothing _) check
     = ASTDecl varType var Nothing newCheck
     where
         newCheck    = addToScope check (varName, varType)
+-- Adds variable to scope (see addToScope)
+-- Check expression type
+-- Does nameCheck
 checker2 (ASTDecl varType var@(ASTVar varName _) (Just expr) _) check
     | varType == (getExprType exprCheck) && (nameCheck expr varName)
         = ASTDecl varType varCheck (Just exprCheck) newCheck
-    | otherwise     = error $ "Types do not match, type: " ++ (show varType) ++ " and expression: " ++ (show expr)
+    | otherwise     = error $ "Types do not match or declared variable itself is used in assignment, type: " ++ (show varType) ++ " and expression: " ++ (show expr)
     where
         newCheck    = addToScope check (varName, varType)
         exprCheck   = checker2 expr newCheck
         varCheck    = checker2 var newCheck
+-- Check expression type
+-- Check body
 checker2 (ASTIf expr thenAst Nothing _) check
     | (getExprType exprCheck) == BoolType    = ASTIf exprCheck thenCheck Nothing check
     | otherwise     = error $ "Condition in if statement should be of type: bool, but isnt, in: " ++ (show expr)
     where
         exprCheck   = checker2 expr check
         thenCheck   = checker2 thenAst check
+-- Check expression type
+-- Check bodies
 checker2 (ASTIf expr thenAst (Just elseAst) _) check
     | (getExprType exprCheck) == BoolType   = ASTIf exprCheck thenCheck (Just elseCheck) check
     | otherwise     = error $ "Condition in if statement should be of type: bool, but isnt, in: " ++ (show expr)
@@ -94,42 +114,55 @@ checker2 (ASTIf expr thenAst (Just elseAst) _) check
         exprCheck   = checker2 expr check
         thenCheck   = checker2 thenAst check
         elseCheck   = checker2 elseAst check
+-- Check expression type
+-- Check body
 checker2 (ASTWhile expr ast _) check
     | (getExprType exprCheck) == BoolType   = ASTWhile exprCheck astCheck check
     | otherwise     = error $ "Condition in while statement should be of type: bool, but isnt, in: " ++ (show expr)
     where
         exprCheck   = checker2 expr check
         astCheck    = checker2 ast check
+-- Check arguments (see matchArgs)
 checker2 self@(ASTFork pid args _) check
     | matchArgs pid argsCheck check  = ASTFork pid argsCheck check
     | otherwise 
         = error $ "Either function not declared or arguments did not match declared types in Checker.checker2, with " ++ (show self) ++ " and: " ++ (show check)
     where
         argsCheck = map (\x -> checker2 x check) args
+-- No checks
 checker2 (ASTJoin _) check
     = ASTJoin check
+-- Check arguments (see matchArgs)
 checker2 self@(ASTCall pid args _) check
     | matchArgs pid argsCheck check  = ASTCall pid argsCheck check
     | otherwise 
         = error $ "Either function not declared or arguments did not match declared types in Checker.checker2, with " ++ (show self) ++ " and: " ++ (show check)
     where
         argsCheck = map (\x -> checker2 x check) args
+-- Check expressions
 checker2 (ASTPrint exprs _) check
     = ASTPrint (map (\x -> checker2 x check) exprs) check
+-- Check types
 checker2 (ASTAss var expr _ _) check
     | (getExprType varCheck) == (getExprType exprCheck)  = ASTAss varCheck exprCheck (Just (getExprType varCheck)) check
     | otherwise     = error $ "Types do not match in assignment in Checker.checker2, with: " ++ (show var) ++ " and: " ++ (show expr)
     where
         exprCheck   = checker2 expr check
         varCheck    = checker2 var check
+-- No checks
 checker2 (ASTVar str _) check
     = ASTVar str check
+-- No checks
 checker2 (ASTInt str _) check
     = ASTInt str check
+-- No checks
 checker2 (ASTBool str _) check
     = ASTBool str check
+-- No checks
 checker2 (ASTType str _) check
     = ASTType str check
+-- Check types
+-- Set operation result type
 checker2 (ASTOp expr1 op expr2 _ _) check
     | expr1Type == (getExprType expr2Check) && (fst $ matchOpType op expr1Type)
         = ASTOp expr1Check op expr2Check (Just (snd (matchOpType op expr1Type))) check
@@ -138,6 +171,8 @@ checker2 (ASTOp expr1 op expr2 _ _) check
         expr1Type   = getExprType expr1Check
         expr1Check  = checker2 expr1 check
         expr2Check  = checker2 expr2 check
+-- Check type
+-- Set operation result type
 checker2 (ASTUnary op expr _ _) check
     | fst (matchOpType op exprType) 
         = ASTUnary op exprCheck (Just (snd (matchOpType op exprType))) check
@@ -146,6 +181,8 @@ checker2 (ASTUnary op expr _ _) check
         exprType    = getExprType exprCheck
         exprCheck   = checker2 expr check
 
+-- Take the operator and input type as argument, 
+-- return whether the type matches the operator and the resulting operation type
 matchOpType :: String -> Alphabet -> (Bool, Alphabet)
 matchOpType op exprType
     | op `elem` ["==","!="]       = (True, BoolType)
@@ -158,17 +195,21 @@ matchOpType op exprType
             | op `elem` ["<=", ">=", "<", ">"]          = (IntType, BoolType)
             | otherwise = error $ "Undefined operator, look either here or in the tokenizer: " ++ op
 
+-- Check whether the length of the arguments matches the length of the declared procedure arguments
+-- Check whether the types of every argument matches
 matchArgs :: String -> [AST] -> CheckType -> Bool
 matchArgs pid args check@(f,g,v)
     = (length argTypes == (length funcTypes)) && (all (==True) $ zipWith (==) argTypes funcTypes)
     where
-        argTypes    = map getExprType args--Check
-        --argsCheck   = map (\x -> checker2 x check) args
+        argTypes    = map getExprType args
         funcTypes   = map snd $ (Map.fromList f)Map.!pid
 
+-- Open a scope
 openScope :: CheckType -> CheckType
 openScope (f,g,v) = (f,g,[]:v)
 
+-- Add a variable to the deepest scope
+-- Check whether the name conflicts other declarations, where variable shadowing is allowed for non-global variables
 addToScope :: CheckType -> (String, Alphabet) -> CheckType
 addToScope (f,g,(v:vs)) pair@(id,_) 
     | Map.member id (Map.fromList g)
@@ -179,22 +220,27 @@ addToScope (f,g,(v:vs)) pair@(id,_)
         = error $ "A variable with id " ++ (show id) ++ " has already been declared."
     | otherwise = (f,g,((v ++ [pair]):vs))
 
+-- Return the name of an ASTVar as a string
 getStr :: AST -> String
 getStr (ASTVar str _)   = str
 getStr x                = error $ "Cannot get string of: " ++ (show x)
 
+-- Return both the name and type of an ASTArg as a tuple
 getArg :: AST -> (String, Alphabet)
 getArg (ASTArg (ASTType typeStr _) (ASTVar varName _) _)
     = (varName, getAlphabet typeStr)
 getArg self 
     = error $ "Shouldn't reach this. In Checker.getArg, with: " ++ (show self) 
 
+-- Determine the type of a variable based on it's string only
 getStrType :: String -> Alphabet
 getStrType str  | length str == 0   = error "Variable length equals zero in Checker.getStrType"
                 | all (== True) $ map (isDigit) str     = IntType
                 | (str == "true") || (str == "false")   = BoolType
                 | otherwise         = error $ "invalid type in Checker.getStrType, var: " ++ str
 
+-- Return the type of an expression
+-- Looks through all scopes to find a variable
 getExprType :: AST -> Alphabet
 getExprType (ASTAss _ _ (Just typeStr) _)   = typeStr
 getExprType (ASTOp _ _ _ (Just typeStr) _)  = typeStr
@@ -212,11 +258,14 @@ getExprType (ASTVar varName (_,g,v))
             | otherwise                             = iterVar varName vts
 getExprType ast = error $ "Shouldn't reach this in Checker.getExprType. AST: " ++ (show ast)
 
+-- Returns an Alphabet with the correct type of a type in string form
 getAlphabet :: String -> Alphabet
 getAlphabet "int"   = IntType
 getAlphabet "bool"  = BoolType
 getAlphabet _       = error "Type not recognised in Checker.getAlphabet"
 
+-- Checks if the name of the function has been declared already
+-- Adds the FunctionType to the CheckType
 mergeFunction :: FunctionType -> CheckType -> CheckType
 mergeFunction f@(pid,_) (fs,gs,vs)  
     | Map.member pid $ Map.fromList fs
@@ -228,6 +277,8 @@ mergeFunction f@(pid,_) (fs,gs,vs)
     | otherwise 
         = (fs ++ [f],gs,vs)
 
+-- Checks if the name of the global has been declared already
+-- Adds the VariableType to the CheckType
 mergeGlobal :: VariableType -> CheckType -> CheckType
 mergeGlobal g@(id,_) (fs,gs,vs)
     | Map.member id $ Map.fromList fs
@@ -239,6 +290,8 @@ mergeGlobal g@(id,_) (fs,gs,vs)
     | otherwise
         =(fs,gs ++ [g],vs)
 
+-- Checks if the name of the variable has been declared already, only considering the deepest scope
+-- Adds the VariableType to the CheckType
 mergeVariable :: VariableType -> CheckType -> CheckType
 mergeVariable v@(id,_) (fs,gs,(scope:scopes))
     | Map.member id $ Map.fromList fs
@@ -250,6 +303,7 @@ mergeVariable v@(id,_) (fs,gs,(scope:scopes))
     | otherwise
         = (fs,gs,((scope ++ [v]):scopes))
 
+-- Return the type CheckType from any AST
 getCheck :: AST -> CheckType
 getCheck (ASTArg _ _ mergedChecks)      = mergedChecks
 getCheck (ASTBlock _ mergedChecks)      = mergedChecks
@@ -268,8 +322,9 @@ getCheck (ASTType _ mergedChecks)       = mergedChecks
 getCheck (ASTOp _ _ _ _ mergedChecks)   = mergedChecks
 getCheck (ASTUnary _ _ _ mergedChecks)  = mergedChecks
 
+-- Check if a variable name is not used in an expression
 nameCheck :: AST -> String -> Bool
-nameCheck (ASTVar varName _) id         = varName == id
+nameCheck (ASTVar varName _) id         = varName /= id
 nameCheck (ASTAss ast1 ast2 _ _) id     = nameCheck ast1 id && (nameCheck ast2 id)
 nameCheck (ASTInt _ _) _                = True
 nameCheck (ASTBool _ _) _               = True

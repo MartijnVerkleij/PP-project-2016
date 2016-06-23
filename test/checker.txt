@@ -1,0 +1,23 @@
+// int i;
+global bool x;
+
+// procedure x () {
+procedure y (){
+	print(0);
+}
+procedure z (int a, bool b) {
+	print(1);
+}
+
+x = /*1*/true;
+y(/*x*/);
+int /*j*/i = 10;
+{
+	int j = (/*j*/i - 5);
+}
+z(1,/*2*/false);
+int /*x*/a = 10;
+bool b;
+z(a,b);
+if (false) int ii = 5;
+int jj = 7;
