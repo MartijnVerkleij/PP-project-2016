@@ -550,14 +550,14 @@ runIfElse = do
 
 -- ==================== Deep Expression ====================
 prprDeep = do 
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     prpr $ 
         parse grammar Program $ 
         toTokenList $ 
         tokenizer a
 
 parseDeep = do
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     showTree $
         toRoseTree $
         parse grammar Program $
@@ -565,7 +565,7 @@ parseDeep = do
         tokenizer a
 
 astDeep = do
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     showTree $
         astToRose $
         checker $
@@ -575,7 +575,7 @@ astDeep = do
         tokenizer a
 
 checkDeep = do
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     showTree $
         astToRoseDebug $
         checker $
@@ -585,7 +585,7 @@ checkDeep = do
         tokenizer a
 
 genDeep = do
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     putStr $
         sprILprpr $
         codeGen' 1 $
@@ -596,7 +596,7 @@ genDeep = do
         tokenizer a
 
 runDeep = do
-    a <- readFile "test/deep.txt"
+    a <- readFile "test/deep_expression.txt"
     sysTest $
         replicate 1 $
         codeGen' 1 $
