@@ -1,5 +1,0 @@
-procedure foo(int a) {
-    a = a+1;
-}
-
-foo(2);

@@ -17,6 +17,8 @@ import Sprockell
 import System
 import Simulation
 
+
+-- ==================== Fib ====================
 prprFib = do 
     a <- readFile "test/fib.txt"
     prpr $ 
@@ -36,15 +38,7 @@ astFib = do
     a <- readFile "test/fib.txt"
     showTree $
         astToRose $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astFibDebug = do
-    a <- readFile "test/fib.txt"
-    showTree $
-        astToRoseDebug $
+        checker$
         pTreeToAst $
         parse grammar Program $
         toTokenList $
@@ -60,6 +54,8 @@ checkFib = do
         toTokenList $
         tokenizer a
 
+
+-- ==================== Prime ====================
 prprPrime = do 
     a <- readFile "test/prime.txt"
     prpr $ 
@@ -79,15 +75,7 @@ astPrime = do
     a <- readFile "test/prime.txt"
     showTree $
         astToRose $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astPrimeDebug = do
-    a <- readFile "test/prime.txt"
-    showTree $
-        astToRoseDebug $
+        checker $
         pTreeToAst $
         parse grammar Program $
         toTokenList $
@@ -97,18 +85,7 @@ checkPrime = do
     a <- readFile "test/prime.txt"
     showTree $
         astToRoseDebug $
-        checker1 $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-        
-        
-genPrime = do
-    a <- readFile "test/prime.txt"
-    putStr $ show $
-        codeGen' 3 $
-        checker1 $
+        checker $
         pTreeToAst $
         parse grammar Program $
         toTokenList $
@@ -119,10 +96,52 @@ runPrime = do
     sysTest $
         replicate 3 $
         codeGen' 3 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+
+-- ==================== Banking ====================
+astBanking = do
+    a <- readFile "test/banking.txt"
+    showTree $
+        astToRose $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkBanking = do
+    a <- readFile "test/banking.txt"
+    showTree $
+        astToRoseDebug $
         checker1 $
         pTreeToAst $
         parse grammar Program $
         toTokenList $
         tokenizer a
 
-tokenizePrime = show $ toTokenList $  tokenizer "procedure fib(int i, int res) {    if ((i < 3)) {        res = i;    } else {        int a;        int b;        fib((i-1), a);        fib((i-2), b);        res = (a + b);    }}"
+
+-- ==================== Peterson ====================
+astPeterson = do
+    a <- readFile "test/peterson.txt"
+    showTree $
+        astToRose $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkPeterson = do
+    a <- readFile "test/peterson.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a

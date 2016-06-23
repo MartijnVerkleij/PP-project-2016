@@ -16,21 +16,22 @@ tokenizer (',':xs)  = (Comma, ",") : tokenizer xs
 
 tokenizer input@(x:xs) 
     | isSpace x             = tokenizer xs
-    | elem x "()"           = (Par, [x]) : (tokenizer xs)
-    | elem x "{}"           = (Brace, [x]) : (tokenizer xs)
-    | word == "procedure"   = (Proc, word) : (tokenizer wordRest)
-    | word == "if"          = (If, word) : (tokenizer wordRest)
-    | word == "else"        = (Else, word) : (tokenizer wordRest)
-    | word == "while"       = (While, word) : (tokenizer wordRest)
-    | word == "fork"        = (Fork, word) : (tokenizer wordRest)
-    | word == "join"        = (Join, word) : (tokenizer wordRest)
-    | word == "global"      = (Global, word) : (tokenizer wordRest)
-    | word == "true"        = (BoolType, word) : (tokenizer wordRest)
-    | word == "false"       = (BoolType, word) : (tokenizer wordRest)
-    | word == "blackjack"   = (BoolType, word) : (tokenizer wordRest)
-    | word == "hookers"     = (BoolType, word) : (tokenizer wordRest)
-    | word == "int"         = (Type, word) : (tokenizer wordRest)
-    | word == "bool"        = (Type, word) : (tokenizer wordRest)
+    | elem x "()"           = (Par, [x])        : (tokenizer xs)
+    | elem x "{}"           = (Brace, [x])      : (tokenizer xs)
+    | word == "procedure"   = (Proc, word)      : (tokenizer wordRest)
+    | word == "if"          = (If, word)        : (tokenizer wordRest)
+    | word == "else"        = (Else, word)      : (tokenizer wordRest)
+    | word == "while"       = (While, word)     : (tokenizer wordRest)
+    | word == "fork"        = (Fork, word)      : (tokenizer wordRest)
+    | word == "join"        = (Join, word)      : (tokenizer wordRest)
+    | word == "global"      = (Global, word)    : (tokenizer wordRest)
+    | word == "print"       = (Print, word)     : (tokenizer wordRest)
+    | word == "true"        = (BoolType, word)  : (tokenizer wordRest)
+    | word == "false"       = (BoolType, word)  : (tokenizer wordRest)
+    | word == "blackjack"   = (BoolType, word)  : (tokenizer wordRest)
+    | word == "hookers"     = (BoolType, word)  : (tokenizer wordRest)
+    | word == "int"         = (Type, word)      : (tokenizer wordRest)
+    | word == "bool"        = (Type, word)      : (tokenizer wordRest)
     
     | isPrefixOf "==" input = (Op, "==") : tokenizer (input \\ "==")
     | isPrefixOf "!=" input = (Op, "!=") : tokenizer (input \\ "!=")
@@ -53,7 +54,7 @@ tokenizer input@(x:xs)
     | otherwise             = error ("Lexical error at character \"" ++ [x] ++ 
                                   "\", left to parse: \"" ++ xs ++ "\"" )
         where 
-            (word,wordRest)     = span isAlphaNum input
+            (word,wordRest)     = span (isAlphaNumPlus) input
             (int,intRest)       = span isNumber input
             endOfLine :: String -> String
             endOfLine []        = []
@@ -67,3 +68,7 @@ tokenizer input@(x:xs)
 -- From series6a
 toTokenList :: [(Alphabet, String)] -> [Token]
 toTokenList tl = zipWith (\ (x,y) z -> (x,y,z) ) tl [0..]
+
+isAlphaNumPlus :: Char -> Bool
+isAlphaNumPlus char     | char `elem` "_'@#$`~\"?:." = True
+                        | otherwise                             = isAlphaNum char
