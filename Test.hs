@@ -294,11 +294,22 @@ checkIf = do
         toTokenList $
         tokenizer a
 
+genIf = do
+    a <- readFile "test/if.txt"
+    putStr $ 
+        show $
+        codeGen' 3 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 runIf = do
     a <- readFile "test/if.txt"
     sysTest $
-        replicate 3 $
-        codeGen' 3 $
+        replicate 1 $
+        codeGen' 1 $
         checker $
         pTreeToAst $
         parse grammar Program $

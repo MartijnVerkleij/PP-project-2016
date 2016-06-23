@@ -76,6 +76,7 @@ data Operator    = Add   | Sub | Mul -- | Div | Mod             -- Computational
                  | Equal | NEq | Gt  | Lt     | GtE | LtE       -- Comparison operations
                  | And   | Or  | Xor | LShift | RShift          -- Logical operations
                  | Decr  | Incr | Decr4 | Incr4                 -- Decrement (-1), Increment (+1), PP26: Decrement (-4), Increment (+4)
+                 | Prnt                                         -- Enables printing to stdout
                  deriving (Eq,Show,Read)
 
 data Instruction = Compute Operator RegAddr RegAddr RegAddr     -- Compute op r0 r1 r2: go to "alu",

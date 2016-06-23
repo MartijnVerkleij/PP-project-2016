@@ -129,7 +129,7 @@ decode instr = case instr of
 
   Nop                         -> nullcode
   
-  PrintOut reg                   -> traceShow reg nullcode
+  PrintOut reg                -> nullcode {ldCode=LdAlu, aluCode=Prnt, regX=reg, regY=regSprID, loadReg=regSprID}
 
   Debug _                     -> nullcode       -- only for development purposes
 
@@ -192,6 +192,7 @@ alu op x y = case op of
         LShift -> shiftL x (fromIntegral y)
         RShift -> shiftR x (fromIntegral y)
         Xor    -> x `xor` y
+        Prnt   -> trace (">>> " ++ show x) y
         -- Div    -> x `div` y                          -- usable in Haskell, but expensive on hardware
         -- Mod    -> x `mod` y                          -- Ibid
 

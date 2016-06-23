@@ -67,11 +67,11 @@ initSystemState = SystemState
         }
 
 myShow (instrs,s) = show instrs ++ "\n" ++
-                    (unlines $ map show $ sprStates s) ++
+                    (unlines $ map show $ sprStates s) {-++
                     show (requestChnls s) ++ "\n" ++
                     show (replyChnls s) ++"\n" ++
                     show (requestFifo s) ++ "\n" ++
-                    show (sharedMem s)
+                    show (sharedMem s)-}
 
 
 sysTest :: [[Instruction]] -> IO ()                             -- instrss: list of instructions per Sprockell
