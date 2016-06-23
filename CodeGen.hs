@@ -27,7 +27,7 @@ codeGen (ASTProgram asts
             threadControl = 
                 [ Compute Equal regSprID reg0 regE
                 , Branch regE (Rel 2)
-                , Jump (Rel 5)
+                , Jump (Rel 6)
                 , TestAndSet (DirAddr (threadControlAddr + 1))
                 , Receive (regE)
                 , Branch regE (Rel 2)
@@ -237,7 +237,7 @@ codeGen (ASTAss astVar astExpr _
             ]
 codeGen (ASTVar varName 
     checkType@(functions, globals, variables)) threads
-        | findVar varName variables /= ((-1),(-1))
+        | (findVar (0,0) varName variables) /= ((-1),(-1))
             =   getMemAddr varName variables ++
                 [ Load (IndAddr regE) regD
                 , Push regD
@@ -256,7 +256,7 @@ codeGen (ASTVar varName
             , WriteInstr reg0 (IndAddr regA)    -- Unlock value
             ]
             where
-                addr = (global_record_size * (globalIndex (getStr astVar) globals))
+                addr = (global_record_size * (globalIndex varName globals))
 codeGen (ASTInt value 
     checkType@(functions, globals, variables)) threads
         =   [ Load (ImmValue (read value :: Int)) regE
@@ -336,6 +336,10 @@ codeGen (ASTUnary op astV _
             , Compute Incr regA reg0 regC
             , Push regC
             ]
+
+codeGen (ASTPrint astExprs 
+    checkType@(functions, globals, variables)) threads
+    = [Nop]
 -- Find the index of a given Global. Used to calculate global address in memory.
 globalIndex :: String -> [VariableType] -> Int
 globalIndex var [] = error $ "Global -|" ++ (show var) ++ "|- is not defined."
