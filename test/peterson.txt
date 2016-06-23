@@ -28,46 +28,38 @@ procedure p_1() {
 }
 
 procedure test1() {
-	print(0,0,0,0,1);
 	fork p_0();
 	fork p_1();
 	join;
 	print(i);
 
-	print(0,0,0,0,2);
 	fork p_1();
 	fork p_0();
 	print(i);
 
-	print(0,0,0,0,3);
 	fork p_0();
 	fork p_1();
 	join;
 	print(i);
 
-	print(0,0,0,0,4);
 	fork p_1();
 	fork p_0();
 	print(i);
 
-	print(0,0,0,0,5);
 	fork p_0();
 	fork p_1();
 	join;
 	print(i);
 
-	print(0,0,0,0,6);
 	fork p_1();
 	fork p_0();
 	print(i);
 
-	print(0,0,0,0,7);
 	fork p_0();
 	fork p_1();
 	join;
 	print(i);
 
-	print(0,0,0,0,8);
 	fork p_1();
 	fork p_0();
 	print(i);
