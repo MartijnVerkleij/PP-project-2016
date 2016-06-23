@@ -128,6 +128,8 @@ decode instr = case instr of
   EndProg                     -> nullcode {tgtCode=TRel, immValue=0}
 
   Nop                         -> nullcode
+  
+  PrintOut reg                   -> traceShow reg nullcode
 
   Debug _                     -> nullcode       -- only for development purposes
 
