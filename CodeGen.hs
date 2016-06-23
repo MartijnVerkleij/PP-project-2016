@@ -9,9 +9,11 @@ import Constants
 import Checker
 import Data.Maybe
 
+import qualified Data.Map.Strict as Map
+
 import Debug.Trace
 
-codeGen' int ast = codeGen ast int
+codeGen' int ast = insertErrorPointers $ insertFPointers $ codeGen ast int
 
 codeGen :: AST -> Int -> [Instruction]
 
@@ -223,17 +225,18 @@ codeGen (ASTCall pName astArgs
             , Compute Decr regD reg0 regD
             , Jump (Rel (-9))               -- Back to while
             , Compute Incr regC reg0 regC
-            , Debug ("**a_call_" ++ pName ++ "**") -- return address
+            , Debug ("**r" ++ pName ++ "**") -- return address
             , Debug ""
             , Pop regD                      --
             , Store regD (IndAddr regC)     -- to ARP
             , Compute Incr regC reg0 regC   --
             , Store regARP (IndAddr regC)   -- Caller's ARP
             , Load (IndAddr regC) regARP    -- Set ARP to new scope
-            , Debug pName                   -- line of procedure is not known
+            , Debug "**c" ++ pName          -- line of procedure is not known
             , Debug ""
             , Pop regA
             , Jump (Ind regA)               -- jump to procedure
+            , Debug ("**a" ++ pName ++ "**")
             ]
 codeGen (ASTAss astVar astExpr _
     checkType@(functions, globals, variables)) threads
@@ -381,3 +384,53 @@ findVar (x,y) str (scope@(var@(str2,_):vars):scopes)
 sprILprpr :: [Instruction] -> String
 sprILprpr [] = ""
 sprILprpr (x:xs) = "    " ++ show x ++ "\n" ++ sprILprpr xs
+
+
+--- Removing debug pointers
+type ProcPointer = (String, Int)
+type CallPointer = (String, Int)
+
+findPointers' :: [Instruction] -> ([Instruction], [ProcPointer], [CallPointer])
+findPointers' instrss = findPointers instrss 0 
+
+findPointers :: [Instruction] -> Int -> ([Instruction], [ProcPointer], [CallPointer])
+findPointers [] _ = ([],[],[])
+findPointers (x@(Debug fName):xs) i = (xs,((fName, i):fPointers),(cPointers))
+    where (fPointers,cPointers) = findPointers xs (i+1)
+findPointers (x@(Debug '*':'*':'a':cName):xs) i = (xs,(fPointers),((cName, i):cPointers))
+    where (fPointers,cPointers) = findPointers xs (i+1)
+findPointers (x:xs) i = ((x:instrss),(fPointers),(cPointers))
+    where (instrss,fPointers,cPointers) = findPointers xs (i+1)
+
+
+insertFPointers :: [Instruction] -> ([ProcPointer], [CallPointer]) -> [Instruction]
+insertFPointers []  _ = []
+insertFPointers [x]  _ = [x]
+insertFPointers (x@(Debug ('*':'*':'c':fName)):(Debug ""):xs) ptrs@(progP,_)
+    =   [ Load (ImmValue ((Map.fromList progP)Map.!fName)) regE
+        , Push regE
+        ]
+        ++ (insertFPointers xs ptrs)
+insertFPointers (x:xs) ptrs = (x: (insertFPointers xs ptrs))
+
+
+insertACallPointers :: [Instruction] -> ([ProcPointer], [CallPointer]) -> [Instruction]
+insertACallPointers [] _ = []
+insertACallPointers [x]  _ = [x]
+insertACallPointers (x@(Debug '*':'*':'r':cName):(Debug ""):xs) (progP, callP)
+    =   [ Load (ImmValue (v)) regE
+        , Push regE
+        ]
+        ++ (insertACallPointers xs (progP, newCallP))
+    where
+        takeItem :: [CallPointer] -> String -> (Int, [CallPointer])
+        takeItem [] _ = (999999,[])
+        takeItem (x@(cNameStr,number):xs) str 
+            | cNameStr == str = (number,xs)
+            | otherwise = (nr,x:nxs)
+                where (nr,nxs) = takeItem xs str
+        
+        (v,newCallP) = takeItem callP cName
+
+insertErrorPointers :: [Instruction] -> ([ProcPointer], [CallPointer]) -> [Instruction]
+insertErrorPointers l _ = l
