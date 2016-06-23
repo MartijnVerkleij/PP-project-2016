@@ -54,6 +54,17 @@ checkFib = do
         toTokenList $
         tokenizer a
 
+runFib = do
+    a <- readFile "test/fib.txt"
+    sysTest $
+        replicate 3 $
+        codeGen' 3 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 
 -- ==================== Prime ====================
 prprPrime = do 
@@ -104,6 +115,21 @@ runPrime = do
 
 
 -- ==================== Banking ====================
+prprBanking = do 
+    a <- readFile "test/banking.txt"
+    prpr $ 
+        parse grammar Program $ 
+        toTokenList $ 
+        tokenizer a
+
+parseBanking = do
+    a <- readFile "test/banking.txt"
+    showTree $
+        toRoseTree $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 astBanking = do
     a <- readFile "test/banking.txt"
     showTree $
@@ -124,8 +150,34 @@ checkBanking = do
         toTokenList $
         tokenizer a
 
+runBanking = do
+    a <- readFile "test/banking.txt"
+    sysTest $
+        replicate 3 $
+        codeGen' 3 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 
 -- ==================== Peterson ====================
+prprPeterson = do 
+    a <- readFile "test/peterson.txt"
+    prpr $ 
+        parse grammar Program $ 
+        toTokenList $ 
+        tokenizer a
+
+parsePeterson = do
+    a <- readFile "test/peterson.txt"
+    showTree $
+        toRoseTree $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 astPeterson = do
     a <- readFile "test/peterson.txt"
     showTree $
@@ -138,6 +190,77 @@ astPeterson = do
 
 checkPeterson = do
     a <- readFile "test/peterson.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+runPeterson = do
+    a <- readFile "test/peterson.txt"
+    sysTest $
+        replicate 3 $
+        codeGen' 3 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+
+{--- ==================== Lock ====================
+prpr = do 
+    a <- readFile "test/.txt"
+    prpr $ 
+        parse grammar Program $ 
+        toTokenList $ 
+        tokenizer a
+
+parse = do
+    a <- readFile "test/.txt"
+    showTree $
+        toRoseTree $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+ast = do
+    a <- readFile "test/.txt"
+    showTree $
+        astToRose $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+check = do
+    a <- readFile "test/.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+run = do
+    a <- readFile "test/.txt"
+    sysTest $
+        replicate 3 $
+        codeGen' 3 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a-}
+
+
+-- ==================== Checker checks ====================
+checkChecker = do
+    a <- readFile "test/checker.txt"
     showTree $
         astToRoseDebug $
         checker $
