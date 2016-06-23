@@ -5,15 +5,15 @@ module Constants where
 
 var_size = 1 :: Int
 
--- Thread record
-thread_record_size = 14 * var_size :: Int
+-- Fork record
+fork_record_size = 14 * var_size :: Int
 
 -- shared fork handover record
-thread_record_wr = 0 * var_size :: Int -- defaults to 0 in rest
-thread_record_rd = 1 * var_size :: Int -- defaults to 1 in rest
-thread_record_jump = 2 * var_size :: Int
-thread_record_argc = 3 * var_size :: Int
-thread_record_args = 4 * var_size :: Int
+fork_record_wr = 0 * var_size :: Int -- defaults to 0 in rest
+fork_record_rd = 1 * var_size :: Int -- defaults to 1 in rest
+fork_record_jump = 2 * var_size :: Int
+fork_record_argc = 3 * var_size :: Int
+fork_record_args = 4 * var_size :: Int
 
 -- Individual thread record
 thread_occ = 0 * var_size :: Int
