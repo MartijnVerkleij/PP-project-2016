@@ -1,0 +1,31 @@
+procedure p0 {
+	print(0);
+	p1();
+	p2();
+	p3();
+	p4();
+}
+
+procedure p1 {
+	print(0);
+	p2();
+	p3();
+	p4();
+}
+
+procedure p2 {
+	print(0);
+	p3();
+	p4();
+}
+
+procedure p3 {
+	print(0);
+	p4();
+}
+
+procedure p4 {
+	print(0);
+}
+
+p0();
