@@ -113,6 +113,7 @@ data Instruction = Compute Operator RegAddr RegAddr RegAddr     -- Compute op r0
 
                  | Nop                                          -- Operation "do nothing"
 
+                 | PrintOut RegAddr                             -- PP26: No real instruction, for printing values. 
                  | Debug String                                 -- No real instruction, for debug purposes.
                  deriving (Eq,Show,Read)
 

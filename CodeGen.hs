@@ -339,7 +339,12 @@ codeGen (ASTUnary op astV _
 
 codeGen (ASTPrint astExprs 
     checkType@(functions, globals, variables)) threads
-    = [Nop]
+    =   (concat $ map (\x -> codeGen x threads) astExprs) ++ 
+        (concat $ replicate (length astExprs) 
+            [ Pop regE
+            , PrintOut regE
+            ]
+        )
 -- Find the index of a given Global. Used to calculate global address in memory.
 globalIndex :: String -> [VariableType] -> Int
 globalIndex var [] = error $ "Global -|" ++ (show var) ++ "|- is not defined."
