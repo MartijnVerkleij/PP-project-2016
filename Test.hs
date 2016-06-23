@@ -54,11 +54,23 @@ checkFib = do
         toTokenList $
         tokenizer a
 
+genFib = do
+    a <- readFile "test/fib.txt"
+    putStr $
+        sprILprpr $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 runFib = do
     a <- readFile "test/fib.txt"
     sysTest $
-        replicate 3 $
-        codeGen' 3 $
+        replicate 1 $
+        codeGen' 1 $
         checker $
         pTreeToAst $
         parse grammar Program $
@@ -101,12 +113,24 @@ checkPrime = do
         parse grammar Program $
         toTokenList $
         tokenizer a
+
+genPrime = do
+    a <- readFile "test/prime.txt"
+    putStr $
+        sprILprpr $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
         
 runPrime = do
     a <- readFile "test/prime.txt"
     sysTest $
-        replicate 3 $
-        codeGen' 3 $
+        replicate 1 $
+        codeGen' 1 $
         checker $
         pTreeToAst $
         parse grammar Program $
@@ -150,11 +174,23 @@ checkBanking = do
         toTokenList $
         tokenizer a
 
+genBanking = do
+    a <- readFile "test/banking.txt"
+    putStr $
+        sprILprpr $
+        replicate 4 $
+        codeGen' 4 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 runBanking = do
     a <- readFile "test/banking.txt"
     sysTest $
-        replicate 3 $
-        codeGen' 3 $
+        replicate 4 $
+        codeGen' 4 $
         checker $
         pTreeToAst $
         parse grammar Program $
@@ -192,6 +228,18 @@ checkPeterson = do
     a <- readFile "test/peterson.txt"
     showTree $
         astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+genPeterson = do
+    a <- readFile "test/peterson.txt"
+    putStr $
+        sprILprpr $
+        replicate 3 $
+        codeGen' 3 $
         checker $
         pTreeToAst $
         parse grammar Program $
@@ -305,11 +353,23 @@ checkWhile = do
         toTokenList $
         tokenizer a
 
+genWhile = do
+    a <- readFile "test/while.txt"
+    putStr $
+        sprILprpr $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 runWhile = do
     a <- readFile "test/while.txt"
     sysTest $
-        replicate 3 $
-        codeGen' 3 $
+        replicate 1 $
+        codeGen' 1 $
         checker $
         pTreeToAst $
         parse grammar Program $
@@ -352,11 +412,23 @@ checkNested = do
         toTokenList $
         tokenizer a
 
+genNested = do
+    a <- readFile "test/nested_procedures.txt"
+    putStr $
+        sprILprpr $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 runNested = do
     a <- readFile "test/nested_procedures.txt"
     sysTest $
-        replicate 3 $
-        codeGen' 3 $
+        replicate 1 $
+        codeGen' 1 $
         checker $
         pTreeToAst $
         parse grammar Program $
@@ -400,11 +472,23 @@ checkRecursion = do
         toTokenList $
         tokenizer a
 
+genRecursion = do
+    a <- readFile "test/recursion.txt"
+    putStr $
+        sprILprpr $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 runRecursion = do
     a <- readFile "test/recursion.txt"
     sysTest $
-        replicate 3 $
-        codeGen' 3 $
+        replicate 1 $
+        codeGen' 1 $
         checker $
         pTreeToAst $
         parse grammar Program $
@@ -448,11 +532,83 @@ checkIfElse = do
         toTokenList $
         tokenizer a
 
+genIfElse = do
+    a <- readFile "test/ifelse.txt"
+    putStr $
+        sprILprpr $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 runIfElse = do
     a <- readFile "test/ifelse.txt"
     sysTest $
-        replicate 3 $
-        codeGen' 3 $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+
+-- ==================== Deep Expression ====================
+prprDeep = do 
+    a <- readFile "test/deep.txt"
+    prpr $ 
+        parse grammar Program $ 
+        toTokenList $ 
+        tokenizer a
+
+parseDeep = do
+    a <- readFile "test/deep.txt"
+    showTree $
+        toRoseTree $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+astDeep = do
+    a <- readFile "test/deep.txt"
+    showTree $
+        astToRose $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkDeep = do
+    a <- readFile "test/deep.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+genDeep = do
+    a <- readFile "test/deep.txt"
+    putStr $
+        sprILprpr $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+runDeep = do
+    a <- readFile "test/deep.txt"
+    sysTest $
+        replicate 1 $
+        codeGen' 1 $
         checker $
         pTreeToAst $
         parse grammar Program $
