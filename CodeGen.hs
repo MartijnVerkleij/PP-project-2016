@@ -178,9 +178,9 @@ codeGen (ASTIf astExpr astThen (Just astElse)
     checkType@(functions, globals, variables)) threads
         =   (codeGen astExpr threads) ++
             [ Pop regE
-            , Branch regE (Rel (length thenGen))] ++
+            , Branch regE (Rel (lengthNoDebug thenGen))] ++
             thenGen
-            ++ [ Jump (Rel ((length elseGen) + 1))]
+            ++ [ Jump (Rel ((lengthNoDebug elseGen) + 1))]
             ++ elseGen
                 where   thenGen = codeGen astThen threads
                         elseGen = codeGen astElse threads
