@@ -65,7 +65,7 @@ checker2 (ASTGlobal varType varName@(ASTVar varId _) (Just expr) _) check
         exprCheck   = checker2 expr check
 -- Opens new scope and puts its arguments in it as variables
 -- Checks its body
-checker2 (ASTProc pid args body check@(f,_,_)) _
+checker2 (ASTProc pid args body _) check@(f,_,_)
     = ASTProc pid args bodyCheck newCheck
     where
         bodyCheck   = checker2 body newCheck

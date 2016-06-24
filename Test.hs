@@ -784,6 +784,65 @@ runInfBusy = do
         tokenizer a
 
 
+-- ==================== Cyclic Recursion ====================
+prprCyclic = do 
+    a <- readFile "test/cyclic_recursion.txt"
+    prpr $ 
+        parse grammar Program $ 
+        toTokenList $ 
+        tokenizer a
+
+parseCyclic = do
+    a <- readFile "test/cyclic_recursion.txt"
+    showTree $
+        toRoseTree $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+astCyclic = do
+    a <- readFile "test/cyclic_recursion.txt"
+    showTree $
+        astToRose $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+checkCyclic = do
+    a <- readFile "test/cyclic_recursion.txt"
+    showTree $
+        astToRoseDebug $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+genCyclic = do
+    a <- readFile "test/cyclic_recursion.txt"
+    putStr $
+        sprILprpr $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+runCyclic = do
+    a <- readFile "test/cyclic_recursion.txt"
+    sysTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+
 -- ==================== Checker checks ====================
 checkChecker = do
     a <- readFile "test/checker.txt"
