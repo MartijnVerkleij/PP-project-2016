@@ -33,6 +33,7 @@ testSingle =    [ "cyclic_recursion"
                 , "prime"
                 , "recursion"
                 , "while"
+                , "call_by_reference"
                 ]
 
 testMulti :: [(String, Int)]
@@ -50,16 +51,26 @@ testConversion :: String -> String
 testConversion x    = "test/" ++ (alias x) ++ ".txt"
     where
         alias :: String -> String
-        alias x | x `elem` ["cyclic", "cycl"]                       = "cyclic_recursion"
-                | x `elem` ["deep", "expression"]                   = "deep_expression"
-                | x `elem` ["division", "zero"]                     = "division_zero"
-                | x `elem` ["else"]                                 = "ifelse"
-                | x `elem` ["inf", "loop", "infinite"]              = "infinite_loop"
+        alias x | x `elem` ["cyclic", "cycl"]
+                    = "cyclic_recursion"
+                | x `elem` ["deep", "expression"]
+                    = "deep_expression"
+                | x `elem` ["division", "zero"]
+                    = "division_zero"
+                | x `elem` ["else"]
+                    = "ifelse"
+                | x `elem` ["inf", "loop", "infinite"]
+                    = "infinite_loop"
                 | x `elem` ["infbusy", "busy", "busyloop", "busy_loop", "infinite_busy", "infinitebusy"] 
                     = "infinite_busy_loop"
-                | x `elem` ["nest", "nested", "proc", "procedures"] = "nested_procedures"
-                | x` elem` ["rec"]                                  = "recursion"
-                | otherwise                                         = x
+                | x `elem` ["nest", "nested", "proc", "procedures"]
+                    = "nested_procedures"
+                | x `elem` ["rec"]
+                    = "recursion"
+                | x `elem` ["call", "callby", "call_by", "ref", "reference"]
+                    = "call_by_reference"
+                | otherwise                                         
+                    = x
 
 
 -- ==================== Generalized Testing ====================
