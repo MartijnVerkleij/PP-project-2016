@@ -21,7 +21,7 @@ codeGen :: AST -> Int -> [Instruction]
 
 codeGen (ASTProgram asts 
     checkType@(functions, globals, variables)) threads
-        =   threadControl ++ procsCode ++ exprsCode ++ [EndProg]
+        =   threadControl ++ procsCode ++ exprsCode ++ [Nop,EndProg]
         where
             
             
@@ -171,14 +171,16 @@ codeGen (ASTIf astExpr astThen Nothing
     checkType@(functions, globals, variables)) threads
         =   (codeGen astExpr threads) ++
             [ Pop regE
-            , Branch regE (Rel (length thenGen))] ++
+            , ComputeI Xor regE 1 regE
+            , Branch regE (Rel (lengthNoDebug thenGen))] ++
             thenGen
                 where thenGen = codeGen astThen threads
 codeGen (ASTIf astExpr astThen (Just astElse) 
     checkType@(functions, globals, variables)) threads
         =   (codeGen astExpr threads) ++
             [ Pop regE
-            , Branch regE (Rel (lengthNoDebug thenGen))] ++
+            , ComputeI Xor regE 1 regE
+            , Branch regE (Rel (lengthNoDebug thenGen + 2))] ++
             thenGen
             ++ [ Jump (Rel ((lengthNoDebug elseGen) + 1))]
             ++ elseGen
@@ -188,6 +190,7 @@ codeGen (ASTWhile astExpr astStat
     checkType@(functions, globals, variables)) threads
         =   exprGen ++
             [ Pop regE
+            , ComputeI Xor regE 1 regE
             , Branch regE (Rel (1 + (lengthNoDebug bodyGen)))] ++
             bodyGen ++
             [ Jump (Rel ((lengthNoDebug (bodyGen ++ exprGen)) + 2))]
