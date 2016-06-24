@@ -13,7 +13,9 @@ import qualified Data.Map.Strict as Map
 
 import Debug.Trace
 
-codeGen' int ast = insertErrorPointers $ insertFPointers $ codeGen ast int
+codeGen' int ast = insertErrorPointers ( insertACallPointers (insertFPointers instrss (pPointers, cPointers)) (pPointers, cPointers)) (pPointers, cPointers)
+    where 
+        (instrss, pPointers, cPointers) = findPointers' $ codeGen ast int
 
 codeGen :: AST -> Int -> [Instruction]
 
@@ -122,8 +124,9 @@ codeGen (ASTGlobal varType astVar (Just astExpr)
 codeGen (ASTProc pName astArgs astStat 
     checkType@(functions, globals, variables)) threads
         = codeGen astStat threads ++ 
-            [ Compute Decr regARP reg0 regA 
+            [Compute Decr regARP reg0 regA 
             , Load (IndAddr regA) regE          -- Return address
+            , Load (IndAddr regARP) regARP
             , Jump (Ind regE)                   -- Jump to it
             ]
 codeGen (ASTArg astType astVar 
@@ -131,7 +134,14 @@ codeGen (ASTArg astType astVar
         = [Nop] -- fill with code that pushes something to stack
 codeGen (ASTBlock astStats 
     checkType@(functions, globals, variables)) threads
-        = [Nop]
+        =   [ Load (IndAddr regARP) regC    -- Load ARP = regC
+            , ComputeI Add regC (length variables) regC -- Skip local data area
+            , Store regARP (IndAddr regC)   -- Caller's ARP
+            , Load (IndAddr regC) regARP    -- Set mini-ARP to new scope
+            ] 
+            ++ concat ( map (\x -> codeGen x threads) astStats ) ++
+            [ Load (IndAddr regARP) regE
+            ]
 codeGen (ASTDecl vartype astVar Nothing 
     checkType@(functions, globals, variables)) threads
         = (getMemAddr varNameStr variables) ++
@@ -225,18 +235,18 @@ codeGen (ASTCall pName astArgs
             , Compute Decr regD reg0 regD
             , Jump (Rel (-9))               -- Back to while
             , Compute Incr regC reg0 regC
-            , Debug ("**r" ++ pName ++ "**") -- return address
+            , Debug ("**r" ++ pName) -- return address
             , Debug ""
             , Pop regD                      --
             , Store regD (IndAddr regC)     -- to ARP
             , Compute Incr regC reg0 regC   --
             , Store regARP (IndAddr regC)   -- Caller's ARP
             , Load (IndAddr regC) regARP    -- Set ARP to new scope
-            , Debug "**c" ++ pName          -- line of procedure is not known
+            , Debug ("**c" ++ pName)          -- line of procedure is not known
             , Debug ""
             , Pop regA
             , Jump (Ind regA)               -- jump to procedure
-            , Debug ("**a" ++ pName ++ "**")
+            , Debug ("**a" ++ pName)
             ]
 codeGen (ASTAss astVar astExpr _
     checkType@(functions, globals, variables)) threads
@@ -382,8 +392,11 @@ findVar (x,y) str (scope@(var@(str2,_):vars):scopes)
     | otherwise     = findVar (x,y+1) str (vars:scopes)
 
 sprILprpr :: [Instruction] -> String
-sprILprpr [] = ""
-sprILprpr (x:xs) = "    " ++ show x ++ "\n" ++ sprILprpr xs
+sprILprpr = sprILprpr' 0
+
+sprILprpr' :: Int -> [Instruction] -> String
+sprILprpr' _ [] = ""
+sprILprpr' i (x:xs) =  (show i) ++ "    " ++ (show x) ++ "\n" ++ (sprILprpr' (i+1) xs)
 
 
 --- Removing debug pointers
@@ -395,10 +408,10 @@ findPointers' instrss = findPointers instrss 0
 
 findPointers :: [Instruction] -> Int -> ([Instruction], [ProcPointer], [CallPointer])
 findPointers [] _ = ([],[],[])
-findPointers (x@(Debug fName):xs) i = (xs,((fName, i):fPointers),(cPointers))
-    where (fPointers,cPointers) = findPointers xs (i+1)
-findPointers (x@(Debug '*':'*':'a':cName):xs) i = (xs,(fPointers),((cName, i):cPointers))
-    where (fPointers,cPointers) = findPointers xs (i+1)
+findPointers (x@(Debug ('*':'*':'a':cName)):xs) i = (resCode,(fPointers),((cName, i):cPointers))
+    where (resCode,fPointers,cPointers) = findPointers xs (i+1)
+findPointers (x@(Debug fName):xs) i = (resCode,((fName, i):fPointers),(cPointers))
+    where (resCode,fPointers,cPointers) = findPointers xs (i+1)
 findPointers (x:xs) i = ((x:instrss),(fPointers),(cPointers))
     where (instrss,fPointers,cPointers) = findPointers xs (i+1)
 
@@ -417,11 +430,13 @@ insertFPointers (x:xs) ptrs = (x: (insertFPointers xs ptrs))
 insertACallPointers :: [Instruction] -> ([ProcPointer], [CallPointer]) -> [Instruction]
 insertACallPointers [] _ = []
 insertACallPointers [x]  _ = [x]
-insertACallPointers (x@(Debug '*':'*':'r':cName):(Debug ""):xs) (progP, callP)
-    =   [ Load (ImmValue (v)) regE
+insertACallPointers (x@(Debug ('*':'*':'r':cName)):(Debug ""):xs) (progP, callP)
+    =   (trace (show [ Load (ImmValue (v)) regE
         , Push regE
-        ]
-        ++ (insertACallPointers xs (progP, newCallP))
+        ])
+        [ Load (ImmValue (v)) regE
+        , Push regE
+        ]) ++ (insertACallPointers xs (progP, newCallP))
     where
         takeItem :: [CallPointer] -> String -> (Int, [CallPointer])
         takeItem [] _ = (999999,[])
@@ -431,6 +446,8 @@ insertACallPointers (x@(Debug '*':'*':'r':cName):(Debug ""):xs) (progP, callP)
                 where (nr,nxs) = takeItem xs str
         
         (v,newCallP) = takeItem callP cName
+insertACallPointers (x:xs) ptrs@(progP, callP)
+    = x : (insertACallPointers xs ptrs) 
 
 insertErrorPointers :: [Instruction] -> ([ProcPointer], [CallPointer]) -> [Instruction]
 insertErrorPointers l _ = l
