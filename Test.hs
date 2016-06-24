@@ -117,7 +117,7 @@ gen name = do
 run :: String -> IO ()
 run name = do
     a <- readFile $ testConversion name
-    runTest $
+    sysTest $
         replicate ((Map.fromList testAll)Map.!(testConversion name)) $
         codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
         checker $
@@ -129,7 +129,7 @@ run name = do
 debug :: String -> IO ()
 debug name = do
     a <- readFile $ testConversion name
-    sysTest $
+    runTest $
         replicate ((Map.fromList testAll)Map.!(testConversion name)) $
         codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
         checker $
