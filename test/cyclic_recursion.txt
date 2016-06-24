@@ -1,7 +1,7 @@
 procedure prod(int i) {
 	i = (i + 1);
 	print (i);
-	cons(i);
+	//cons(i);
 }
 
 procedure cons(int i) {
