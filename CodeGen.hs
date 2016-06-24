@@ -33,6 +33,7 @@ codeGen (ASTProgram asts
                 , Receive (regE)
                 , Branch regE (Rel 2)
                 , Jump (Rel (-3))
+                , Load (ImmValue 1) regARP
                 , Jump (Rel begin_of_code)
                 , Load (ImmValue threadControlAddr) regA 
                                                 -- Begin of thread control loop
@@ -83,7 +84,7 @@ codeGen (ASTProgram asts
                 where
                     threadControlAddr = global_record_size * (length globals)
             
-            begin_of_code = (lengthNoDebug (threadControl ++ procsCode)) - 7
+            begin_of_code = (lengthNoDebug (threadControl ++ procsCode)) - 8
             (procs, exprs) = span isProcedure asts
             procsCode = concat $ map (\x -> codeGen x threads) procs
             exprsCode = concat $ map (\x -> codeGen x threads) exprs
@@ -370,7 +371,7 @@ codeGen (ASTUnary op astV _
 
 codeGen (ASTPrint astExprs 
     checkType@(functions, globals, variables)) threads
-    =   (concat $ map (\x -> codeGen x threads) astExprs) ++ 
+    =   (concat $ map (\x -> codeGen x threads) $reverse astExprs) ++ 
         (concat $ replicate (length astExprs) 
             [ Pop regE
             , PrintOut regE
@@ -388,7 +389,7 @@ getMemAddr varStr variables
     = [ Compute Add regARP reg0 regE] ++
       (replicate x (Load (IndAddr regARP) regE) ++
       [ ComputeI Add regE (y*4) regE
-      , Load (IndAddr regE) regE ])
+      {-, Load (IndAddr regE) regE -}])
         where 
             (x,y) = findVar (0,0) varStr variables
 
