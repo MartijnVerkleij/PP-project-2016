@@ -142,6 +142,11 @@ checker2 self@(ASTCall pid args _) check
 -- Check expressions
 checker2 (ASTPrint exprs _) check
     = ASTPrint (map (\x -> checker2 x check) exprs) check
+-- Checks: 
+checker2 (ASTExpr expr _ _) check
+    = ASTExpr exprCheck (Just (getExprType exprCheck)) check
+    where
+        exprCheck = checker2 expr check
 -- Check types
 checker2 (ASTAss var expr _ _) check
     | (getExprType varCheck) == (getExprType exprCheck)  = ASTAss varCheck exprCheck (Just (getExprType varCheck)) check
@@ -247,6 +252,7 @@ getExprType (ASTOp _ _ _ (Just typeStr) _)  = typeStr
 getExprType (ASTUnary _ _ (Just typeStr) _) = typeStr
 getExprType (ASTInt _ _)                    = IntType
 getExprType (ASTBool _ _)                   = BoolType
+getExprType (ASTExpr _ (Just typeStr) _)    = typeStr
 getExprType (ASTVar varName (_,g,v))
     | Map.member varName (Map.fromList g)   = (Map.fromList g)Map.!varName
     | otherwise                             = iterVar varName v
@@ -314,6 +320,7 @@ getCheck (ASTFork _ _ mergedChecks)     = mergedChecks
 getCheck (ASTJoin mergedChecks)         = mergedChecks
 getCheck (ASTCall _ _ mergedChecks)     = mergedChecks
 getCheck (ASTPrint _ mergedChecks)      = mergedChecks
+getCheck (ASTExpr _ _ mergedChecks)     = mergedChecks
 getCheck (ASTAss _ _ _ mergedChecks)    = mergedChecks
 getCheck (ASTVar _ mergedChecks)        = mergedChecks
 getCheck (ASTInt _ mergedChecks)        = mergedChecks
@@ -331,5 +338,6 @@ nameCheck (ASTBool _ _) _               = True
 nameCheck (ASTType _ _) _               = True
 nameCheck (ASTOp ast1 _ ast2 _ _) id    = nameCheck ast1 id && (nameCheck ast2 id)
 nameCheck (ASTUnary _ ast _ _) id       = nameCheck ast id
+nameCheck (ASTExpr ast _ _) id          = nameCheck ast id
 nameCheck ast id 
     = error $ "Shouldn't be reached in Checker.checker2.nameCheck, with: " ++ id ++ " and: " ++ (show ast)

@@ -34,6 +34,7 @@ testSingle =    [ "cyclic_recursion"
                 , "recursion"
                 , "while"
                 , "call_by_reference"
+                , "blocks"
                 ]
 
 testMulti :: [(String, Int)]
@@ -69,6 +70,8 @@ testConversion x    = "test/" ++ (alias x) ++ ".txt"
                     = "recursion"
                 | x `elem` ["call", "callby", "call_by", "ref", "reference"]
                     = "call_by_reference"
+                | x `elem` ["block"]
+                    = "blocks"
                 | otherwise                                         
                     = x
 
