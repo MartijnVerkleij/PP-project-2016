@@ -7,25 +7,25 @@ procedure p0() {
 }
 
 procedure p1() {
-	print(0);
+	print(1);
 	p2();
 	p3();
 	p4();
 }
 
 procedure p2() {
-	print(0);
+	print(2);
 	p3();
 	p4();
 }
 
 procedure p3() {
-	print(0);
+	print(3);
 	p4();
 }
 
 procedure p4() {
-	print(0);
+	print(4);
 }
 
 p0();
