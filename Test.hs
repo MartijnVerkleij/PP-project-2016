@@ -18,6 +18,34 @@ import System
 import Simulation
 
 
+-- ==================== Lists of Test Files ====================
+testSingle :: [String]
+testSingle =    [ "cyclic_recursion"
+                , "deep_expression"
+                , "division_zero"
+                , "fib"
+                , "if"
+                , "ifelse"
+                , "infinite_busy_loop"
+                , "infinite_loop"
+                , "nested_procedures"
+                , "prime"
+                , "recursion"
+                , "while"
+                ]
+
+testMulti :: [(String, Int)]
+testMulti =     [ ("banking", 4)
+                , ("peterson", 3)
+                ]
+
+testAll :: [(String, Int)]
+testAll =   single ++ multi
+    where
+        single  = map (\x       -> ("test/" ++ x ++ ".txt",1)) testSingle
+        multi   = map (\(x,y)   -> ("test/" ++ x ++ ".txt", y)) testMulti
+
+
 -- ==================== Fib ====================
 prprFib = do 
     a <- readFile "test/fib.txt"
@@ -68,6 +96,17 @@ genFib = do
 runFib = do
     a <- readFile "test/fib.txt"
     sysTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+debugFib = do
+    a <- readFile "test/fib.txt"
+    runTest $
         replicate 1 $
         codeGen' 1 $
         checker $
@@ -135,6 +174,17 @@ runPrime = do
         toTokenList $
         tokenizer a
 
+debugPrime = do
+    a <- readFile "test/prime.txt"
+    runTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 
 -- ==================== Banking ====================
 prprBanking = do 
@@ -186,6 +236,17 @@ genBanking = do
 runBanking = do
     a <- readFile "test/banking.txt"
     sysTest $
+        replicate 4 $
+        codeGen' 4 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+debugBanking = do
+    a <- readFile "test/banking.txt"
+    runTest $
         replicate 4 $
         codeGen' 4 $
         checker $
@@ -253,6 +314,17 @@ runPeterson = do
         toTokenList $
         tokenizer a
 
+debugPeterson = do
+    a <- readFile "test/peterson.txt"
+    runTest $
+        replicate 3 $
+        codeGen' 3 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 
 -- ==================== If ====================
 prprIf = do 
@@ -304,6 +376,17 @@ genIf = do
 runIf = do
     a <- readFile "test/if.txt"
     sysTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+debugIf = do
+    a <- readFile "test/if.txt"
+    runTest $
         replicate 1 $
         codeGen' 1 $
         checker $
@@ -371,6 +454,17 @@ runWhile = do
         toTokenList $
         tokenizer a
 
+debugWhile = do
+    a <- readFile "test/while.txt"
+    runTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 -- ==================== Nested Procedure Usage ====================
 prprNested = do 
     a <- readFile "test/nested_procedures.txt"
@@ -421,6 +515,17 @@ genNested = do
 runNested = do
     a <- readFile "test/nested_procedures.txt"
     sysTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+debugNested = do
+    a <- readFile "test/nested_procedures.txt"
+    runTest $
         replicate 1 $
         codeGen' 1 $
         checker $
@@ -488,6 +593,17 @@ runRecursion = do
         toTokenList $
         tokenizer a
 
+debugRecursion = do
+    a <- readFile "test/recursion.txt"
+    runTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 
 -- ==================== If Else ====================
 prprIfElse = do 
@@ -539,6 +655,17 @@ genIfElse = do
 runIfElse = do
     a <- readFile "test/ifelse.txt"
     sysTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+debugIfElse = do
+    a <- readFile "test/ifelse.txt"
+    runTest $
         replicate 1 $
         codeGen' 1 $
         checker $
@@ -606,6 +733,17 @@ runDeep = do
         toTokenList $
         tokenizer a
 
+debugDeep = do
+    a <- readFile "test/deep_expression.txt"
+    runTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 
 -- ==================== Division by Zero ====================
 prprZero = do 
@@ -657,6 +795,17 @@ genZero = do
 runZero = do
     a <- readFile "test/division_zero.txt"
     sysTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+debugZero = do
+    a <- readFile "test/division_zero.txt"
+    runTest $
         replicate 1 $
         codeGen' 1 $
         checker $
@@ -724,6 +873,17 @@ runInfEmpty = do
         toTokenList $
         tokenizer a
 
+debugInfEmpty = do
+    a <- readFile "test/infinite_loop.txt"
+    runTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 
 -- ==================== Infinite Busy Loop ====================
 prprInfBusy = do 
@@ -783,6 +943,17 @@ runInfBusy = do
         toTokenList $
         tokenizer a
 
+debugInfBusy = do
+    a <- readFile "test/infinite_busy_loop.txt"
+    runTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
 
 -- ==================== Cyclic Recursion ====================
 prprCyclic = do 
@@ -834,6 +1005,17 @@ genCyclic = do
 runCyclic = do
     a <- readFile "test/cyclic_recursion.txt"
     sysTest $
+        replicate 1 $
+        codeGen' 1 $
+        checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+debugCyclic = do
+    a <- readFile "test/cyclic_recursion.txt"
+    runTest $
         replicate 1 $
         codeGen' 1 $
         checker $
