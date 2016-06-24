@@ -1,0 +1,18 @@
+procedure prod(int i) {
+	i = (i + 1);
+	print (i);
+	cons(i);
+}
+
+procedure cons(int i) {
+	if ((i > 1)) {
+		i = (i - 2);
+		print(i);
+		prod(i);
+	} else if ((i > 0)) {
+		i = (i - 1);
+		print(i);
+	}
+}
+
+prod(10);
