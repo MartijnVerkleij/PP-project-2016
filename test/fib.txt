@@ -9,3 +9,7 @@ procedure fib(int i, int res) {
         res = (a + b);
     }
 }
+
+int a;
+print (a);
+fib(15, a);

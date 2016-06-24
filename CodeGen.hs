@@ -23,10 +23,7 @@ codeGen (ASTProgram asts
     checkType@(functions, globals, variables)) threads
         =   threadControl ++ procsCode ++ exprsCode ++ [EndProg]
         where
-            begin_of_code = length (threadControl ++ procsCode) - 7
-            (procs, exprs) = span isProcedure asts
-            procsCode = concat $ map (\x -> codeGen x threads) procs
-            exprsCode = concat $ map (\x -> codeGen x threads) exprs
+            
             
             threadControl = 
                 [ Compute Equal regSprID reg0 regE
@@ -86,10 +83,21 @@ codeGen (ASTProgram asts
                 where
                     threadControlAddr = global_record_size * (length globals)
             
+            begin_of_code = (lengthNoDebug (threadControl ++ procsCode)) - 7
+            (procs, exprs) = span isProcedure asts
+            procsCode = concat $ map (\x -> codeGen x threads) procs
+            exprsCode = concat $ map (\x -> codeGen x threads) exprs
+            
+            
             isProcedure :: AST -> Bool
             isProcedure (ASTProc _ _ _ _) = True
             isProcedure _ = False
             
+            lengthNoDebug :: [Instruction] -> Int 
+            lengthNoDebug [] = 0
+            lengthNoDebug ((Debug ('*':'*':'p':_)):xs) = lengthNoDebug xs
+            lengthNoDebug ((Debug ('*':'*':'a':_)):xs) = lengthNoDebug xs
+            lengthNoDebug (_:xs) = 1 + lengthNoDebug xs          
 codeGen (ASTGlobal varType astVar Nothing 
     checkType@(functions, globals, variables)) threads
         =   [ Load (ImmValue addr) regA         -- Load memory address of global's lock
@@ -123,7 +131,8 @@ codeGen (ASTGlobal varType astVar (Just astExpr)
                     + (global_record_size * (globalIndex (getStr astVar) globals))
 codeGen (ASTProc pName astArgs astStat 
     checkType@(functions, globals, variables)) threads
-        = codeGen astStat threads ++ 
+        =   [ Debug ("**p" ++ pName) ] ++ 
+            codeGen astStat threads ++ 
             [Compute Decr regARP reg0 regA 
             , Load (IndAddr regA) regE          -- Return address
             , Load (IndAddr regARP) regARP
@@ -198,7 +207,7 @@ codeGen (ASTFork pName astArgs
             , Compute Decr regC reg0 regC
             , Branch regE (Rel (-4))
             , WriteInstr regD (DirAddr fork_record_argc)
-            , Debug pName                   -- line of jump addr. is not known
+            , Debug ("**c" ++ pName)        -- line of jump addr. is not known
             , Debug ""
             , Pop regD
             , WriteInstr regD (DirAddr fork_record_jump)
@@ -223,7 +232,8 @@ codeGen (ASTJoin
             ]
 codeGen (ASTCall pName astArgs 
     checkType@(functions, globals, variables)) threads
-        =   [ Load (IndAddr regARP) regC    -- Load ARP (now 0) = regC
+        =   concat ( map (\x -> codeGen x threads) astArgs ) ++
+            [ Load (IndAddr regARP) regC    -- Load ARP (now 0) = regC
             , ComputeI Add regC (length variables) regC -- Skip local data area
             , Load (ImmValue (length astArgs)) regD -- Read argcount = regD
             , Compute Equal regD reg0 regE  -- while still args left
@@ -410,7 +420,7 @@ findPointers :: [Instruction] -> Int -> ([Instruction], [ProcPointer], [CallPoin
 findPointers [] _ = ([],[],[])
 findPointers (x@(Debug ('*':'*':'a':cName)):xs) i = (resCode,(fPointers),((cName, i):cPointers))
     where (resCode,fPointers,cPointers) = findPointers xs (i+1)
-findPointers (x@(Debug fName):xs) i = (resCode,((fName, i):fPointers),(cPointers))
+findPointers (x@(Debug ('*':'*':'p':fName)):xs) i = (resCode,((fName, i):fPointers),(cPointers))
     where (resCode,fPointers,cPointers) = findPointers xs (i+1)
 findPointers (x:xs) i = ((x:instrss),(fPointers),(cPointers))
     where (instrss,fPointers,cPointers) = findPointers xs (i+1)
@@ -431,12 +441,9 @@ insertACallPointers :: [Instruction] -> ([ProcPointer], [CallPointer]) -> [Instr
 insertACallPointers [] _ = []
 insertACallPointers [x]  _ = [x]
 insertACallPointers (x@(Debug ('*':'*':'r':cName)):(Debug ""):xs) (progP, callP)
-    =   (trace (show [ Load (ImmValue (v)) regE
+    =   [ Load (ImmValue (v)) regE
         , Push regE
-        ])
-        [ Load (ImmValue (v)) regE
-        , Push regE
-        ]) ++ (insertACallPointers xs (progP, newCallP))
+        ] ++ (insertACallPointers xs (progP, newCallP))
     where
         takeItem :: [CallPointer] -> String -> (Int, [CallPointer])
         takeItem [] _ = (999999,[])

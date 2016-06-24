@@ -1,5 +1,6 @@
 module Simulation where
 
+import Control.DeepSeq
 import BasicFunctions
 import HardwareTypes
 import Sprockell
@@ -47,7 +48,7 @@ clock = repeat Tick
 
 systemSim :: [[Instruction]] -> SystemState -> Clock -> [([Instruction],SystemState)]
 systemSim instrss s []     = []
-systemSim instrss s (t:ts) | not sysHalted = (instrs,s') : systemSim instrss s' ts
+systemSim instrss s (t:ts) | not sysHalted = deepseq s $ (instrs,s') : systemSim instrss s' ts
                            | otherwise     = []
                 where
                   instrs    = zipWith (!) instrss (map pc $ sprStates s)
@@ -67,17 +68,26 @@ initSystemState = SystemState
         }
 
 myShow (instrs,s) = show instrs ++ "\n" ++
-                    (unlines $ map show $ sprStates s) {-++
+                    (unlines $ map show $ sprStates s) ++
                     show (requestChnls s) ++ "\n" ++
                     show (replyChnls s) ++"\n" ++
                     show (requestFifo s) ++ "\n" ++
-                    show (sharedMem s)-}
+                    show (sharedMem s)
 
-
+myShow' (instrs,s) = ""
+                    
 sysTest :: [[Instruction]] -> IO ()                             -- instrss: list of instructions per Sprockell
 sysTest instrss = putStr                                        -- putStr: standard Haskell IO-function
                 $ unlines
                 $ map (++"\n")
                 $ map myShow                                    -- make your own show-function?
                 $ systemSim instrss initSystemState clock
+
+runTest :: [[Instruction]] -> IO ()                             -- instrss: list of instructions per Sprockell
+runTest instrss = putStr                                        -- putStr: standard Haskell IO-function
+                $ unlines
+                $ map (++"\n")
+                $ map myShow'                                    -- make your own show-function?
+                $ systemSim instrss initSystemState clock
+
 
