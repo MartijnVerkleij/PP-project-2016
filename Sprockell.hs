@@ -131,7 +131,7 @@ decode instr = case instr of
   
   PrintOut reg                -> nullcode {ldCode=LdAlu, aluCode=Prnt, regX=reg, regY=regSprID, loadReg=regSprID}
 
-  Debug _                     -> nullcode       -- only for development purposes
+  Debug s                     -> trace s nullcode       -- only for development purposes
 
 
 {- ===============================================================

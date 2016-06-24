@@ -1,5 +1,8 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 module HardwareTypes where
 
+import GHC.Generics
+import Control.DeepSeq
 import Debug.Trace
 import BasicFunctions
 
@@ -37,7 +40,7 @@ data Request    = NoRequest                                     -- No request to
                 | ReadReq MemAddr                               -- Request to shared memory to send the value at the given address
                 | WriteReq Value MemAddr                        -- Request to write a value to a given address in shared memory
                 | TestReq MemAddr                               -- Request to test-and-Set at the given address in shared memory
-                deriving (Eq,Show)
+                deriving (Eq,Show, Generic, NFData)
 
 type IndRequests        = [(SprID, Request)]                    -- A list of requests together with the sprockell-IDs of the sender
 type IndReplies         = [(SprID, Reply)]                      -- Ibid for replies
@@ -59,7 +62,7 @@ data SprockellState = SprState
         , sp            :: !MemAddr                             -- Stack pointer
         , regbank       :: !RegBank                             -- Register bank
         , localMem      :: !LocalMem                            -- Local memory
-        } deriving (Eq,Show)                                    --      Exclamation mark for eager (non-lazy) evaluation
+        } deriving (Eq,Show, Generic, NFData)                                    --      Exclamation mark for eager (non-lazy) evaluation
 
 data SystemState = SystemState
         { sprStates     :: ![SprockellState]                    -- list of all Sprockell states
@@ -67,7 +70,7 @@ data SystemState = SystemState
         , replyChnls    :: ![ReplyChannel]                      -- list of all reply channels
         , requestFifo   :: !RequestFifo                         -- request fifo for buffering requests
         , sharedMem     :: ![Value]                             -- shared memory
-        } deriving (Eq,Show)                                    --      Exclamation mark for eager (non-lazy) evaluation
+        } deriving (Eq,Show, Generic, NFData)                                    --      Exclamation mark for eager (non-lazy) evaluation
 
 -- ==========================================================================================================
 -- SprIL: Sprockell Instruction Language
