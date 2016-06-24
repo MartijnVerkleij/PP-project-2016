@@ -6,6 +6,7 @@ import Grammar
 import FP_ParserGen         -- Touching this file leaves you at your own devices
 import FPPrac.Trees
 import Debug.Trace
+import qualified Data.Map.Strict as Map
 import System.FilePath
 import ASTBuilder
 import Checker
@@ -18,7 +19,7 @@ import System
 import Simulation
 
 
--- ==================== Lists of Test Files ====================
+-- ==================== Lists of Test Files and Conversions ====================
 testSingle :: [String]
 testSingle =    [ "cyclic_recursion"
                 , "deep_expression"
@@ -45,25 +46,43 @@ testAll =   single ++ multi
         single  = map (\x       -> ("test/" ++ x ++ ".txt",1)) testSingle
         multi   = map (\(x,y)   -> ("test/" ++ x ++ ".txt", y)) testMulti
 
+testConversion :: String -> String
+testConversion x    = "test/" ++ (alias x) ++ ".txt"
+    where
+        alias :: String -> String
+        alias x | x `elem` ["cyclic", "cycl"]                       = "cyclic_recursion"
+                | x `elem` ["deep", "expression"]                   = "deep_expression"
+                | x `elem` ["division", "zero"]                     = "division_zero"
+                | x `elem` ["else"]                                 = "ifelse"
+                | x `elem` ["inf", "loop", "infinite"]              = "infinite_loop"
+                | x `elem` ["infbusy", "busy", "busyloop", "busy_loop", "infinite_busy", "infinitebusy"] 
+                    = "infinite_busy_loop"
+                | x `elem` ["nest", "nested", "proc", "procedures"] = "nested_procedures"
+                | x` elem` ["rec"]                                  = "recursion"
+                | otherwise                                         = x
 
--- ==================== Fib ====================
-prprFib = do 
-    a <- readFile "test/fib.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
+
+-- ==================== Generalized Testing ====================
+pr :: String -> IO ()
+pr name = do
+    a <- readFile $ testConversion name
+    prpr $
+        parse grammar Program $
+        toTokenList $
         tokenizer a
 
-parseFib = do
-    a <- readFile "test/fib.txt"
+par :: String -> IO ()
+par name = do
+    a <- readFile $ testConversion name
     showTree $
         toRoseTree $
         parse grammar Program $
         toTokenList $
         tokenizer a
 
-astFib = do
-    a <- readFile "test/fib.txt"
+ast :: String -> IO ()
+ast name = do
+    a <- readFile $ testConversion name
     showTree $
         astToRose $
         checker$
@@ -72,8 +91,9 @@ astFib = do
         toTokenList $
         tokenizer a
 
-checkFib = do
-    a <- readFile "test/fib.txt"
+check :: String -> IO ()
+check name = do
+    a <- readFile $ testConversion name
     showTree $
         astToRoseDebug $
         checker $
@@ -82,950 +102,43 @@ checkFib = do
         toTokenList $
         tokenizer a
 
-genFib = do
-    a <- readFile "test/fib.txt"
+gen :: String -> IO ()
+gen name = do
+    a <- readFile $ testConversion name
     putStr $
         sprILprpr $
-        codeGen' 1 $
+        codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
         checker $
         pTreeToAst $
         parse grammar Program $
         toTokenList $
         tokenizer a
 
-runFib = do
-    a <- readFile "test/fib.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugFib = do
-    a <- readFile "test/fib.txt"
+run :: String -> IO ()
+run name = do
+    a <- readFile $ testConversion name
     runTest $
-        replicate 1 $
-        codeGen' 1 $
+        replicate ((Map.fromList testAll)Map.!(testConversion name)) $
+        codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
         checker $
         pTreeToAst $
         parse grammar Program $
         toTokenList $
         tokenizer a
 
-
--- ==================== Prime ====================
-prprPrime = do 
-    a <- readFile "test/prime.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parsePrime = do
-    a <- readFile "test/prime.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astPrime = do
-    a <- readFile "test/prime.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkPrime = do
-    a <- readFile "test/prime.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genPrime = do
-    a <- readFile "test/prime.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-        
-runPrime = do
-    a <- readFile "test/prime.txt"
+debug :: String -> IO ()
+debug name = do
+    a <- readFile $ testConversion name
     sysTest $
-        replicate 1 $
-        codeGen' 1 $
+        replicate ((Map.fromList testAll)Map.!(testConversion name)) $
+        codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
         checker $
         pTreeToAst $
         parse grammar Program $
         toTokenList $
         tokenizer a
 
-debugPrime = do
-    a <- readFile "test/prime.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== Banking ====================
-prprBanking = do 
-    a <- readFile "test/banking.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseBanking = do
-    a <- readFile "test/banking.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astBanking = do
-    a <- readFile "test/banking.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkBanking = do
-    a <- readFile "test/banking.txt"
-    showTree $
-        astToRoseDebug $
-        checker1 $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genBanking = do
-    a <- readFile "test/banking.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 4 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runBanking = do
-    a <- readFile "test/banking.txt"
-    sysTest $
-        replicate 4 $
-        codeGen' 4 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugBanking = do
-    a <- readFile "test/banking.txt"
-    runTest $
-        replicate 4 $
-        codeGen' 4 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== Peterson ====================
-prprPeterson = do 
-    a <- readFile "test/peterson.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parsePeterson = do
-    a <- readFile "test/peterson.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astPeterson = do
-    a <- readFile "test/peterson.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkPeterson = do
-    a <- readFile "test/peterson.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genPeterson = do
-    a <- readFile "test/peterson.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 3 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runPeterson = do
-    a <- readFile "test/peterson.txt"
-    sysTest $
-        replicate 3 $
-        codeGen' 3 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugPeterson = do
-    a <- readFile "test/peterson.txt"
-    runTest $
-        replicate 3 $
-        codeGen' 3 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== If ====================
-prprIf = do 
-    a <- readFile "test/if.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseIf = do
-    a <- readFile "test/if.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astIf = do
-    a <- readFile "test/if.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkIf = do
-    a <- readFile "test/if.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genIf = do
-    a <- readFile "test/if.txt"
-    putStr $ 
-        show $
-        codeGen' 3 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runIf = do
-    a <- readFile "test/if.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugIf = do
-    a <- readFile "test/if.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== While ====================
-prprWhile = do 
-    a <- readFile "test/while.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseWhile = do
-    a <- readFile "test/while.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astWhile = do
-    a <- readFile "test/while.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkWhile = do
-    a <- readFile "test/while.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genWhile = do
-    a <- readFile "test/while.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runWhile = do
-    a <- readFile "test/while.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugWhile = do
-    a <- readFile "test/while.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
--- ==================== Nested Procedure Usage ====================
-prprNested = do 
-    a <- readFile "test/nested_procedures.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseNested = do
-    a <- readFile "test/nested_procedures.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astNested = do
-    a <- readFile "test/nested_procedures.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkNested = do
-    a <- readFile "test/nested_procedures.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genNested = do
-    a <- readFile "test/nested_procedures.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runNested = do
-    a <- readFile "test/nested_procedures.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugNested = do
-    a <- readFile "test/nested_procedures.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== Recursion ====================
-prprRecursion = do 
-    a <- readFile "test/recursion.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseRecursion = do
-    a <- readFile "test/recursion.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astRecursion = do
-    a <- readFile "test/recursion.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkRecursion = do
-    a <- readFile "test/recursion.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genRecursion = do
-    a <- readFile "test/recursion.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runRecursion = do
-    a <- readFile "test/recursion.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugRecursion = do
-    a <- readFile "test/recursion.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== If Else ====================
-prprIfElse = do 
-    a <- readFile "test/ifelse.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseIfElse = do
-    a <- readFile "test/ifelse.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astIfElse = do
-    a <- readFile "test/ifelse.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkIfElse = do
-    a <- readFile "test/ifelse.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genIfElse = do
-    a <- readFile "test/ifelse.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runIfElse = do
-    a <- readFile "test/ifelse.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugIfElse = do
-    a <- readFile "test/ifelse.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== Deep Expression ====================
-prprDeep = do 
-    a <- readFile "test/deep_expression.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseDeep = do
-    a <- readFile "test/deep_expression.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astDeep = do
-    a <- readFile "test/deep_expression.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkDeep = do
-    a <- readFile "test/deep_expression.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genDeep = do
-    a <- readFile "test/deep_expression.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runDeep = do
-    a <- readFile "test/deep_expression.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugDeep = do
-    a <- readFile "test/deep_expression.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== Division by Zero ====================
-prprZero = do 
-    a <- readFile "test/division_zero.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseZero = do
-    a <- readFile "test/division_zero.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astZero = do
-    a <- readFile "test/division_zero.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkZero = do
-    a <- readFile "test/division_zero.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genZero = do
-    a <- readFile "test/division_zero.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runZero = do
-    a <- readFile "test/division_zero.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugZero = do
-    a <- readFile "test/division_zero.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== Infinite Empty Loop ====================
-prprInfEmpty = do 
-    a <- readFile "test/infinite_loop.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseInfEmpty = do
-    a <- readFile "test/infinite_loop.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astInfEmpty = do
-    a <- readFile "test/infinite_loop.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkInfEmpty = do
-    a <- readFile "test/infinite_loop.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genInfEmpty = do
-    a <- readFile "test/infinite_loop.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runInfEmpty = do
-    a <- readFile "test/infinite_loop.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugInfEmpty = do
-    a <- readFile "test/infinite_loop.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== Infinite Busy Loop ====================
-prprInfBusy = do 
-    a <- readFile "test/infinite_busy_loop.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseInfBusy = do
-    a <- readFile "test/infinite_busy_loop.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astInfBusy = do
-    a <- readFile "test/infinite_busy_loop.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkInfBusy = do
-    a <- readFile "test/infinite_busy_loop.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genInfBusy = do
-    a <- readFile "test/infinite_busy_loop.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runInfBusy = do
-    a <- readFile "test/infinite_busy_loop.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugInfBusy = do
-    a <- readFile "test/infinite_busy_loop.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== Cyclic Recursion ====================
-prprCyclic = do 
-    a <- readFile "test/cyclic_recursion.txt"
-    prpr $ 
-        parse grammar Program $ 
-        toTokenList $ 
-        tokenizer a
-
-parseCyclic = do
-    a <- readFile "test/cyclic_recursion.txt"
-    showTree $
-        toRoseTree $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-astCyclic = do
-    a <- readFile "test/cyclic_recursion.txt"
-    showTree $
-        astToRose $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-checkCyclic = do
-    a <- readFile "test/cyclic_recursion.txt"
-    showTree $
-        astToRoseDebug $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-genCyclic = do
-    a <- readFile "test/cyclic_recursion.txt"
-    putStr $
-        sprILprpr $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-runCyclic = do
-    a <- readFile "test/cyclic_recursion.txt"
-    sysTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-debugCyclic = do
-    a <- readFile "test/cyclic_recursion.txt"
-    runTest $
-        replicate 1 $
-        codeGen' 1 $
-        checker $
-        pTreeToAst $
-        parse grammar Program $
-        toTokenList $
-        tokenizer a
-
-
--- ==================== Checker checks ====================
+-- ==================== Checker test ====================
 checkChecker = do
     a <- readFile "test/checker.txt"
     showTree $
