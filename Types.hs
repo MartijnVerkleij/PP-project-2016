@@ -89,6 +89,7 @@ data AST = ASTProgram [AST] CheckType
     | ASTCall String [AST] CheckType
     | ASTPrint [AST] CheckType
     -- Expressions
+    | ASTExpr AST (Maybe Alphabet) CheckType
     | ASTAss AST AST (Maybe Alphabet) CheckType
     | ASTVar String CheckType
     | ASTInt String CheckType

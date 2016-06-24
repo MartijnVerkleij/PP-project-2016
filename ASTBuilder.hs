@@ -58,7 +58,7 @@ pTreeToAst (PNode Stat (pid@(PNode Pid _):args_expr))
     = ASTCall (getStr pid) (map pTreeToAst args_expr) ([],[],[])
 -- Expression statement
 pTreeToAst (PNode Stat (expr@(PNode Expr _):[]))
-    = pTreeToAst expr
+    = ASTExpr (pTreeToAst expr) Nothing ([],[],[])
 -- Block statement
 pTreeToAst (PNode Stat ((PLeaf (Brace,_,_)):stats))
     = ASTBlock (map pTreeToAst stats) ([],[],[])
@@ -119,6 +119,8 @@ astToRoseDebug (ASTCall str asts (f,g,v))
     = RoseNode ("call " ++ " -> " {-++ (show f) ++ (show g)-} ++ (show (getDeepestScope v))) $ map astToRoseDebug asts
 astToRoseDebug (ASTPrint asts (f,g,v))
     = RoseNode ("print " ++ " -> " {-++ (show f) ++ (show g)-} ++ (show (getDeepestScope v))) $ map astToRoseDebug asts
+astToRoseDebug (ASTExpr ast typeStr (f,g,v))
+    = RoseNode ("expr " ++ " -> " {-++ (show f) ++ (show g)-} ++ (show (getDeepestScope v))) $ [(astToRoseDebug ast)]
 astToRoseDebug (ASTAss ast1 ast2 typeStr (f,g,v))
     = RoseNode ("= -> " {-++ (show f) ++ (show g)-} ++ (show (getDeepestScope v))) $ map astToRoseDebug [ast1, ast2]
 astToRoseDebug (ASTVar str (f,g,v))
@@ -170,7 +172,9 @@ astToRose (ASTJoin _)
 astToRose (ASTCall str asts _)
     = RoseNode ("call " ++ str) $ map astToRose asts
 astToRose (ASTPrint asts _)
-    = RoseNode ("print") $ map astToRose asts
+    = RoseNode "print" $ map astToRose asts
+astToRose (ASTExpr ast _ _)
+    = RoseNode "expr" [(astToRose ast)]
 astToRose (ASTAss ast1 ast2 _ _)
     = RoseNode "=" $ map astToRose [ast1, ast2]
 astToRose (ASTVar str _)
