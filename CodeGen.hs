@@ -33,7 +33,7 @@ codeGen (ASTProgram asts
                 , Receive (regE)
                 , Branch regE (Rel 2)
                 , Jump (Rel (-3))
-                , Load (ImmValue 1) regARP
+                , Load (ImmValue 0) regARP
                 , Jump (Rel begin_of_code)
                 , Load (ImmValue threadControlAddr) regA 
                                                 -- Begin of thread control loop
@@ -143,12 +143,12 @@ codeGen (ASTArg astType astVar
 codeGen (ASTBlock astStats 
     checkType@(functions, globals, variables)) threads
         =   [ Load (IndAddr regARP) regC    -- Load ARP = regC
-            , ComputeI Add regC (length variables) regC -- Skip local data area
+            , ComputeI Add regC (length (variables!1) + 1) regC -- Skip local data area
             , Store regARP (IndAddr regC)   -- Caller's ARP
             , Load (IndAddr regC) regARP    -- Set mini-ARP to new scope
             ] 
             ++ concat ( map (\x -> codeGen x threads) astStats ) ++
-            [ Load (IndAddr regARP) regE
+            [ Load (IndAddr regARP) regARP
             ]
 codeGen (ASTDecl vartype astVar@(ASTVar _ _) Nothing 
     checkType@(functions, globals, variables)) threads
@@ -191,9 +191,9 @@ codeGen (ASTWhile astExpr astStat
         =   exprGen ++
             [ Pop regE
             , ComputeI Xor regE 1 regE
-            , Branch regE (Rel (1 + (lengthNoDebug bodyGen)))] ++
+            , Branch regE (Rel (2 + (lengthNoDebug bodyGen)))] ++
             bodyGen ++
-            [ Jump (Rel ((lengthNoDebug (bodyGen ++ exprGen)) + 2))]
+            [ Jump (Rel (-((lengthNoDebug (bodyGen ++ exprGen)) + 3)))]
                 where 
                     exprGen = codeGen astExpr threads
                     bodyGen = codeGen astStat threads
@@ -263,6 +263,10 @@ codeGen (ASTCall pName astArgs
             , Jump (Ind regA)               -- jump to procedure
             , Debug ("**a" ++ pName)
             ]
+codeGen (ASTExpr astExpr _ 
+    checkType@(functions, globals, variables)) threads
+        =   [ Pop reg0 ]
+
 codeGen (ASTAss astVar astExpr _
     checkType@(functions, globals, variables)) threads
         =   (codeGen astExpr threads) ++ (getMemAddr (getStr astVar) variables) ++
@@ -310,18 +314,7 @@ codeGen (ASTType typeStr
         = [Nop] -- Intentionally left blank
 codeGen (ASTOp astL op astR _
     checkType@(functions, globals, variables)) threads
-        | op == "/" =
-            [ Pop regB 
-            , Pop regA
-            , Load (ImmValue 0) regC
-            , Load (IndAddr regB) regD
-            , Compute Equal regD reg0 regE
-            , Branch regE (Rel 5)
-            , Compute Sub regD regB regD
-            , Push regC
-            ]
-        | otherwise =
-            (codeGen astL threads) ++ 
+        =   (codeGen astL threads) ++ 
             (codeGen astR threads) ++
             [ Pop regB 
             , Pop regA
@@ -391,7 +384,7 @@ getMemAddr :: String -> [[VariableType]] -> [Instruction]
 getMemAddr varStr variables 
     = [ Compute Add regARP reg0 regE] ++
       (replicate x (Load (IndAddr regARP) regE) ++
-      [ ComputeI Add regE (y*4) regE
+      [ ComputeI Add regE (y + 1) regE
       {-, Load (IndAddr regE) regE -}])
         where 
             (x,y) = findVar (0,0) varStr variables
