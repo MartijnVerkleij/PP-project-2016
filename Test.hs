@@ -56,8 +56,6 @@ testConversion x    = "test/" ++ (alias x) ++ ".txt"
                     = "cyclic_recursion"
                 | x `elem` ["deep", "expression"]
                     = "deep_expression"
-                | x `elem` ["division", "zero"]
-                    = "division_zero"
                 | x `elem` ["else"]
                     = "ifelse"
                 | x `elem` ["inf", "loop", "infinite"]
