@@ -1,0 +1,8 @@
+procedure write(int input, int output) {
+	output = input;
+}
+
+int var = 100;
+print (var);
+write(42, var);
+print(var);
