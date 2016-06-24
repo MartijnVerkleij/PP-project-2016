@@ -37,7 +37,7 @@ codeGen (ASTProgram asts
                 , Load (ImmValue threadControlAddr) regA 
                                                 -- Begin of thread control loop
                 , ReadInstr (DirAddr fork_record_endp)
-                , Receive regB                  -- Read end of program address
+                , EndProg{-Receive regB -}                 -- Read end of program address
                 , Compute Equal regB reg0 regE
                 , Branch regE (Rel 2)           -- jump over endprog if not done
                 , EndProg                       -- Endprog if done bit is set by main thread
@@ -92,12 +92,7 @@ codeGen (ASTProgram asts
             isProcedure :: AST -> Bool
             isProcedure (ASTProc _ _ _ _) = True
             isProcedure _ = False
-            
-            lengthNoDebug :: [Instruction] -> Int 
-            lengthNoDebug [] = 0
-            lengthNoDebug ((Debug ('*':'*':'p':_)):xs) = lengthNoDebug xs
-            lengthNoDebug ((Debug ('*':'*':'a':_)):xs) = lengthNoDebug xs
-            lengthNoDebug (_:xs) = 1 + lengthNoDebug xs          
+                     
 codeGen (ASTGlobal varType astVar Nothing 
     checkType@(functions, globals, variables)) threads
         =   [ Load (ImmValue addr) regA         -- Load memory address of global's lock
@@ -140,7 +135,10 @@ codeGen (ASTProc pName astArgs astStat
             ]
 codeGen (ASTArg astType astVar 
     checkType@(functions, globals, variables)) threads
-        = [Nop] -- fill with code that pushes something to stack
+        = getMemAddr astStr variables ++
+            [ Push regE ]
+            where
+                astStr = getStr astVar
 codeGen (ASTBlock astStats 
     checkType@(functions, globals, variables)) threads
         =   [ Load (IndAddr regARP) regC    -- Load ARP = regC
@@ -151,12 +149,15 @@ codeGen (ASTBlock astStats
             ++ concat ( map (\x -> codeGen x threads) astStats ) ++
             [ Load (IndAddr regARP) regE
             ]
-codeGen (ASTDecl vartype astVar Nothing 
+codeGen (ASTDecl vartype astVar@(ASTVar _ _) Nothing 
     checkType@(functions, globals, variables)) threads
         = (getMemAddr varNameStr variables) ++
             [ Store reg0 (IndAddr regE) ]
                 where 
                     varNameStr = getStr astVar
+codeGen (ASTDecl vartype astVar Nothing 
+    checkType@(functions, globals, variables)) threads
+        = codeGen astVar threads
 codeGen (ASTDecl vartype astVar (Just astExpr) 
     checkType@(functions, globals, variables)) threads
         =   (codeGen astExpr threads) ++
@@ -186,9 +187,9 @@ codeGen (ASTWhile astExpr astStat
     checkType@(functions, globals, variables)) threads
         =   exprGen ++
             [ Pop regE
-            , Branch regE (Rel (1 + (length bodyGen)))] ++
+            , Branch regE (Rel (1 + (lengthNoDebug bodyGen)))] ++
             bodyGen ++
-            [ Jump (Rel ((length (bodyGen ++ exprGen)) + 2))]
+            [ Jump (Rel ((lengthNoDebug (bodyGen ++ exprGen)) + 2))]
                 where 
                     exprGen = codeGen astExpr threads
                     bodyGen = codeGen astStat threads
@@ -243,7 +244,7 @@ codeGen (ASTCall pName astArgs
             , Store regB (IndAddr regC)     -- Store in local memory
             , Compute Incr regC reg0 regC
             , Compute Decr regD reg0 regD
-            , Jump (Rel (-9))               -- Back to while
+            , Jump (Rel (-7))               -- Back to while
             , Compute Incr regC reg0 regC
             , Debug ("**r" ++ pName) -- return address
             , Debug ""
@@ -458,3 +459,10 @@ insertACallPointers (x:xs) ptrs@(progP, callP)
 
 insertErrorPointers :: [Instruction] -> ([ProcPointer], [CallPointer]) -> [Instruction]
 insertErrorPointers l _ = l
+
+ -- Helper function to accurately determine the final length of a certain piece of instructions.
+lengthNoDebug :: [Instruction] -> Int 
+lengthNoDebug [] = 0
+lengthNoDebug ((Debug ('*':'*':'p':_)):xs) = lengthNoDebug xs
+lengthNoDebug ((Debug ('*':'*':'a':_)):xs) = lengthNoDebug xs
+lengthNoDebug (_:xs) = 1 + lengthNoDebug xs 
