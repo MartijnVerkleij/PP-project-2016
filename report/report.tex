@@ -29,6 +29,8 @@ tabsize=4
 \usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
 \usepackage{hyperref} % For hyperlinks in the PDF
 
+\usepackage{pdflscape} % For landscape pages
+
 \usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
 \usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
 
@@ -99,7 +101,7 @@ The language designed for this project is called Simple Haskell Language (SHL), 
 \label{summary}
 This chapter will give a summary of the features of SHL. 
 \paragraph{Data types} SHL supports two types: integers and booleans. 
-\paragraph{Simple expressions and variables} SHL supports denotations for primitive values of types as well as operations for (in)equality of values of types. SHL is strongly typed and all variables are initialised upon declaration. It also supports scoping with variable shadowing. The following expressions are supported:
+\paragraph{Simple expressions and variables} SHL supports denotations for primitive values of types as well as operations for (in)equality for values of types. SHL is strongly typed and all variables are initialised upon declaration. It also supports scoping with variable shadowing. The following expressions are supported:
 \begin{compactitem}
 	\item Parentheses
 	\item Assignment
@@ -113,12 +115,52 @@ This chapter will give a summary of the features of SHL.
 \begin{compactitem}
 	\item Block
 	\item Declaration
-	\item If \& While
+	\item If 
+	\item While
 	\item Call
-	\item Fork \& Join
+	\item Fork 
+	\item Join
 	\item Print
 	\item Expression
 \end{compactitem}
+\paragraph{Concurrency} SHL supports global variables, fork and join statements to implement concurrency.
+\paragraph{Procedures} SHL supports basic procedures with call-by-reference.
+
+
+%------------------------------------------------
+\chapter{Problems \& Solutions}
+\label{problems_and_solutions}
+TODO somewhere at the end
+
+- Something about concurrency
+
+- Something about call-by-reference
+
+- Something about other stuff
+
+
+%------------------------------------------------
+\chapter{Detailed Language Description}
+\label{detailed_language_description}
+
+
+%------------------------------------------------
+\chapter{Description of the Software}
+\label{description_of_the_software}
+
+
+%------------------------------------------------
+\chapter{Test Plan \& Results}
+\label{test_plan_and_results}
+
+
+%------------------------------------------------
+\chapter{Personal Evaluation}
+\label{personal_evaluation}
+\section{Martijn}
+TODO somewhere at the end by Martijn
+\section{Tim}
+TODO somewhere at the end by Tim
 
 
 %------------------------------------------------
@@ -134,11 +176,24 @@ This chapter will give a summary of the features of SHL.
 \begin{appendices}
 \label{appendices}
 
-%------------------------------------------------
 
 %------------------------------------------------
+\chapter{Grammar Specification}
+\label{grammar_specification}
+\begin{landscape}
+\lstinputlisting[language=Haskell, firstline=66, lastline=111]{../Grammar.hs}
+\end{landscape}
+
+
+%------------------------------------------------
+\chapter{Extended Test Program}
+\label{extended_test_program}
+\section{TODO Listing of test program}
+\section{TODO generated target code of test program}
+\section{TODO one or more example executions showing correct functioning of the generated code}
+
+
 
 \end{appendices}
-%------------------------------------------------
 
 \end{document}
