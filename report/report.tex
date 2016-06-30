@@ -37,8 +37,8 @@ tabsize=4
 \usepackage{titlesec} % Allows customization of titles
 %\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
 %\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
-\titleformat{\section}[block]{\large\scshape}{\thesection.}{1em}{} % Change the look of the chapter titles
-\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the chapter titles
+%\titleformat{\section}[block]{\large\scshape}{\thesection.}{1em}{} % Change the look of the section titles
+%\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the subsection titles
 
 \usepackage{fancyhdr} % Headers and footers
 \pagestyle{fancy} % All pages have headers and footers
@@ -89,6 +89,10 @@ tabsize=4
 %------------------------------------------------
 %	ARTICLE CONTENTS
 %------------------------------------------------
+
+%------------------------------------------------
+\tableofcontents
+
 
 %------------------------------------------------
 \chapter{Introduction}
@@ -142,6 +146,12 @@ TODO somewhere at the end
 %------------------------------------------------
 \chapter{Detailed Language Description}
 \label{detailed_language_description}
+\section{Feature} 
+\subsection*{Syntax} 
+\subsubsection*{Examples}
+\subsection*{Usage} 
+\subsection*{Semantics}
+\subsection*{Code Generation}  
 
 
 %------------------------------------------------
