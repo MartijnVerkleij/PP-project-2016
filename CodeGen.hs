@@ -142,10 +142,12 @@ codeGen (ASTArg astType astVar
                 astStr = getStr astVar
 codeGen (ASTBlock astStats 
     checkType@(functions, globals, variables)) threads
-        =   [ Load (IndAddr regARP) regC    -- Load ARP = regC
+        =   trace (show variables) $
+        
+            [ Compute Add regARP reg0 regC    -- Load ARP = regC
             , ComputeI Add regC (length (variables!1) + 1) regC -- Skip local data area
             , Store regARP (IndAddr regC)   -- Caller's ARP
-            , Load (IndAddr regC) regARP    -- Set mini-ARP to new scope
+            , Compute Add regC reg0 regARP    -- Set mini-ARP to new scope
             ] 
             ++ concat ( map (\x -> codeGen x threads) astStats ) ++
             [ Load (IndAddr regARP) regARP
@@ -265,7 +267,8 @@ codeGen (ASTCall pName astArgs
             ]
 codeGen (ASTExpr astExpr _ 
     checkType@(functions, globals, variables)) threads
-        =   [ Pop reg0 ]
+        =   codeGen astExpr threads ++ 
+            [ Pop reg0 ]
 
 codeGen (ASTAss astVar astExpr _
     checkType@(functions, globals, variables)) threads

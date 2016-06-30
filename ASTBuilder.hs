@@ -100,7 +100,7 @@ astToRoseDebug (ASTProc str asts ast (f,g,v))
 astToRoseDebug (ASTArg ast1 ast2 (f,g,v))
     = RoseNode ("arg" ++ " -> " {-++ (show f) ++ (show g)-} ++ (show (getDeepestScope v))) $ map astToRoseDebug [ast1, ast2]
 astToRoseDebug (ASTBlock asts (f,g,v))
-    = RoseNode ("block" ++ " -> " {-++ (show f) ++ (show g)-} ++ (show (getDeepestScope v))) $ map astToRoseDebug asts
+    = RoseNode ("block" ++ " -> " {-++ (show f) ++ (show g)-} ++ (show ({-getDeepestScope-} v))) $ map astToRoseDebug asts
 astToRoseDebug (ASTDecl typeStr ast Nothing (f,g,v))
     = RoseNode (getTypeStr typeStr ++ " -> " {-++ (show f) ++ (show g)-} ++ (show (getDeepestScope v))) [(astToRoseDebug ast)]
 astToRoseDebug (ASTDecl typeStr ast1 (Just ast2) (f,g,v))
