@@ -1,0 +1,131 @@
+%------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%------------------------------------------------
+
+\documentclass[twoside]{report}
+
+\usepackage{graphicx}
+
+\usepackage{listings}
+\lstset{
+breaklines=true,
+tabsize=4
+}
+
+\usepackage{amsmath,amssymb,amsthm} % Mathematical Symbols, styles, etc
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+% Output encoding
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+% Input encoding
+\usepackage[utf8]{inputenc} % UTF-8 character encoding stuff
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
+\usepackage{hyperref} % For hyperlinks in the PDF
+
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+\usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
+
+\usepackage{titlesec} % Allows customization of titles
+%\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+%\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
+\titleformat{\section}[block]{\large\scshape}{\thesection.}{1em}{} % Change the look of the chapter titles
+\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the chapter titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+\fancyhead[C]{M.F. Verkleij, T. Kerkhoven: \shorttitle} % Custom header text
+\fancyfoot[RO,LE]{\thepage} % Custom footer text
+
+% Bibliography
+\usepackage[backend=bibtex, sorting=none]{biblatex}
+\bibliography{references.bib}
+
+% Appendices
+\usepackage[toc,page]{appendix} % appendix
+
+% Additional column type
+\usepackage{array}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+%------------------------------------------------
+%	TITLE SECTION
+%------------------------------------------------
+
+\newcommand{\articletitle}{Programming Paradigms Final Project: Building a Compiler in Haskell for the Sprockell}
+\newcommand{\shorttitle}{PP Final Project}
+
+\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{\articletitle}} % Article title
+
+\author{
+\large
+\textsc{Martijn Verkleij \& Tim Kerkhoven}\\[2mm] % Your name
+\normalsize University of Twente \\ % Your institution
+\normalsize \href{mailto:m.f.verkleij@student.utwente.nl}{m.f.verkleij@student.utwente.nl},
+\href{mailto:t.kerkhoven@student.utwente.nl}{t.kerkhoven@student.utwente.nl}\\% Your email addresses
+\normalsize s1466895 s1375253
+}
+
+\date{\today}
+
+%------------------------------------------------
+
+\begin{document}
+
+\thispagestyle{empty}
+\maketitle % Insert title
+
+
+%------------------------------------------------
+%	ARTICLE CONTENTS
+%------------------------------------------------
+
+%------------------------------------------------
+\chapter{Title}
+\label{title}
+
+
+%------------------------------------------------
+\chapter{Summary}
+\label{summary}
+Data types
+\begin{itemize}
+	\item Integer
+	\item Boolean
+\end{itemize}
+
+
+\begin{itemize}
+	\item Integer
+	\item Boolean
+\end{itemize}
+
+
+%------------------------------------------------
+%	REFERENCE LIST
+%------------------------------------------------
+\label{references}
+\printbibliography
+%bibliography{references}
+
+%------------------------------------------------
+%	APPENDICES
+%------------------------------------------------
+\begin{appendices}
+\label{appendices}
+
+%------------------------------------------------
+
+%------------------------------------------------
+
+\end{appendices}
+%------------------------------------------------
+
+\end{document}
