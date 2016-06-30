@@ -1,0 +1,97 @@
+int x = 1;
+int y = 100;
+bool a = false;
+bool b = false;
+print(x,y,a,b);
+{
+	int x = 2;
+	int y = 120;
+	bool a = true;
+	bool b = false;
+	print(x,y,a,b);
+	{   
+	
+	
+	    /* ----------------------------------
+		int x = 3;
+		int y = 123;
+		bool a = false;
+		bool b = true;
+		print(x,y,a,b); 
+		{
+			int x = 4;
+			int y = 423;
+			bool a = true;
+			bool b = true;
+			print(x,y,a,b);
+		}
+		print(x,y,a,b);
+		{
+			int x = 5;
+			int y = 453;
+			bool a = true;
+			bool b = false;
+			print(x,y,a,b);
+			{
+				int x = 5;
+				int y = 453;
+				bool a = false;
+				bool b = true;
+				print(x,y,a,b);
+			}
+			print(x,y,a,b);
+			{
+				int x = 6;
+				int y = 456;
+				bool a = false;
+				bool b = false;
+				print(x,y,a,b);
+			}
+			print(x,y,a,b);
+		}
+		print(x,y,a,b);
+		--------------------------------------------------------*/
+		
+		
+	}
+	print(x,y,a,b);
+	{
+		print(x,y,a,b);
+		{
+			print(x,y,a,b);
+		}
+		/*
+		print(x,y,a,b);
+		{
+			print(x,y,a,b);
+			{
+				print(x,y,a,b);
+				{
+					print(x,y,a,b);
+					{
+						print(x,y,a,b);
+					}   
+					print(x,y,a,b);
+				}
+				print(x,y,a,b);
+			}
+			print(x,y,a,b);
+		}
+		print(x,y,a,b);
+		{
+			print(x,y,a,b);
+			{
+				print(x,y,a,b);
+				{
+					print(x,y,a,b);
+				}
+				print(x,y,a,b);
+			}
+			print(x,y,a,b);
+		}
+		print(x,y,a,b);
+		*/
+	}
+	print(x,y,a,b);
+}
+print(x,y,a,b);

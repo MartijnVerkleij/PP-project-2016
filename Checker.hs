@@ -213,6 +213,11 @@ matchArgs pid args check@(f,g,v)
 openScope :: CheckType -> CheckType
 openScope (f,g,v) = (f,g,[]:v)
 
+-- Closes a scope
+closeScope :: CheckType -> CheckType
+closeScope self@(f,g,[])    = error $ "No scopes left to close, in Checker.closeScope, with: " ++ (show self)
+closeScope (f,g,(v:vs))     = (f,g,vs)
+
 -- Add a variable to the deepest scope
 -- Check whether the name conflicts other declarations, where variable shadowing is allowed for non-global variables
 addToScope :: CheckType -> (String, Alphabet) -> CheckType
@@ -312,7 +317,7 @@ mergeVariable v@(id,_) (fs,gs,(scope:scopes))
 -- Return the type CheckType from any AST
 getCheck :: AST -> CheckType
 getCheck (ASTArg _ _ mergedChecks)      = mergedChecks
-getCheck (ASTBlock _ mergedChecks)      = mergedChecks
+getCheck (ASTBlock _ mergedChecks)      = closeScope mergedChecks
 getCheck (ASTDecl _ _ _ mergedChecks)   = mergedChecks
 getCheck (ASTIf _ _ _ mergedChecks)     = mergedChecks
 getCheck (ASTWhile _ _ mergedChecks)    = mergedChecks
