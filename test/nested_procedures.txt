@@ -1,31 +1,41 @@
 procedure p0() {
-	print(0);
-	/*p1();
+	print(90);
+	p1();
+	print(91);
 	p2();
-	p3();*/
+	print(92);
+	p3();
+	print(93);
 	p4();
+	print(94);
 }
 
 procedure p1() {
-	print(1);
+	print(10);
 	p2();
+	print(12);
 	p3();
+	print(13);
 	p4();
+	print(14);
 }
 
 procedure p2() {
-	print(2);
+	print(20);
 	p3();
+	print(23);
 	p4();
+	print(24);
 }
 
 procedure p3() {
-	print(3);
+	print(30);
 	p4();
+	print(34);
 }
 
 procedure p4() {
-	print(4);
+	print(40);
 }
 
 p0();
