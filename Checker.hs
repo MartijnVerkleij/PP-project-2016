@@ -169,7 +169,7 @@ checker2 (ASTType str _) check
 -- Check types
 -- Set operation result type
 checker2 (ASTOp expr1 op expr2 _ _) check
-    | expr1Type == (getExprType expr2Check) && (fst $ matchOpType op expr1Type)
+    | elem op ["&&", "||", "<>", "==", "!=", "+", "-", "*", "<=", ">=", "<", ">"] && expr1Type == (getExprType expr2Check) && (fst $ matchOpType op expr1Type)
         = ASTOp expr1Check op expr2Check (Just (snd (matchOpType op expr1Type))) check
     | otherwise     = error $ "Types do not match in operation in Checker.checker2, with " ++ op ++ " on: " ++ (show expr1) ++ " and: " ++ (show expr2)
     where
@@ -179,7 +179,7 @@ checker2 (ASTOp expr1 op expr2 _ _) check
 -- Check type
 -- Set operation result type
 checker2 (ASTUnary op expr _ _) check
-    | fst (matchOpType op exprType) 
+    | elem op ["!", "-"] && fst (matchOpType op exprType) 
         = ASTUnary op exprCheck (Just (snd (matchOpType op exprType))) check
     | otherwise     = error $ "Types do not match in unary in Checker.checker2, with " ++ op ++ " on: " ++ (show expr)
     where
@@ -196,7 +196,7 @@ matchOpType op exprType
         opType :: String -> (Alphabet, Alphabet)
         opType op
             | op `elem` ["&&", "||", "<>", "!"]         = (BoolType, BoolType)
-            | op `elem` ["+", "-", "^", "*", "/", "%"]  = (IntType, IntType)
+            | op `elem` ["+", "-", "*"]                 = (IntType, IntType)
             | op `elem` ["<=", ">=", "<", ">"]          = (IntType, BoolType)
             | otherwise = error $ "Undefined operator, look either here or in the tokenizer: " ++ op
 
@@ -212,6 +212,11 @@ matchArgs pid args check@(f,g,v)
 -- Open a scope
 openScope :: CheckType -> CheckType
 openScope (f,g,v) = (f,g,[]:v)
+
+-- Closes a scope
+closeScope :: CheckType -> CheckType
+closeScope self@(f,g,[])    = error $ "No scopes left to close, in Checker.closeScope, with: " ++ (show self)
+closeScope (f,g,(v:vs))     = (f,g,vs)
 
 -- Add a variable to the deepest scope
 -- Check whether the name conflicts other declarations, where variable shadowing is allowed for non-global variables
@@ -312,7 +317,7 @@ mergeVariable v@(id,_) (fs,gs,(scope:scopes))
 -- Return the type CheckType from any AST
 getCheck :: AST -> CheckType
 getCheck (ASTArg _ _ mergedChecks)      = mergedChecks
-getCheck (ASTBlock _ mergedChecks)      = mergedChecks
+getCheck (ASTBlock _ mergedChecks)      = closeScope mergedChecks
 getCheck (ASTDecl _ _ _ mergedChecks)   = mergedChecks
 getCheck (ASTIf _ _ _ mergedChecks)     = mergedChecks
 getCheck (ASTWhile _ _ mergedChecks)    = mergedChecks

@@ -28,8 +28,8 @@ tokenizer input@(x:xs)
     | word == "print"       = (Print, word)     : (tokenizer wordRest)
     | word == "true"        = (BoolType, word)  : (tokenizer wordRest)
     | word == "false"       = (BoolType, word)  : (tokenizer wordRest)
-    | word == "blackjack"   = (BoolType, word)  : (tokenizer wordRest)
-    | word == "hookers"     = (BoolType, word)  : (tokenizer wordRest)
+    | word == "blackjack"   = (BoolType, "true"): (tokenizer wordRest)
+    | word == "hookers"     = (BoolType,"false"): (tokenizer wordRest)
     | word == "int"         = (Type, word)      : (tokenizer wordRest)
     | word == "bool"        = (Type, word)      : (tokenizer wordRest)
     
@@ -44,7 +44,7 @@ tokenizer input@(x:xs)
     | isPrefixOf "//" input = tokenizer $ endOfLine (input \\ "//")
     | isPrefixOf "/*" input = tokenizer $ endOfBlock (input \\ "/*")
     
-    | elem x "!+-^*/%<>"    = (Op, [x]) : tokenizer xs
+    | elem x "!+-*<>"    = (Op, [x]) : tokenizer xs
     
     | x ==  '='              = (Ass, [x]) : tokenizer xs
     

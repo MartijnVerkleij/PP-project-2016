@@ -9,7 +9,7 @@ print(x,y,a,b);
 	bool a = true;
 	bool b = false;
 	print(x,y,a,b);
-	{   {}
+	{   
 	
 	
 	    /* ----------------------------------
@@ -60,6 +60,37 @@ print(x,y,a,b);
 		{
 			print(x,y,a,b);
 		}
+		/*
+		print(x,y,a,b);
+		{
+			print(x,y,a,b);
+			{
+				print(x,y,a,b);
+				{
+					print(x,y,a,b);
+					{
+						print(x,y,a,b);
+					}   
+					print(x,y,a,b);
+				}
+				print(x,y,a,b);
+			}
+			print(x,y,a,b);
+		}
+		print(x,y,a,b);
+		{
+			print(x,y,a,b);
+			{
+				print(x,y,a,b);
+				{
+					print(x,y,a,b);
+				}
+				print(x,y,a,b);
+			}
+			print(x,y,a,b);
+		}
+		print(x,y,a,b);
+		*/
 	}
 	print(x,y,a,b);
 }
