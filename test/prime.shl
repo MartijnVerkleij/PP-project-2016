@@ -13,3 +13,4 @@ procedure naivePrime(int number, bool output) {
 int number = 4931;
 bool output;
 naivePrime(number, output);
+print(output);
