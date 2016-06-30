@@ -21,7 +21,7 @@ codeGen :: AST -> Int -> [Instruction]
 
 codeGen (ASTProgram asts 
     checkType@(functions, globals, variables)) threads
-        =   threadControl ++ procsCode ++ exprsCode ++ [Nop,EndProg]
+        =   threadControl ++ procsCode ++ [Nop,Nop,Nop] ++ exprsCode ++ [Nop,EndProg]
         where
             
             
@@ -33,7 +33,7 @@ codeGen (ASTProgram asts
                 , Receive (regE)
                 , Branch regE (Rel 2)
                 , Jump (Rel (-3))
-                , Load (ImmValue 0) regARP
+                , Load (ImmValue 1) regARP
                 , Jump (Rel begin_of_code)
                 , Load (ImmValue threadControlAddr) regA 
                                                 -- Begin of thread control loop
@@ -142,9 +142,7 @@ codeGen (ASTArg astType astVar
                 astStr = getStr astVar
 codeGen (ASTBlock astStats 
     checkType@(functions, globals, variables)) threads
-        =   trace (show variables) $
-        
-            [ Compute Add regARP reg0 regC    -- Load ARP = regC
+        =   [ Compute Add regARP reg0 regC    -- Load ARP = regC
             , ComputeI Add regC (length (variables!1) + 1) regC -- Skip local data area
             , Store regARP (IndAddr regC)   -- Caller's ARP
             , Compute Add regC reg0 regARP    -- Set mini-ARP to new scope
@@ -244,7 +242,7 @@ codeGen (ASTCall pName astArgs
             , ComputeI Add regC (length variables) regC -- Skip local data area
             , Load (ImmValue (length astArgs)) regD -- Read argcount = regD
             , Compute Equal regD reg0 regE  -- while still args left
-            , Branch regE (Rel 9)           
+            , Branch regE (Rel 7)           
             , Compute Incr regA reg0 regA
             , Pop regB                      -- Read argument
             , Store regB (IndAddr regC)     -- Store in local memory
@@ -420,9 +418,9 @@ findPointers' instrss = findPointers instrss 0
 findPointers :: [Instruction] -> Int -> ([Instruction], [ProcPointer], [CallPointer])
 findPointers [] _ = ([],[],[])
 findPointers (x@(Debug ('*':'*':'a':cName)):xs) i = (resCode,(fPointers),((cName, i):cPointers))
-    where (resCode,fPointers,cPointers) = findPointers xs (i+1)
+    where (resCode,fPointers,cPointers) = findPointers xs (i)
 findPointers (x@(Debug ('*':'*':'p':fName)):xs) i = (resCode,((fName, i):fPointers),(cPointers))
-    where (resCode,fPointers,cPointers) = findPointers xs (i+1)
+    where (resCode,fPointers,cPointers) = findPointers xs (i)
 findPointers (x:xs) i = ((x:instrss),(fPointers),(cPointers))
     where (instrss,fPointers,cPointers) = findPointers xs (i+1)
 

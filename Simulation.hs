@@ -76,6 +76,12 @@ myShow (instrs,s) = show instrs ++ "\n" ++
 
 myShow' (instrs,s) = ""
                     
+runTestStr :: [[Instruction]] -> String                             -- instrss: list of instructions per Sprockell
+runTestStr instrss = unlines
+                $ map (++"\n")
+                $ map myShow                                    -- make your own show-function?
+                $ systemSim instrss initSystemState clock
+
 runTest :: [[Instruction]] -> IO ()                             -- instrss: list of instructions per Sprockell
 runTest instrss = putStr                                        -- putStr: standard Haskell IO-function
                 $ unlines
