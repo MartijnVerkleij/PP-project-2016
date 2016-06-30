@@ -58,6 +58,10 @@ tabsize=4
 \usepackage{array}
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
 
+% Indentation of list
+\usepackage{changepage}
+\newenvironment{mycompactdesc}{\begin{adjustwidth}{0.53cm}{}\begin{compactdesc}}{\end{compactdesc}\end{adjustwidth}}
+
 %------------------------------------------------
 %	TITLE SECTION
 %------------------------------------------------
@@ -146,12 +150,29 @@ TODO somewhere at the end
 %------------------------------------------------
 \chapter{Detailed Language Description}
 \label{detailed_language_description}
-\section{Feature} 
-\subsection*{Syntax} 
-\subsubsection*{Examples}
-\subsection*{Usage} 
-\subsection*{Semantics}
-\subsection*{Code Generation}  
+This chapter will describe every feature of SHL in detail: providing a basic description; information on the syntax with at least one example; usage information along with restrictions; a description of its effects and execution; and some general information on the generated code.
+
+\section{General/collection}
+\subsection{Feature}
+\subsubsection*{Syntax}
+\subsubsection*{Usage}
+\subsubsection*{Semantics}
+\subsubsection*{Code Generation}
+
+\section{Program}
+\label{def:program}
+\subsubsection*{Syntax}
+\texttt{[globals] [procedures] [statements]}\\
+\begin{mycompactdesc}
+	\item[globals] Global variable declarations as defined in \ref{def:program}
+	\item[procedures] as defined in ??
+	\item[statements] as defined in ??
+\end{mycompactdesc}
+\paragraph{Example}
+\lstlisting[firstline=1, lastline=15]{../test/prime.shl}
+\subsubsection*{Usage}
+\subsubsection*{Semantics}
+\subsubsection*{Code Generation}
 
 
 %------------------------------------------------
