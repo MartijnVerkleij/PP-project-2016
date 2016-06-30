@@ -8,6 +8,7 @@
 
 \usepackage{listings}
 \lstset{
+numbers=left,
 breaklines=true,
 tabsize=4
 }
@@ -88,24 +89,36 @@ tabsize=4
 %------------------------------------------------
 
 %------------------------------------------------
-\chapter{Title}
-\label{title}
+\chapter{Introduction}
+\label{introduction}
+The language designed for this project is called Simple Haskell Language (SHL), with file extension \emph{.shl}.
 
 
 %------------------------------------------------
 \chapter{Summary}
 \label{summary}
-Data types
-\begin{itemize}
-	\item Integer
-	\item Boolean
-\end{itemize}
-
-
-\begin{itemize}
-	\item Integer
-	\item Boolean
-\end{itemize}
+This chapter will give a summary of the features of SHL. 
+\paragraph{Data types} SHL supports two types: integers and booleans. 
+\paragraph{Simple expressions and variables} SHL supports denotations for primitive values of types as well as operations for (in)equality of values of types. SHL is strongly typed and all variables are initialised upon declaration. It also supports scoping with variable shadowing. The following expressions are supported:
+\begin{compactitem}
+	\item Parentheses
+	\item Assignment
+	\item Operation (with ==, !=, <>, \&\&, ||, <=, >=, <, >, +, -, *)
+	\item Unary operation (with !, -)
+	\item Variable
+	\item Integer value
+	\item Boolean value
+\end{compactitem}
+\paragraph{Basic statements} SHL supports the following statements: 
+\begin{compactitem}
+	\item Block
+	\item Declaration
+	\item If \& While
+	\item Call
+	\item Fork \& Join
+	\item Print
+	\item Expression
+\end{compactitem}
 
 
 %------------------------------------------------
