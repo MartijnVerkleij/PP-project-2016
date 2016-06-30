@@ -33,6 +33,8 @@ tokenizer input@(x:xs)
     | word == "int"         = (Type, word)      : (tokenizer wordRest)
     | word == "bool"        = (Type, word)      : (tokenizer wordRest)
     
+    | isPrefixOf "--" input = (Op, "--") : tokenizer (input \\ "--")
+    | isPrefixOf "++" input = (Op, "++") : tokenizer (input \\ "++")
     | isPrefixOf "==" input = (Op, "==") : tokenizer (input \\ "==")
     | isPrefixOf "!=" input = (Op, "!=") : tokenizer (input \\ "!=")
     | isPrefixOf "&&" input = (Op, "&&") : tokenizer (input \\ "&&")

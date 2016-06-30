@@ -6,12 +6,7 @@
 
 \usepackage{graphicx}
 
-\usepackage{listings}
-\lstset{
-numbers=left,
-breaklines=true,
-tabsize=4
-}
+\usepackage{minted}
 
 \usepackage{amsmath,amssymb,amsthm} % Mathematical Symbols, styles, etc
 
@@ -28,6 +23,10 @@ tabsize=4
 \usepackage{booktabs} % Horizontal rules in tables
 \usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
 \usepackage{hyperref} % For hyperlinks in the PDF
+\newcommand*{\fullref}[1]{\hyperref[{#1}]{\ref*{#1} (\nameref*{#1})}}
+\newcommand*{\fullautoref}[1]{\hyperref[{#1}]{\autoref*{#1} (\nameref*{#1})}}
+
+\usepackage{pdflscape} % For landscape pages
 
 \usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
 \usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
@@ -35,8 +34,8 @@ tabsize=4
 \usepackage{titlesec} % Allows customization of titles
 %\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
 %\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
-\titleformat{\section}[block]{\large\scshape}{\thesection.}{1em}{} % Change the look of the chapter titles
-\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the chapter titles
+%\titleformat{\section}[block]{\large\scshape}{\thesection.}{1em}{} % Change the look of the section titles
+%\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the subsection titles
 
 \usepackage{fancyhdr} % Headers and footers
 \pagestyle{fancy} % All pages have headers and footers
@@ -55,6 +54,10 @@ tabsize=4
 % Additional column type
 \usepackage{array}
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% Indentation of list
+\usepackage{changepage}
+\newenvironment{mycompactdesc}{\begin{adjustwidth}{0.53cm}{}\begin{compactdesc}}{\end{compactdesc}\end{adjustwidth}}
 
 %------------------------------------------------
 %	TITLE SECTION
@@ -89,6 +92,10 @@ tabsize=4
 %------------------------------------------------
 
 %------------------------------------------------
+\tableofcontents
+
+
+%------------------------------------------------
 \chapter{Introduction}
 \label{introduction}
 The language designed for this project is called Simple Haskell Language (SHL), with file extension \emph{.shl}.
@@ -99,7 +106,7 @@ The language designed for this project is called Simple Haskell Language (SHL), 
 \label{summary}
 This chapter will give a summary of the features of SHL. 
 \paragraph{Data types} SHL supports two types: integers and booleans. 
-\paragraph{Simple expressions and variables} SHL supports denotations for primitive values of types as well as operations for (in)equality of values of types. SHL is strongly typed and all variables are initialised upon declaration. It also supports scoping with variable shadowing. The following expressions are supported:
+\paragraph{Simple expressions and variables} SHL supports denotations for primitive values of types as well as operations for (in)equality for values of types. SHL is strongly typed and all variables are initialised upon declaration. It also supports scoping with variable shadowing. The following expressions are supported:
 \begin{compactitem}
 	\item Parentheses
 	\item Assignment
@@ -113,12 +120,106 @@ This chapter will give a summary of the features of SHL.
 \begin{compactitem}
 	\item Block
 	\item Declaration
-	\item If \& While
+	\item If 
+	\item While
 	\item Call
-	\item Fork \& Join
+	\item Fork 
+	\item Join
 	\item Print
 	\item Expression
 \end{compactitem}
+\paragraph{Concurrency} SHL supports global variables, fork and join statements to implement concurrency.
+\paragraph{Procedures} SHL supports basic procedures with call-by-reference.
+
+
+%------------------------------------------------
+\chapter{Problems \& Solutions}
+\label{problems_and_solutions}
+%TODO somewhere at the end
+
+- Something about concurrency\\
+- Something about call-by-reference\\
+- Something about other stuff
+
+
+%------------------------------------------------
+\chapter{Detailed Language Description}
+\label{detailed_language_description}
+This chapter will describe every feature of SHL in detail: providing a basic description; information on the syntax with at least one example; usage information along with restrictions; a description of its effects and execution; and some general information on the generated code.
+
+%\section{General/collection}
+%\subsection{Feature}
+%\subsubsection*{Syntax}
+%\subsubsection*{Usage}
+%\subsubsection*{Semantics}
+%\subsubsection*{Code Generation}
+
+\subsection{Program}
+\label{def:program}
+\subsubsection*{Syntax}
+\texttt{[globals] [procedures] [statements]}\\
+\begin{mycompactdesc}
+	\item[globals] Global variable declarations as defined in \fullref{def:global}
+	\item[procedures] Procedures as defined in \fullref{def:procedure}
+	\item[statements] Statements as defined in \fullref{def:statements}
+\end{mycompactdesc}
+\paragraph{Example}
+\inputminted{text}{../test/prime.shl}
+\subsubsection*{Usage}
+All files must follow the Program syntax, and may only contain a single Program.
+\subsubsection*{Semantics}
+A Program is a collection of code which can be used to create an executable program. It is the root node of the AST.
+\subsubsection*{Code Generation}
+%TODO
+
+\subsection{Procedure}
+\label{def:procedure}
+\subsubsection*{Syntax}
+\subsubsection*{Usage}
+\subsubsection*{Semantics}
+\subsubsection*{Code Generation}
+
+\subsection{Global}
+\label{def:global}
+\subsubsection*{Syntax}
+\subsubsection*{Usage}
+\subsubsection*{Semantics}
+\subsubsection*{Code Generation}
+
+\section{Statements}
+\label{def:statements}
+
+\subsection{Declaration}
+\subsubsection*{Syntax}
+\subsubsection*{Usage}
+\subsubsection*{Semantics}
+\subsubsection*{Code Generation}
+
+\subsection{If}
+\subsubsection*{Syntax}
+\subsubsection*{Usage}
+\subsubsection*{Semantics}
+\subsubsection*{Code Generation}
+
+
+
+%------------------------------------------------
+\chapter{Description of the Software}
+\label{description_of_the_software}
+
+
+%------------------------------------------------
+\chapter{Test Plan \& Results}
+\label{test_plan_and_results}
+
+
+%------------------------------------------------
+\chapter{Personal Evaluation}
+\label{personal_evaluation}
+\section{Martijn}
+%TODO somewhere at the end by Martijn
+\section{Tim}
+%TODO somewhere at the end by Tim
 
 
 %------------------------------------------------
@@ -134,11 +235,24 @@ This chapter will give a summary of the features of SHL.
 \begin{appendices}
 \label{appendices}
 
-%------------------------------------------------
 
 %------------------------------------------------
+\chapter{Grammar Specification}
+\label{grammar_specification}
+\begin{landscape}
+\inputminted[firstline=66, lastline=111]{haskell}{../Grammar.hs}
+\end{landscape}
+
+
+%------------------------------------------------
+\chapter{Extended Test Program}
+\label{extended_test_program}
+\section{TODO Listing of test program}
+\section{TODO generated target code of test program}
+\section{TODO one or more example executions showing correct functioning of the generated code}
+
+
 
 \end{appendices}
-%------------------------------------------------
 
 \end{document}

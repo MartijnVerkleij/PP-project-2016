@@ -27,6 +27,7 @@ cabal.sandbox.config
 *.fot
 *.cb
 *.cb2
+*.pdf
 
 ## Intermediate documents:
 *.dvi

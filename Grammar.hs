@@ -64,57 +64,51 @@ import FP_ParserGen (parse) -- Touching this file leaves you at your own devices
 --      (where the Alphabet is in the file TypesEtc.hs)
 
 grammar :: Grammar
-
 grammar nt = case nt of
 
-        -- Program
+    -- Program
+    Program ->  [[ (*:) [Global], (*:) [Proc], (*:) [Stat] ]]
 
-        Program     ->  [[ (*:) [Global], (*:) [Proc], (*:) [Stat] ]]
+    -- Globals
+    Global  ->  [[ global, Type, Var, (?:) [ass, Expr], eol ]]
 
-        -- Globals
+    -- Procedures
+    Proc    ->  [[ procedure, Pid, lPar, (?:) [Type, Var, (*:) [comma, Type, Var]], rPar, Stat ]]
 
-        Global      ->  [[ global, Type, Var, (?:) [ass, Expr], eol ]]
+    -- Statements
+    Stat    ->  [[ Type, Var, (?:) [ass, Expr], eol ]                               -- declaration
+                ,[ ifStr, lPar, Expr, rPar, Stat, (?:) [elseStr, Stat] ]            -- if
+                ,[ while, lPar, Expr, rPar, Stat ]                                  -- while
+                ,[ fork, Pid, lPar, (?:) [Expr, (*:) [comma, Expr]], rPar, eol ]    -- fork
+                ,[ join, eol ]                                                      -- join
+                ,[ Pid, lPar, (?:) [Expr, (*:) [comma, Expr]], rPar, eol ]          -- call
+                ,[ Expr, eol ]                                                      -- expression
+                ,[ lBrace, (*:) [Stat], rBrace ]                                    -- block
+                ,[ printStr, lPar, Expr, (*:) [comma, Expr], rPar, eol ]]           -- print
 
-        -- Procedures
+    -- Expressions
+    Expr    ->  [[ lPar, Expr, rPar ]               -- parentheses
+                ,[ Var, ass, Expr ]                 -- assignment
+                ,[ Var ]                            -- variable
+                ,[ IntType ]                        -- integer
+                ,[ BoolType ]                       -- boolean
+                ,[ lPar, Expr, Op, Expr, rPar ]     -- operation
+                ,[ Unary, Expr ]]                   -- unary operation
 
-        Proc        ->  [[ procedure, Pid, lPar, (?:) [Type, Var, (*:) [comma, Type, Var]], rPar, Stat ]]
+    -- Other
+    Type    ->  [[ typeStr ]]   -- type
 
-        -- Statements
+    Var     ->  [[ var ]]       -- variable
 
-        Stat        ->  [[ Type, Var, (?:) [ass, Expr], eol ]                               -- declaration
-                        ,[ ifStr, lPar, Expr, rPar, Stat, (?:) [elseStr, Stat] ]            -- if
-                        ,[ while, lPar, Expr, rPar, Stat ]                                  -- while
-                        ,[ fork, Pid, lPar, (?:) [Expr, (*:) [comma, Expr]], rPar, eol ]    -- fork
-                        ,[ join, eol ]                                                      -- join
-                        ,[ Pid, lPar, (?:) [Expr, (*:) [comma, Expr]], rPar, eol ]          -- call
-                        ,[ Expr, eol ]                                                      -- expression
-                        ,[ lBrace, (*:) [Stat], rBrace ]                                    -- block
-                        ,[ printStr, lPar, Expr, (*:) [comma, Expr], rPar, eol ]]           -- print
-        -- Expressions
+    Pid     ->  [[ Var ]]       -- procedure identifier
 
-        Expr        ->  [[ lPar, Expr, rPar ]               -- parentheses
-                        ,[ Var, ass, Expr ]                 -- assignment
-                        ,[ Var ]                            -- variable
-                        ,[ IntType ]                        -- integer
-                        ,[ BoolType ]                       -- boolean
-                        ,[ lPar, Expr, Op, Expr, rPar ]     -- operation
-                        ,[ Unary, Expr ]]                   -- unary operation
+    IntType ->  [[ intType ]]   -- number
 
-        -- Other
+    BoolType->  [[ boolType ]]  -- boolean
 
-        Type        ->  [[ typeStr ]]       -- type
+    Op      ->  [[ op ]]        -- operator
 
-        Var         ->  [[ var ]]           -- variable
-
-        Pid         ->  [[ Var ]]           -- procedure identifier
-
-        IntType     ->  [[ intType ]]       -- number
-
-        BoolType    ->  [[ boolType ]]      -- boolean
-
-        Op          ->  [[ op ]]            -- operator
-
-        Unary       ->  [[ Op ]]         -- unary operator
+    Unary   ->  [[ Op ]]        -- unary operator
 
 
 -- shorthand names can be handy, such as:

@@ -49,7 +49,7 @@ testAll =   single ++ multi
         multi   = map (\(x,y)   -> ("test/" ++ x ++ ".txt", y)) testMulti
 
 testConversion :: String -> String
-testConversion x    = "test/" ++ (alias x) ++ ".txt"
+testConversion x    = "test/" ++ (alias x) ++ ".shl"
     where
         alias :: String -> String
         alias x | x `elem` ["cyclic", "cycl"]
