@@ -150,6 +150,28 @@ debug name = do
         toTokenList $
         tokenizer a
 
+write :: String -> IO ()
+write name = do
+    a <- readFile $ testConversion name
+    writeFile ("gen/debug_" ++ name ++ ".txt") 
+            (runTestStr $
+            replicate ((Map.fromList testAll)Map.!(testConversion name)) $
+            codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
+            checker $
+            pTreeToAst $
+            parse grammar Program $
+            toTokenList $
+            tokenizer a)
+    putStr (runTestStr $
+            replicate ((Map.fromList testAll)Map.!(testConversion name)) $
+            codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
+            checker $
+            pTreeToAst $
+            parse grammar Program $
+            toTokenList $
+            tokenizer a)
+    
+
 -- ==================== Checker test ====================
 checkChecker = do
     a <- readFile "test/checker.txt"
