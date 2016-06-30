@@ -1,5 +1,5 @@
 procedure rec(int i) {
-	if ((i < 10)) {
+	if ((i < 3)) {
 		print(i);
 		i = i + 1;
 		rec(i);
@@ -8,5 +8,5 @@ procedure rec(int i) {
 	}
 }
 
-int i = 15;
+int i = 0;
 rec(i);
