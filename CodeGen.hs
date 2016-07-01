@@ -136,6 +136,8 @@ codeGen (ASTProgram asts
             isGlobal (ASTGlobal _ _ _ _) = True
             isGlobal _ = False
                      
+-- Declares a global in global memory, with its standard initial value .
+-- Globals are saved from memory address 31 upwards, in pairs with a mutation bit. 
 codeGen (ASTGlobal varType astVar Nothing 
     checkType@(functions, globals, variables)) threads
         =   [ Load (ImmValue addr) regA         -- Load memory address of global's lock
@@ -152,6 +154,7 @@ codeGen (ASTGlobal varType astVar Nothing
                 addr = fork_record_size + threads 
                     + (global_record_size * (globalIndex (getStr astVar) globals))
             
+-- Same as function above, this pattern has the initial expression
 codeGen (ASTGlobal varType astVar (Just astExpr) 
     checkType@(functions, globals, variables)) threads
         =   (codeGen astExpr threads) ++
