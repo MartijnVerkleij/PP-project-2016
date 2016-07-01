@@ -194,7 +194,7 @@ A program is a collection of code which can be used to create an executable set 
 \subsubsection*{Syntax}
 \texttt{global <TYPE> <ID> [= <EXPRESSION>] ;}
 \begin{mycompactdesc}
-	\item[TYPE] A type as defined in \fullref{def:type}
+	\item[TYPE] A type as defined in \fullref{def:types}
 	\item[ID] A string as defined by \fullref{def:variable}
 	\item[EXPRESSION] An expression as defined in \fullref{def:expressions}
 \end{mycompactdesc}
@@ -221,7 +221,7 @@ Global variables are reachable from anywhere below its declaration in the code, 
 \texttt{procedure <ID> ( [<TYPE> <VAR>] [, <TYPE> <VAR>]\ldots ) <STATEMENT>...}
 \begin{mycompactdesc}
 	\item[ID] A string as defined in \fullref{def:variable}
-	\item[TYPE] A type as defined in \fullref{def:type}
+	\item[TYPE] A type as defined in \fullref{def:types}
 	\item[VAR] A variable as defined in \fullref{def:variable}
 	\item[STATEMENT] A statement as defined in \fullref{def:statements}
 \end{mycompactdesc}
@@ -237,7 +237,7 @@ procedure other(int num, bool flip) {
 }
 \end{minted}
 \subsubsection*{Usage}
-Used to declare a procedure. Because call-by-reference (see \fullref{def:call_by_reference}) is used, a variable passed as an argument can be used to write resulting values. One could also use the global variables (see \fullref{def:global}), as they are accessible from everywhere.
+Used to declare a procedure. Because call-by-reference (see \fullref{def:call-by-reference}) is used, a variable passed as an argument can be used to write resulting values. One could also use the global variables (see \fullref{def:global}), as they are accessible from everywhere.
 
 The id of a procedure is unique in the whole program. No other variable of procedure may use the same id.
 \subsubsection*{Semantics}
@@ -251,10 +251,11 @@ A procedure is section of code that can be executed from anywhere, using a call 
 
 
 \subsection{Declaration}
+\label{def:declaration}
 \subsubsection*{Syntax}
 \texttt{<TYPE> <ID> [= <EXPRESSION>] ;}
 \begin{mycompactdesc}
-	\item[TYPE] A type as defined in \fullref{def:type}
+	\item[TYPE] A type as defined in \fullref{def:types}
 	\item[ID] A string as defined in \fullref{def:variable}
 	\item[EXPRESSION] An expression as defined in \fullref{def:expressions}
 \end{mycompactdesc}
@@ -326,7 +327,7 @@ If the expression evaluates to \emph{true}, execute the statement. Repeat this f
 \texttt{fork <ID> ( [<EXPRESSION> [, <EXPRESSION>]\ldots] ) ;}
 \begin{mycompactdesc}
 	\item[ID] A string as defined by \fullref{def:variable}
-	\item[EXPRESSION] An expression as defined by \fullref{def:expression}
+	\item[EXPRESSION] An expression as defined by \fullref{def:expressions}
 \end{mycompactdesc}
 \paragraph{Examples}
 \begin{minted}[tabsize=4]{text}
@@ -335,7 +336,7 @@ fork proc1(flag);
 fork proc2(5, flag = true);
 \end{minted}
 \subsubsection*{Usage}
-Run a procedure on a separate thread. The expression types must match the types defined during the procedure declaration (see \fullref{def:procedure}).
+Run a procedure, which must have been declared somewhere, on a separate thread. The expression types must match the types defined during the procedure declaration (see \fullref{def:procedure}).
 \subsubsection*{Semantics}
 Writes the argument to shared memory and tells the thread pool to start parallel execution of the procedure.
 
@@ -366,7 +367,7 @@ Blocks execution of the main thread until all other threads have finished their 
 \texttt{<ID> ( [<EXPRESSION> [, <EXPRESSION>]\ldots] ) ;}
 \begin{mycompactdesc}
 	\item[ID] A string as defined by \fullref{def:variable}
-	\item[EXPRESSION] An expression as defined by \fullref{def:expression}
+	\item[EXPRESSION] An expression as defined by \fullref{def:expressions}
 \end{mycompactdesc}
 \paragraph{Examples}
 \begin{minted}[tabsize=4]{text}
@@ -375,7 +376,7 @@ proc1(flag);
 proc2(5, flag = true);
 \end{minted}
 \subsubsection*{Usage}
-Execute the called procedure. The expressions must have the same types as the procedure as defined in its declaration (see \fullref{def:procedure})
+Execute the called procedure, which must have been declared somewhere. The expressions must have the same types as the procedure as defined in its declaration (see \fullref{def:procedure})
 \subsubsection*{Semantics}
 Go to the procedure code and execute the procedure with the expressions, then return to the call.
 \subsubsection*{Code Generation}
@@ -425,7 +426,9 @@ Execute the expression, this generally has no effects, except for an assignment.
 }
 \end{minted}
 \subsubsection*{Usage}
+A block is a single statement that contains zero or more statements. It is mostly used within procedures and statements to executes more than one statement.
 \subsubsection*{Semantics}
+A block opens a new scope, then executes the code within. When exiting a block, the scope is closed.
 \subsubsection*{Code Generation}
 %TODO Martijn
 
@@ -433,18 +436,217 @@ Execute the expression, this generally has no effects, except for an assignment.
 \subsection{Print}
 \label{def:print}
 \subsubsection*{Syntax}
-\texttt{}
+\texttt{print ( <EXPRESSION> [, <EXPRESSION>]\ldots ) ;}
 \begin{mycompactdesc}
-	
+	\item[EXPRESSION] An expression as defined in \fullref{def:expressions}
 \end{mycompactdesc}
 \paragraph{Examples}
 \begin{minted}[tabsize=4]{text}
+print(a);
+print(true, 5, 1983);
+print(a = ++a, ((11 - 2) * a));
 \end{minted}
 \subsubsection*{Usage}
+Prints values of evaluated expressions to the console.
 \subsubsection*{Semantics}
+Evaluates the expressions and prints the values as they appear in memory, meaning a boolean is represented as either a zero (\emph{false}) or a one (\emph{true}).
 \subsubsection*{Code Generation}
 %TODO Martijn
 
+
+\section{Expressions}
+\label{def:expressions}
+
+
+\subsection{Parentheses}
+\label{def:parentheses}
+\subsubsection*{Syntax}
+\texttt{( <EXPRESSION> )}
+\begin{mycompactdesc}
+	\item[EXPRESSION] An expression as defined in \fullref{def:expressions}
+\end{mycompactdesc}
+\paragraph{Example}
+\begin{minted}[tabsize=4]{text}
+a = -(-(----a); // the same as: a = (-1) * (-1) * (a - 2);
+\end{minted}
+\subsubsection*{Usage}
+Parentheses are used to enforce which operator is used (see the example above). It can also be used to enforce the order in which an expression is evaluated, but since this already explicitly happens (see \fullref{def:operation}) it should not be necessary to use a parentheses expression for it.
+\subsubsection*{Semantics}
+Everything between the parentheses is evaluated and the value is returned as the result of this expression.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Assignment}
+\label{def:assignment}
+\subsubsection*{Syntax}
+\texttt{<ID> = <EXPRESSION>}
+\begin{mycompactdesc}
+	\item[ID] A string as defined in \fullref{def:variable}
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+a = 5;
+b = (c <> (d && e));
+\end{minted}
+\subsubsection*{Usage}
+Used to assign a value, in the form of an expression, to a variable. The variable must have been declared beforehand, and may be either global or local.
+
+The type of the expression must match the type of the variable.
+\subsubsection*{Semantics}
+Assignment evaluates the expression and writes it to the address of the variable.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Variable}
+\label{def:variable}
+\subsubsection*{Syntax}
+\texttt{<ID>}
+\begin{mycompactdesc}
+	\item[ID] A string, starting with a letter, which may use any alphanumerical character in addition to the following characters: \emph{\~{}`'"@\#\$\textbackslash.?:\_{}}
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+a
+a@__b"42"\#1337'
+\end{minted}
+\subsubsection*{Usage}
+A variable must be declared (see \fullref{def:declaration}) before use. It has a type which is determined upon declaration.
+\subsubsection*{Semantics}
+Evaluation of a variable returns its value.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Integer}
+\label{def:integer}
+\subsubsection*{Syntax}
+\texttt{<INTEGER>}
+\begin{mycompactdesc}
+	\item[INTEGER] An integer string
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+42
+1337
+0000004201337
+\end{minted}
+\subsubsection*{Usage}
+Takes the value of the integer, removes leading zeros.
+\subsubsection*{Semantics}
+Upon evaluation it returns its integer value.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Boolean}
+\label{def:boolean}
+\subsubsection*{Syntax}
+\texttt{<BOOLEAN>}
+\begin{mycompactdesc}
+	\item[BOOLEAN] Where a boolean is either "\texttt{true}" or "\texttt{false}"
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+true
+false
+\end{minted}
+\subsubsection*{Usage}
+Takes the value of the boolean (either one or zero) and returns it.
+\subsubsection*{Semantics}
+Upon evaluation, return the corresponding binary representation of the boolean, where \emph{false} equals zero and \emph{true} equals one.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Operation}
+\label{def:operation}
+\subsubsection*{Syntax}
+\texttt{( <EXPRESSION> <OPERATOR> <EXPRESSION> )}
+\begin{mycompactdesc}
+	\item[EXPRESSION] An expression as defined in \fullref{def:expressions}
+	\item[OPERATOR] One of the following operators: \texttt{==, !=, \&\&, ||, <>, <=, >=, <, >, +, -, *} (see \fullref{def:operators})
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+(true <> b)
+((a + b) == (c + d))
+\end{minted}
+\subsubsection*{Usage}
+Apply operator on two expressions. Both expressions must be of the same type, which must also match one of the types supported by the operator.
+\subsubsection*{Semantics}
+After both expressions have been evaluated, the operation is evaluated and its result will be returned.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Unary Operation}
+\label{def:unary_operation}
+\subsubsection*{Syntax}
+\texttt{<OPERATOR> <EXPRESSION>}
+\begin{mycompactdesc}
+	\item[OPERATOR] One of the following operators: \texttt{--, ++, -, !} (see \fullref{def:operators})
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+!b
+-(--a)
+---a // is the same as: --(-a)
+\end{minted}
+\subsubsection*{Usage}
+Apply operator on the expression. The expression type must match one of the types supported by the operator.
+\subsubsection*{Semantics}
+After the expression has been evaluated, the operation is evaluated and its result will be returned.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\section{Other Features}
+\label{def:other_features}
+
+
+\subsection{Types}
+\label{def:types}
+\subsubsection*{Syntax}
+\texttt{<TYPE>}
+\begin{mycompactdesc}
+	\item[TYPE] Either \texttt{int} or \texttt{bool}
+\end{mycompactdesc}
+
+
+\subsection{Operators}
+\label{def:operators}
+\subsubsection*{Syntax}
+\texttt{<OPERATOR>}
+\begin{mycompactdesc}
+	\item[OPERATOR] One of the following: \texttt{==, !=, \&\&, ||, <>, <=, >=, <, >, +, -, *, --, ++, !}
+\end{mycompactdesc}
+\subsubsection*{Usage}
+\begin{mycompactdesc}
+	\item[OPERATOR] Operation: \texttt{supported types} $\rightarrow$ \texttt{return type}
+	\item[==] equals: \texttt{int, bool} $\rightarrow$ \texttt{bool}
+	\item[!=] not equals: \texttt{int, bool} $\rightarrow$ \texttt{bool}
+	\item[\&\&] and: \texttt{bool} $\rightarrow$ \texttt{bool}
+	\item[||] or: \texttt{bool} $\rightarrow$ \texttt{bool}
+	\item[<>] xor: \texttt{bool} $\rightarrow$ \texttt{bool}
+	\item[<=] lesser than or equals: \texttt{int} $\rightarrow$ \texttt{bool}
+	\item[>=] greater than or equals: \texttt{int} $\rightarrow$ \texttt{bool}
+	\item[<] lesser than: \texttt{int} $\rightarrow$ \texttt{bool}
+	\item[>] greater than: \texttt{int} $\rightarrow$ \texttt{bool}
+	\item[+] add: \texttt{int} $\rightarrow$ \texttt{int}
+	\item[-] subtract: \texttt{int} $\rightarrow$ \texttt{int}
+	\item[*] multiply: \texttt{int} $\rightarrow$ \texttt{int}
+	\item[--] decrement: \texttt{int} $\rightarrow$ \texttt{int}
+	\item[++] increment: \texttt{int} $\rightarrow$ \texttt{int}
+	\item[!] not: \texttt{bool} $\rightarrow$ \texttt{bool}
+\end{mycompactdesc}
+Beware that using decrement and increment on a variable does not assign the new value to the variable as some other languages might do.
+
+
+\subsection{Call-by-reference}
+\label{def:call-by-refence}
+%TODO Martijn
 
 %------------------------------------------------
 \chapter{Description of the Software}
@@ -454,6 +656,7 @@ Execute the expression, this generally has no effects, except for an assignment.
 %------------------------------------------------
 \chapter{Test Plan \& Results}
 \label{test_plan_and_results}
+\section{How to run a test}
 
 
 %------------------------------------------------
@@ -488,11 +691,36 @@ Execute the expression, this generally has no effects, except for an assignment.
 
 
 %------------------------------------------------
+\chapter{List of Tests}
+\label{list_of_tests}
+\begin{compactdesc}
+    \item[cyclic\_{}recursion] Tests for correct cyclic recursion
+    \item[deep\_{}expression] Tests for correct evaluation of nested expressions
+    \item[fib] Tests for correct evaluation of a Fibonacci procedure 
+    \item[if] Tests a correct simple if statement
+    \item[ifelse] Tests a correct simple if-else statement
+    \item[infinite\_{}busy\_{}loop] Tests behaviour in an empty infinite loop
+    \item[infinite\_{}loop] Tests behaviour in an infinite loop with some operation in it. Also tests integer overflows, which are not detected.
+    \item[nested\_{}procedures] Tests for correct evaluation of nested procedures
+    \item[prime] Tests for correct evaluation of a procedure that checks whether an integer is prime
+    \item[recursion] Tests for correct recursion
+    \item[while] Tests a simple correct while statement
+    \item[call\_{}by\_{}reference] Tests for correct call-by-reference
+    \item[blocks] Tests for correct handling of scopes
+    \item[simple\_{}proc] Tests a simple correct procedure
+	\item[banking] Tests a concurrent banking application
+    \item[peterson] Tests for correct evaluation of Peterson's algorithm
+    \item[simple\_{}concurrency] Tests a simple correct concurrent program
+\end{compactdesc}
+
+
+%------------------------------------------------
 \chapter{Extended Test Program}
+%TODO
 \label{extended_test_program}
-\section{TODO Listing of test program}
-\section{TODO generated target code of test program}
-\section{TODO one or more example executions showing correct functioning of the generated code}
+\section{Listing of test program}
+\section{generated target code of test program}
+\section{one or more example executions showing correct functioning of the generated code}
 
 
 
