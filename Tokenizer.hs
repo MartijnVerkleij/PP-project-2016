@@ -56,7 +56,7 @@ tokenizer input@(x:xs)
     | otherwise             = error ("Lexical error at character \"" ++ [x] ++ 
                                   "\", left to parse: \"" ++ xs ++ "\"" )
         where 
-            (word,wordRest)     = span (isAlphaNumPlus) input
+            (word,wordRest)     = span isAlphaNumPlus input
             (int,intRest)       = span isNumber input
             endOfLine :: String -> String
             endOfLine []        = []
