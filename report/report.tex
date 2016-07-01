@@ -656,7 +656,36 @@ Beware that using decrement and increment on a variable does not assign the new 
 %------------------------------------------------
 \chapter{Test Plan \& Results}
 \label{test_plan_and_results}
-\section{How to run a test}
+
+
+\section{Implemented Tests}
+\label{implemented_tests}
+\begin{compactdesc}
+    \item[cyclic\_{}recursion] Tests for correct cyclic recursion
+    \item[deep\_{}expression] Tests for correct evaluation of nested expressions
+    \item[fib] Tests for correct evaluation of a Fibonacci procedure 
+    \item[if] Tests a correct simple if statement
+    \item[ifelse] Tests a correct simple if-else statement
+    \item[infinite\_{}busy\_{}loop] Tests behaviour in an empty infinite loop
+    \item[infinite\_{}loop] Tests behaviour in an infinite loop with some operation in it. Also tests integer overflows, which are not detected.
+    \item[nested\_{}procedures] Tests for correct evaluation of nested procedures
+    \item[prime] Tests for correct evaluation of a procedure that checks whether an integer is prime
+    \item[recursion] Tests for correct recursion
+    \item[while] Tests a simple correct while statement
+    \item[call\_{}by\_{}reference] Tests for correct multi-threaded call-by-reference
+    \item[blocks] Tests for correct handling of scopes
+    \item[simple\_{}proc] Tests a simple correct procedure
+	\item[banking] Tests a concurrent banking application
+    \item[peterson] Tests for correct evaluation of Peterson's algorithm
+    \item[simple\_{}concurrency] Tests a simple correct concurrent program
+    \item[multiple_globals] %TODO
+    \item[join_test] %TODO
+\end{compactdesc}
+
+
+\section{How To Run a Test}
+\label{how_to_run_a_test}
+To run a test, simply follow the \texttt{README.md}, using the following path: \texttt{test/<fileName>}, where \texttt{fileName} is one of the tests described above. Remember that for a concurrent program, which is any program that uses at least one fork statement, multiple Sprockells have to be used.
 
 
 %------------------------------------------------
@@ -688,30 +717,6 @@ Beware that using decrement and increment on a variable does not assign the new 
 \begin{landscape}
 \inputminted[firstline=66, lastline=111, tabsize=4]{haskell}{../Grammar.hs}
 \end{landscape}
-
-
-%------------------------------------------------
-\chapter{List of Tests}
-\label{list_of_tests}
-\begin{compactdesc}
-    \item[cyclic\_{}recursion] Tests for correct cyclic recursion
-    \item[deep\_{}expression] Tests for correct evaluation of nested expressions
-    \item[fib] Tests for correct evaluation of a Fibonacci procedure 
-    \item[if] Tests a correct simple if statement
-    \item[ifelse] Tests a correct simple if-else statement
-    \item[infinite\_{}busy\_{}loop] Tests behaviour in an empty infinite loop
-    \item[infinite\_{}loop] Tests behaviour in an infinite loop with some operation in it. Also tests integer overflows, which are not detected.
-    \item[nested\_{}procedures] Tests for correct evaluation of nested procedures
-    \item[prime] Tests for correct evaluation of a procedure that checks whether an integer is prime
-    \item[recursion] Tests for correct recursion
-    \item[while] Tests a simple correct while statement
-    \item[call\_{}by\_{}reference] Tests for correct call-by-reference
-    \item[blocks] Tests for correct handling of scopes
-    \item[simple\_{}proc] Tests a simple correct procedure
-	\item[banking] Tests a concurrent banking application
-    \item[peterson] Tests for correct evaluation of Peterson's algorithm
-    \item[simple\_{}concurrency] Tests a simple correct concurrent program
-\end{compactdesc}
 
 
 %------------------------------------------------
