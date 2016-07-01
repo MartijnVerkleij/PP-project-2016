@@ -87,6 +87,14 @@ alias x | x `elem` ["cyclic", "cycl"]
 
 
 -- ==================== Generalized Testing ====================
+token :: String -> IO ()
+token name = do
+    a <- readFile $ testConversion name
+    putStr $
+        show $
+        toTokenList $
+        tokenizer a
+
 pr :: String -> IO ()
 pr name = do
     a <- readFile $ testConversion name
