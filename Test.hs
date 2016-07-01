@@ -30,7 +30,6 @@ testSingle =    [ "cyclic_recursion"    -- Run this one with more local memory
                 , "infinite_busy_loop"
                 , "infinite_loop"
                 , "nested_procedures"
-                , "prime"
                 , "recursion"
                 , "while"
                 --, "call_by_reference"

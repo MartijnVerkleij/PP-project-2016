@@ -112,8 +112,8 @@ grammar nt = case nt of
 
 
 -- shorthand names can be handy, such as:
-lPar        = Symbol "("           -- Terminals WILL be shown in the parse tree
-rPar        = Symbol ")"
+lPar        = Symbol "("            -- Terminals WILL be shown in the parse tree
+rPar        = Symbol ")"            -- Symbols WILL NOT be shown in the parse tree
 lBrace      = Terminal "{"
 rBrace      = Symbol "}"
 procedure   = Symbol "procedure"
@@ -124,20 +124,13 @@ ass         = Terminal "="
 fork        = Terminal "fork"
 join        = Terminal "join"
 global      = Symbol "global"
-lock        = Terminal "lock"
-unlock      = Terminal "unlock"
 printStr    = Terminal "print"
 
 
 eol         = Symbol ";"
 comma       = Symbol ","
 
--- alternative:
--- lBracket  = Symbol "("          -- Symbols will NOT be shown in the parse tree.
--- rBracket  = Symbol ")"
-
 var         = SyntCat Var
---pid         = SyntCat Pid
 intType     = SyntCat IntType
 boolType    = SyntCat BoolType
 op          = SyntCat Op
