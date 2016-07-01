@@ -135,7 +135,25 @@ Main: tokenList not fully parsed
 Main: tokenList not fully parsed
 \end{minted}
 
+
 \chapter{Contextual Tests}
+
+\section{Wrong Type}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/wrong_type.shl}
+\subsection{Output}
+\begin{minted}[tabsize=4,linenos]{text}
+Main: Condition in if statement should be of type: bool, but isnt, in: ASTVar "i" ([],[],[])
+\end{minted}
+
+\section{Not Declared}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/not_declared.shl}
+\subsection{Output}
+\begin{minted}[tabsize=4,linenos]{text}
+Main: Variable: i not declared in Checker.getExprType.iterVar
+\end{minted}
+
 
 \chapter{Semantic Tests}
 
