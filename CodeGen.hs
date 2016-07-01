@@ -53,7 +53,8 @@ codeGen (ASTProgram asts
                 , Receive (regE)                --
                 , Branch regE (Rel 2)           --
                 , Jump (Rel (-3))               --
-                , Jump (Rel begin_of_code)      -- Jump to exprsCode
+                , Jump (Rel begin_of_code)      -- Jump to global declarations, 
+                                                -- followed by main code.
                 
                 -------------------------
                 -- Thread Control Loop --
@@ -119,6 +120,7 @@ codeGen (ASTProgram asts
                 ]
             
             begin_of_code = (lengthNoDebug (threadControl ++ procsCode)) - 5
+                -- Computes line number that regular code starts at.
             (globalAsts, procexprs) = span isGlobal asts
             (procs, exprs) = span isProcedure procexprs
             procsCode = concat $ map (\x -> codeGen x threads) procs
