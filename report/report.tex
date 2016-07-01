@@ -66,7 +66,6 @@
 
 \author{
 \large
-\textsc{Group 26}\\[-0.75mm]
 \textsc{Martijn Verkleij \& Tim Kerkhoven}\\[2mm] % Your name
 \normalsize University of Twente \\ % Your institution
 \normalsize \href{mailto:m.f.verkleij@student.utwente.nl}{m.f.verkleij@student.utwente.nl},
@@ -95,9 +94,7 @@
 %------------------------------------------------
 \chapter{Introduction}
 \label{introduction}
-In the Programming Paradigms course, the final project is a combination of compiler construction, functional programming, and concurrent programming. It required the participants to build a compiler for a self-defined language to SprIL. The language had to support features, including basic concurrency.
-
-The language group 26 designed for this project is called Simple Haskell Language (SHL), with file extension \emph{.shl}. It supports all the required features, as well as some additional features. These additional features include: procedures, and call-by-reference. The entire compiler runs on uses Haskell, both the code-generation and front end. The Sprockell was slightly extended as well.
+The language designed for this project is called Simple Haskell Language (SHL), with file extension \emph{.shl}.
 
 
 %------------------------------------------------
@@ -151,15 +148,16 @@ If only the schedule made at the beginning of every project works out and no une
 %TODO somewhere at the end
 
 %------------------------------------------------
-\chapter{Sprockell Extensions}
-\label{sprockell_extensions}
-%TODO Martijn
-
-
-%------------------------------------------------
 \chapter{Detailed Language Description}
 \label{detailed_language_description}
 This chapter will describe every feature of SHL in detail: providing a basic description; information on the syntax with at least one example; usage information along with restrictions; a description of its effects and execution; and some general information on the generated code.
+
+%\section{General/collection}
+%\subsection{Feature}
+%\subsubsection*{Syntax}
+%\subsubsection*{Usage}
+%\subsubsection*{Semantics}
+%\subsubsection*{Code Generation}
 
 
 \subsection{Program}
@@ -302,7 +300,7 @@ The id of a variable is unique in the scope it is defined in. No other variable 
 The variable declaration writes the value of the variable to the Local Data Area of where it was (most recently) defined. All variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
 \subsubsection*{Code Generation}
 %TODO Martijn
-
+A declaration evaluates the expression behind it before assigning it to the variable. The variable's value is saved in the appropriate Local Data Area, by following the scopes upward until the right scope is reached, after which it is saved with an offset.
 
 \subsection{If}
 \label{def:if}
@@ -683,7 +681,7 @@ Beware that using decrement and increment on a variable does not assign the new 
 \label{def:error_handling}
 The SHL compiler does not support proper exception handling, but does throw errors of varying usefulness. During the tokenising phase, the only error thrown is an illegal character error.
 
-During the parsing phase, the only error which might be thrown is a token list not fully parsed error, indicating the grammar cannot parse the token list.
+During the parsing phase, the only error which might be thrown is a non-exhaustive pattern error, indicating the grammar cannot parse the token list.
 
 The checker phase thrown different kinds of errors, all related to context constraints, they generally indicate the function which throws the error as well as printing some of the responsible data.
 
@@ -702,7 +700,7 @@ The purpose of the ASTBuilder is to build an Abstract Syntax Tree using a parset
 Part of the Sprockell. Any changes in the Sprockell code have been annotated with \texttt{PP26:\ldots}.
 
 \section{Checker.hs}
-The checker does type checking on an AST and adds information about scopes (symboltable) to it. It works in two passes, first collecting information about global variables and procedures, then checking for all context constraints.
+The checker checks an AST and adds information about scopes to it. It works in two passes, first collecting information about global variables and procedures, then checking for all context constraints.
 
 \section{CodeGen.hs}
 CodeGen takes a checked AST and generates a set of SprIL instructions. %TODO Martijn, is this enough, do you wish to elaborate?
@@ -737,11 +735,6 @@ Part of the Sprockell. Any changes in the Sprockell code have been annotated wit
 \section{Test.hs}
 Used for internal testing, contains functions to print and write debug information, show ASTs with and without debug information, show the parse tree, and show the token list.
 
-\section{Tokenizer.hs}
-Tokenizer tokenises a string into a list of tokens.
-
-\section{Types.hs}
-Contains all the Haskell types used during compilation, including Alphabet, AST, and checking/scope types.
 
 
 %------------------------------------------------
@@ -821,7 +814,11 @@ I finish this up, I enjoyed this module, with the exception of CP. There were a 
 
 %------------------------------------------------
 \chapter{Extended Test Program}
+%TODO
 \label{extended_test_program}
+\section{Listing of test program}
+\section{generated target code of test program}
+\section{one or more example executions showing correct functioning of the generated code}
 The extended test program shown here is Peterson's algorithm. It shows how, using the available methods for concurrency, two thread using the same variable have mutually exclusive access to it.
 
 \section{Peterson's Algorithm Test}
@@ -830,36 +827,6 @@ The extended test program shown here is Peterson's algorithm. It shows how, usin
 \section{Generated Code}
 \inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/peterson_gen.txt}
 
-\section{Correct Executions}
-Every time a value is printed in Peterson's algorithm test, it should be zero:
-\begin{minted}[tabsize=4]{text}
-What file do you want to run? Please provide the relative path excluding the extension.
-test/peterson
-How many Sprockells do you want to use to run this file?
-3
-Running: test/peterson.shl
-On 3 Sprockells
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
->>> 0
-\end{minted}
 
 
 \end{appendices}
