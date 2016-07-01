@@ -1,0 +1,123 @@
+%------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%------------------------------------------------
+
+\documentclass[twoside]{report}
+
+\usepackage{graphicx}
+
+\usepackage{minted}
+
+\usepackage{amsmath,amssymb,amsthm} % Mathematical Symbols, styles, etc
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+% Output encoding
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+% Input encoding
+\usepackage[utf8]{inputenc} % UTF-8 character encoding stuff
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
+\usepackage{hyperref} % For hyperlinks in the PDF
+\newcommand*{\fullref}[1]{\hyperref[{#1}]{\ref*{#1} (\nameref*{#1})}}
+\newcommand*{\fullautoref}[1]{\hyperref[{#1}]{\autoref*{#1} (\nameref*{#1})}}
+
+\usepackage{pdflscape} % For landscape pages
+
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+\usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
+
+\usepackage{titlesec} % Allows customization of titles
+%\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+%\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
+%\titleformat{\section}[block]{\large\scshape}{\thesection.}{1em}{} % Change the look of the section titles
+%\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the subsection titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+\fancyhead[C]{M.F. Verkleij, T. Kerkhoven: \shorttitle} % Custom header text
+\fancyfoot[RO,LE]{\thepage} % Custom footer text
+
+% Appendices
+\usepackage[toc,page]{appendix} % appendix
+
+% Additional column type
+\usepackage{array}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% Indentation of list
+\usepackage{changepage}
+\newenvironment{mycompactdesc}{\begin{adjustwidth}{0.53cm}{}\begin{compactdesc}}{\end{compactdesc}\end{adjustwidth}}
+
+%------------------------------------------------
+%	TITLE SECTION
+%------------------------------------------------
+
+\newcommand{\articletitle}{Programming Paradigms Final Project: Test Report}
+\newcommand{\shorttitle}{Test Report}
+
+\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{\articletitle}} % Article title
+
+\author{
+\large
+\textsc{Group 26}\\[-0.75mm]
+\textsc{Martijn Verkleij \& Tim Kerkhoven}\\[2mm] % Your name
+\normalsize University of Twente \\ % Your institution
+\normalsize \href{mailto:m.f.verkleij@student.utwente.nl}{m.f.verkleij@student.utwente.nl},
+\href{mailto:t.kerkhoven@student.utwente.nl}{t.kerkhoven@student.utwente.nl}\\% Your email addresses
+\normalsize s1466895 s1375253
+}
+
+\date{\today}
+
+%------------------------------------------------
+
+\begin{document}
+
+\thispagestyle{empty}
+\maketitle % Insert title
+
+
+%------------------------------------------------
+%	ARTICLE CONTENTS
+%------------------------------------------------
+
+%------------------------------------------------
+\tableofcontents
+
+
+%------------------------------------------------
+\chapter{Syntax Tests}
+
+\chapter{Contextual Tests}
+
+\chapter{Semantic Tests}
+
+\section{Banking}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/banking.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/banking_gen.txt}
+\subsection{Results}
+
+\section{Blocks}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/blocks.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/blocks_gen.txt}
+\subsection{Results}
+
+\section{Call-by-reference}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/call_by_reference.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/call_by_reference_gen.txt}
+\subsection{Results}
+
+\end{document}
