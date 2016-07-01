@@ -40,11 +40,11 @@ testSingle =    [ "cyclic_recursion"    -- Run this one with more local memory
                 ]
 
 testMulti :: [(String, Int)]
-testMulti =     [ ("banking", 4)
+testMulti =     [ ("banking", 3)
                 , ("peterson", 3)
                 , ("simple_concurrency", 3)
                 , ("multiple_globals", 3)
-                , ("join_test", 2)
+                , ("join_test", 2)          -- Main thread must run forever
                 , ("call_by_reference", 2)
                 ]
 
