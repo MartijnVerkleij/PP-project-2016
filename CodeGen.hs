@@ -41,7 +41,7 @@ codeGen (ASTProgram asts
                 , Receive (regE)
                 , Branch regE (Rel 2)
                 , Jump (Rel (-3))
-                , Load (ImmValue 1) regARP
+                , Load (ImmValue 0) regARP
                 , Jump (Rel begin_of_code)
                 
                 , ReadInstr (DirAddr fork_record_endp)
@@ -195,7 +195,8 @@ codeGen (ASTProc pName astArgs astStat
             , Compute Incr regA reg0 regA       -- Move argrec pointer to global addr
             , Load (IndAddr regA) regB          -- Load global addr record
             , Compute Lt regB reg0 regE         -- global addr is a valid address
-            , Branch regE (Rel 9)               -- 
+            , Branch regE (Rel 10)              -- 
+            
             , Compute Add regB reg0 regE        -- Load memory address of global's lock
             , TestAndSet (IndAddr regE)         -- Lock on ready bit
             , Receive regE                      --
@@ -207,6 +208,7 @@ codeGen (ASTProc pName astArgs astStat
             , ComputeI Sub regB global_record_value regB
                                                 -- Load memory address of global value
             , WriteInstr reg0 (IndAddr regB)    -- Unlock value
+            
             , Compute Incr regD reg0 regD       -- increment arg counter
             , ComputeI Add regA 2 regA          -- Jump over to next arg's local addr
             , Jump (Rel (-23))                  -- Back to condition
@@ -256,7 +258,7 @@ codeGen (ASTIf astExpr astThen Nothing
         =   (codeGen astExpr threads) ++
             [ Pop regE
             , ComputeI Xor regE 1 regE
-            , Branch regE (Rel (lengthNoDebug thenGen))] ++
+            , Branch regE (Rel (lengthNoDebug thenGen + 1))] ++
             thenGen
                 where thenGen = codeGen astThen threads
 codeGen (ASTIf astExpr astThen (Just astElse) 
@@ -289,7 +291,7 @@ codeGen (ASTFork pName astArgs -- TODO: Add code to insert global and local vari
             , Branch regE (Rel 2)           -- successful lock -> +2
             , Jump (Rel (-3))               -- otherwise try again
             ] ++ (concat $ reverse $ map (\x -> codeGen x threads) $ astArgs) ++
-            [ Load (ImmValue fork_record_args) regC
+            [ Load (ImmValue (fork_record_args)) regC
             ]
             ++ (forkArgRecords astArgs variables globals threads) ++
             [ Load (ImmValue (length astArgs)) regD
