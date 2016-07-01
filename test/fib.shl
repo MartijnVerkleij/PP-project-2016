@@ -1,7 +1,4 @@
 procedure fib(int i, int res) {
-    print(i);
-    
-    
     if ((i < (3))) {
         res = 1;
     } else {
@@ -15,5 +12,5 @@ procedure fib(int i, int res) {
 }
 
 int a = 0;
-fib(6, a);
+fib(8, a);
 print(a);

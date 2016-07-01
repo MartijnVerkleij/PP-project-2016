@@ -17,4 +17,3 @@ procedure printAllBW() {
 fork printAll();
 fork printAllBW();
 join;
-

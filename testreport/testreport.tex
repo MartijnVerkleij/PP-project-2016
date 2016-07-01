@@ -95,6 +95,46 @@
 %------------------------------------------------
 \chapter{Syntax Tests}
 
+\section{Syntax 1}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/syntax1.shl}
+\subsection{Output}
+\begin{minted}[tabsize=4,linenos]{text}
+Main: tokenList not fully parsed
+\end{minted}
+
+\section{Syntax 2}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/syntax2.shl}
+\subsection{Output}
+\begin{minted}[tabsize=4,linenos]{text}
+Main: tokenList not fully parsed
+\end{minted}
+
+\section{Syntax 3}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/syntax3.shl}
+\subsection{Output}
+\begin{minted}[tabsize=4,linenos]{text}
+Main: tokenList not fully parsed
+\end{minted}
+
+\section{Syntax 4}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/syntax4.shl}
+\subsection{Output}
+\begin{minted}[tabsize=4,linenos]{text}
+Main: tokenList not fully parsed
+\end{minted}
+
+\section{Syntax 5}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/syntax5.shl}
+\subsection{Output}
+\begin{minted}[tabsize=4,linenos]{text}
+Main: tokenList not fully parsed
+\end{minted}
+
 \chapter{Contextual Tests}
 
 \chapter{Semantic Tests}
@@ -105,6 +145,29 @@
 \subsection{Generated SprIL}
 \inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/banking_gen.txt}
 \subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 10000
+>>> 2000
+>>> 99999
+>>> 10100
+>>> 2100
+>>> 100000
+>>> 9900
+>>> 2300
+>>> 102000
+>>> 9880
+>>> 2290
+>>> 102100
+>>> 9880
+>>> 1990
+>>> 102050
+>>> 10880
+>>> 1955
+>>> 101050
+>>> 10880
+>>> 2055
+>>> 100950
+\end{minted}
 
 \section{Blocks}
 \subsection{Source}
@@ -112,6 +175,72 @@
 \subsection{Generated SprIL}
 \inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/blocks_gen.txt}
 \subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 1
+>>> 100
+>>> 0
+>>> 0
+>>> 2
+>>> 120
+>>> 1
+>>> 0
+>>> 3
+>>> 123
+>>> 0
+>>> 1
+>>> 4
+>>> 423
+>>> 1
+>>> 1
+>>> 3
+>>> 123
+>>> 0
+>>> 1
+>>> 5
+>>> 453
+>>> 1
+>>> 0
+>>> 5
+>>> 453
+>>> 0
+>>> 1
+>>> 5
+>>> 453
+>>> 1
+>>> 0
+>>> 6
+>>> 456
+>>> 0
+>>> 0
+>>> 5
+>>> 453
+>>> 1
+>>> 0
+>>> 3
+>>> 123
+>>> 0
+>>> 1
+>>> 2
+>>> 120
+>>> 1
+>>> 0
+>>> 2
+>>> 120
+>>> 1
+>>> 0
+>>> 2
+>>> 120
+>>> 1
+>>> 0
+>>> 2
+>>> 120
+>>> 1
+>>> 0
+>>> 1
+>>> 100
+>>> 0
+>>> 0
+\end{minted}
 
 \section{Call-by-reference}
 \subsection{Source}
@@ -119,6 +248,10 @@
 \subsection{Generated SprIL}
 \inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/call_by_reference_gen.txt}
 \subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 42
+>>> 1337
+\end{minted}
 
 \section{Cyclic Recursion}
 \subsection{Source}
@@ -126,5 +259,411 @@
 \subsection{Generated SprIL}
 \inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/cyclic_recursion_gen.txt}
 \subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 17
+>>> 16
+>>> 15
+>>> 14
+>>> 13
+>>> 12
+>>> 11
+>>> 10
+>>> 9
+>>> 8
+>>> 7
+>>> 6
+>>> 5
+>>> 4
+>>> 3
+>>> 2
+>>> 1
+>>> 0
+>>> 0
+\end{minted}
+
+\section{Deep Expression}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/deep_expression.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/deep_expression_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 5024000
+\end{minted}
+
+\section{Fib}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/fib.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/fib_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 21
+\end{minted}
+
+\section{If}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/if.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/if_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 1
+\end{minted}
+
+\section{If Else}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/ifelse.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/ifelse_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 4
+>>> 5
+>>> 4
+>>> 3
+>>> 4
+\end{minted}
+
+\section{Infinite Busy Loop}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/infinite_busy_loop.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/infinite_busy_loop_gen.txt}
+\subsection{Results}
+Gets stuck in an infinite loop, repeating the same output.
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 1
+>>> 1
+>>> 2
+>>> 2
+>>> 4
+>>> 8
+>>> 12
+>>> 96
+>>> 108
+>>> 10368
+>>> 10476
+>>> 108615168
+>>> 108625644
+>>> 11798392572168192
+>>> 11798392680793836
+>>> -5570361874949185536
+>>> -5558563482268391700
+>>> 3671369242980155392
+>>> -1887194239288236308
+>>> -4483044364780175360
+>>> -6370238604068411668
+>>> -8730959061097906176
+>>> 3345546408543233772
+>>> -6745737849034768384
+>>> -3400191440491534612
+>>> -6096120617457680384
+>>> 8950432015760336620
+>>> -1019520187243692032
+>>> 7930911828516644588
+>>> -4809903748681826304
+>>> 3121008079834818284
+>>> 5865085819223539712
+>>> 8986093899058357996
+>>> 2740241432517279744
+>>> -6720408742133913876
+>>> 3246081813541552128
+>>> -3474326928592361748
+>>> -1859074291971129344
+>>> -5333401220563491092
+>>> 681350175863603200
+>>> -4652051044699887892
+>>> -8143132099134619648
+>>> 5651560929875044076
+>>> 6951259845357993984
+>>> -5843923298476513556
+>>> 4700992750881865728
+>>> -1142930547594647828
+>>> -8561800288468467712
+>>> 8742013237646436076
+>>> 7566188111470788608
+>>> -2138542724592326932
+>>> -6956372574427152384
+>>> -9094915299019479316
+>>> -8878846665360932864
+>>> 472982109329139436
+>>> 1756403854674493440
+>>> 2229385964003632876
+>>> -5152117973711847424
+>>> -2922732009708214548
+>>> 1585267068834414592
+>>> -1337464940873799956
+>>> 5188146770730811392
+>>> 3850681829857011436
+>>> 6917529027641081856
+>>> -7678533216211458324
+>>> -9223372036854775808
+>>> 1544838820643317484
+>>> 0
+>>> 1544838820643317484
+>>> 0
+>>> 1544838820643317484
+>>> 0
+>>> 1544838820643317484
+>>> 0
+\ldots
+\end{minted}
+
+
+\section{Infinite Empty Loop}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/infinite_loop.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/infinite_loop_gen.txt}
+\subsection{Results}
+No output, gets stuck in an infinite loop.
+
+\section{Join Test}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/join_test.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/join_test_gen.txt}
+\subsection{Results}
+No output, gets stuck in an infinite loop.
+
+\section{Multiple Globals}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/multiple_globals.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/multiple_globals_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 8
+>>> 9
+>>> 10
+>>> 11
+>>> 12
+>>> 13
+>>> 13
+>>> 12
+>>> 11
+>>> 10
+>>> 9
+>>> 8
+\end{minted}
+
+\section{Nested Procedures}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/nested_procedures.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/nested_procedures_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 90
+>>> 10
+>>> 20
+>>> 30
+>>> 40
+>>> 34
+>>> 23
+>>> 40
+>>> 24
+>>> 12
+>>> 30
+>>> 40
+>>> 34
+>>> 13
+>>> 40
+>>> 14
+>>> 91
+>>> 20
+>>> 30
+>>> 40
+>>> 34
+>>> 23
+>>> 40
+>>> 24
+>>> 92
+>>> 30
+>>> 40
+>>> 34
+>>> 93
+>>> 40
+>>> 94
+\end{minted}
+
+\section{Peterson}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/peterson.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/peterson_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+>>> 0
+\end{minted}
+
+\section{Recursion}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/recursion.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/recursion_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 0
+>>> 1
+>>> 2
+>>> 3
+\end{minted}
+
+\section{Simple Concurrency}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/simple_concurrency.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/simple_concurrency_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 4
+>>> 6
+>>> 6
+\end{minted}
+
+\section{Simple Procedures}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/simple_proc.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/simple_proc_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 2
+>>> 4
+>>> 0
+>>> 2
+\end{minted}
+
+\section{While}
+\subsection{Source}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/while.shl}
+\subsection{Generated SprIL}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/while_gen.txt}
+\subsection{Results}
+\begin{minted}[tabsize=4,linenos]{text}
+>>> 100
+>>> 99
+>>> 98
+>>> 97
+>>> 96
+>>> 95
+>>> 94
+>>> 93
+>>> 92
+>>> 91
+>>> 90
+>>> 89
+>>> 88
+>>> 87
+>>> 86
+>>> 85
+>>> 84
+>>> 83
+>>> 82
+>>> 81
+>>> 80
+>>> 79
+>>> 78
+>>> 77
+>>> 76
+>>> 75
+>>> 74
+>>> 73
+>>> 72
+>>> 71
+>>> 70
+>>> 69
+>>> 68
+>>> 67
+>>> 66
+>>> 65
+>>> 64
+>>> 63
+>>> 62
+>>> 61
+>>> 60
+>>> 59
+>>> 58
+>>> 57
+>>> 56
+>>> 55
+>>> 54
+>>> 53
+>>> 52
+>>> 51
+>>> 50
+>>> 49
+>>> 48
+>>> 47
+>>> 46
+>>> 45
+>>> 44
+>>> 43
+>>> 42
+>>> 41
+>>> 40
+>>> 39
+>>> 38
+>>> 37
+>>> 36
+>>> 35
+>>> 34
+>>> 33
+>>> 32
+>>> 31
+>>> 30
+>>> 29
+>>> 28
+>>> 27
+>>> 26
+>>> 25
+>>> 24
+>>> 23
+>>> 22
+>>> 21
+>>> 20
+>>> 19
+>>> 18
+>>> 17
+>>> 16
+>>> 15
+>>> 14
+>>> 13
+>>> 12
+>>> 11
+>>> 10
+>>> 9
+>>> 8
+>>> 7
+>>> 6
+>>> 5
+>>> 4
+>>> 3
+>>> 2
+>>> 1
+>>> 0
+\end{minted}
+
 
 \end{document}

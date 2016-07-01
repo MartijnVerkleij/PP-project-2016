@@ -8,3 +8,4 @@ procedure neverending(bool j) {
 
 fork neverending(forever);
 join;
+print(1);
