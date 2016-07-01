@@ -154,7 +154,7 @@ codeGen (ASTGlobal varType astVar Nothing
                 addr = fork_record_size + threads 
                     + (global_record_size * (globalIndex (getStr astVar) globals))
             
--- Same as function above, this pattern has the initial expression
+-- Same as function above, except that now an expression can be assigned to the variable.
 codeGen (ASTGlobal varType astVar (Just astExpr) 
     checkType@(functions, globals, variables)) threads
         =   (codeGen astExpr threads) ++
@@ -172,6 +172,9 @@ codeGen (ASTGlobal varType astVar (Just astExpr)
             where
                 addr = fork_record_size + threads 
                     + (global_record_size * (globalIndex (getStr astVar) globals))
+                    
+                    
+-- Procedure node. Emits post-call and pre-return code that passes through variables.
 codeGen (ASTProc pName astArgs astStat 
     checkType@(functions, globals, variables)) threads
         =   [ Debug ("**p" ++ pName) ] 
@@ -265,16 +268,18 @@ codeGen (ASTBlock astStats
             [ Load (IndAddr regARP) regARP      -- Exit scope by assigning parent's ARP
             ]
             
--- Declares a variable in the current scope. A free memory address has been 
+-- Declares a variable in the current scope. A free memory address has been created
+-- by the block this variable belongs to, where the value is saved.
 codeGen (ASTDecl vartype astVar@(ASTVar _ _) Nothing 
     checkType@(functions, globals, variables)) threads
-        = (getMemAddr varNameStr variables) ++  -- 
+        = (getMemAddr varNameStr variables) ++  -- Initialises with 0
             [ Store reg0 (IndAddr regE) ]
                 where 
                     varNameStr = getStr astVar
 codeGen (ASTDecl vartype astVar Nothing 
     checkType@(functions, globals, variables)) threads
-        = codeGen astVar threads
+        = codeGen astVar threads                -- Passed on to AST below, which
+                                                -- is a primitive data type
 codeGen (ASTDecl vartype astVar (Just astExpr) 
     checkType@(functions, globals, variables)) threads
         =   (codeGen astExpr threads) ++
@@ -283,6 +288,9 @@ codeGen (ASTDecl vartype astVar (Just astExpr)
             , Store regD (IndAddr regE) ]
                 where 
                     varNameStr = getStr astVar
+                    
+                    
+-- Starts an if-statement. 
 codeGen (ASTIf astExpr astThen Nothing
     checkType@(functions, globals, variables)) threads
         =   (codeGen astExpr threads) ++

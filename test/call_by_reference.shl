@@ -1,5 +1,5 @@
-global int var = 100;
-global int y = 0;
+global int var = 1337;
+global int y = 42;
 
 procedure write(int input, int output) {
 	output = input;

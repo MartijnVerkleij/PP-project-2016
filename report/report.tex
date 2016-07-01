@@ -1,4 +1,4 @@
-%------------------------------------------------
+>>>%------------------------------------------------
 %	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
 %------------------------------------------------
 
@@ -131,12 +131,21 @@ This chapter will give a summary of the features of SHL.
 %------------------------------------------------
 \chapter{Problems \& Solutions}
 \label{problems_and_solutions}
-%TODO somewhere at the end
+This chapter is a short discussion of some of the problems encountered during the project and their solutions.
 
-- Something about concurrency\\
-- Something about call-by-reference\\
+\section{Changing the Types}
+During the process of building the type checker and code generation, which was done in parallel, at certain times a change to the AST or Grammar was required. This resulted in a lot of trying to find every instance which had to be changed, and finding unused code during the final day of the project.
+
+\section{Time}
+If only the schedule made at the beginning of every project works out and no unexpected problems arise, this would not be a problem. Reality, unfortunately, has not been that kind. Many unscheduled delays and problems arose to delay the schedule more than expected. The solution for this is working evenings and parts of the night on the final days.
+
+
+- Something about concurrency
+
+- Something about call-by-reference
+
 - Something about other stuff
-
+%TODO somewhere at the end
 
 %------------------------------------------------
 \chapter{Detailed Language Description}
@@ -184,21 +193,6 @@ A program is a collection of code which can be used to create an executable set 
 \subsubsection*{Code Generation}
 %TODO Martijn
 
-Any program is generally built up as follows:
-\begin{compactitem}
-	\item \textbf{Thread control code}
-	\begin{compactitem}
-		\item \textbf{Thread Control Loop} \\ All extra threads loop here, waiting to accept fork calls.
-		\item \textbf{PreCall forked procedures} \\ Once a sprockell accepts a fork call, it reads the AR from global memory, and starts execution.
-		\item \textbf{PostCall forked procedures} \\ Once an auxilary sprockell finishes the procedure, this code handles cleanup.
-	\end{compactitem}
-	\item \textbf{Procedures \ref{def:procedure}}
-	\item \textbf{Global declarations \ref{def:global}}
-	\item \textbf{Main code}
-	
-	\item \textbf{Post-program code} \\ Stops auxilary threads.
-\end{compactitem}
-
 
 \subsection{Global}
 \label{def:global}
@@ -217,19 +211,13 @@ global int number;
 \subsubsection*{Usage}
 Used to declare global variables and an optional assignment.  The type of the expression must match the type of the global variable.
 
-All global variables MUST be defined at the top of the program, even before procedures.
-
-The id of a global variable is unique in the whole program. No other variable of procedure may use the same id. They can therefore not be shadowed.
+The id of a global variable is unique in the whole program. No other variable of procedure may use the same id.
 \subsubsection*{Semantics}
 The global variable declaration reserves a space in shared memory and writes a value to it. All global variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
 
 Global variables are reachable from anywhere below its declaration in the code, in any thread. Beware, however, that the variable can be written to from any thread as well, and using the shared memory is significantly slower than using the local memory.
-
-Globals that are passed as arguments to a procedure have their own intricacies, see \ref{def:call-by-refence} for more information.
-
 \subsubsection*{Code Generation}
 %TODO Martijn
-All globals are saved in global memory. Writes and reads to globals are done atomically, but assignments are not. This avoids data races, but to ensure atomicity on the whole assignment, one must implement his own mutual exclusion.
 
 
 \subsection{Procedure}
@@ -258,15 +246,10 @@ Used to declare a procedure. Because call-by-reference (see \fullref{def:call-by
 
 The id of a procedure is unique in the whole program. No other variable of procedure may use the same id.
 \subsubsection*{Semantics}
-A procedure is section of code that can be executed from anywhere, using a call or fork statement (see \fullref{def:call} and \fullref{def:fork}) and passing the appropriate number of arguments to it.
+A procedure is section of code that can be executed from anywhere, using a call statement (see \fullref{def:call}) and passing it the appropriate number of arguments.
 \subsubsection*{Code Generation}
 %TODO Martijn
-Procedure code has the following structure:
-\begin{compactitem}
-	\item \textbf{PostCall code} \\ Copies all arguments into the local data area for use. 
-	\item \textbf{Procedure's statements}
-	\item \textbf{PreReturn code} \\ The final result of all arguments is read, and if they are global or local variables, saved to the appropriate location.
-\end{compactitem}
+
 
 \section{Statements}
 \label{def:statements}
@@ -290,8 +273,8 @@ bool flag;
 Used to declare local variables and an optional assignment. The type of the expression must match the type of the variable.
 
 The id of a variable is unique in the scope it is defined in. No other variable in that scope may use the same id.
-\subsubsection*{Semantics} %TODO Martijn, check this -- Done!
-The variable declaration writes the value of the variable to the Local Data Area of where it was (most recently) defined. All variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
+\subsubsection*{Semantics} %TODO Martijn, check this
+The variable declaration writes the value of the variable to the Activation Record of the current scope. All variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
 \subsubsection*{Code Generation}
 %TODO Martijn
 A declaration evaluates the expression behind it before assigning it to the variable. The variable's value is saved in the appropriate Local Data Area, by following the scopes upward until the right scope is reached, after which it is saved with an offset.
@@ -802,9 +785,19 @@ To run a test, simply follow the \texttt{README.md}, using the following path: \
 \chapter{Extended Test Program}
 %TODO
 \label{extended_test_program}
+<<<<<<< HEAD
 \section{Listing of test program}
 \section{generated target code of test program}
 \section{one or more example executions showing correct functioning of the generated code}
+=======
+The extended test program shown here is Peterson's algorithm. It shows how, using the available methods for concurrency, two thread using the same variable have mutually exclusive access to it.
+
+\section{Peterson's Algorithm Test}
+\inputminted[tabsize=4,linenos,firstnumber=1]{text}{../test/peterson.shl}
+
+\section{Generated Code}
+\inputminted[tabsize=4,linenos,firstnumber=0]{text}{../test/peterson_gen.txt}
+>>>>>>> 70527c848e9e50d8002e5b6ed2cf71c3c1599ec2
 
 
 
