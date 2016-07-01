@@ -284,32 +284,43 @@ codeGen (ASTDecl vartype astVar (Just astExpr)
     checkType@(functions, globals, variables)) threads
         =   (codeGen astExpr threads) ++        -- Evaluate expression
             (getMemAddr varNameStr variables) ++
-            [ Pop regD
-            , Store regD (IndAddr regE) ]
+            [ Pop regD                          -- pop result
+            , Store regD (IndAddr regE) ]       -- Initialises variable with result
                 where 
                     varNameStr = getStr astVar
                     
                     
--- Starts an if-statement. 
+-- Starts an if-statement. Evaluates the expression, which decides which of the 
+-- two blocks to execute (then- or else-block). If no second block exists, false
+-- results in the if block will be skipped.
 codeGen (ASTIf astExpr astThen Nothing
     checkType@(functions, globals, variables)) threads
-        =   (codeGen astExpr threads) ++
+        =   (codeGen astExpr threads) ++        -- Evaluate expression
             [ Pop regE
-            , ComputeI Xor regE 1 regE
-            , Branch regE (Rel (lengthNoDebug thenGen + 1))] ++
-            thenGen
+            , ComputeI Xor regE 1 regE          -- Invert value of expression to 
+                                                -- fit with branch bahaviour
+            , Branch regE (Rel (lengthNoDebug thenGen + 1))
+            ] 
+            ++ thenGen                          -- Content code
                 where thenGen = codeGen astThen threads
 codeGen (ASTIf astExpr astThen (Just astElse) 
     checkType@(functions, globals, variables)) threads
-        =   (codeGen astExpr threads) ++
+        =   (codeGen astExpr threads) ++        -- Evaluate expression
             [ Pop regE
-            , ComputeI Xor regE 1 regE
-            , Branch regE (Rel (lengthNoDebug thenGen + 2))] ++
-            thenGen
-            ++ [ Jump (Rel ((lengthNoDebug elseGen) + 1))]
-            ++ elseGen
+            , ComputeI Xor regE 1 regE          -- Invert value of expression to 
+                                                -- fit with branch bahaviour
+            , Branch regE (Rel (lengthNoDebug thenGen + 2))
+            ] 
+            ++ thenGen                          -- Content behind If
+            ++ [ Jump (Rel ((lengthNoDebug elseGen) + 1))] -- Jump over else
+            ++ elseGen                          -- Contant behind else
                 where   thenGen = codeGen astThen threads
                         elseGen = codeGen astElse threads
+                        
+                        
+-- While code. As long as the expression is true, the code in the following block
+-- will be executed. The expression is re-evaluated after each execution of the
+-- block.
 codeGen (ASTWhile astExpr astStat 
     checkType@(functions, globals, variables)) threads
         =   exprGen ++
@@ -321,7 +332,14 @@ codeGen (ASTWhile astExpr astStat
                 where 
                     exprGen = codeGen astExpr threads
                     bodyGen = codeGen astStat threads
-codeGen (ASTFork pName astArgs -- TODO: Add code to insert global and local variables to write to
+                    
+                    
+-- Fork works like a normal call, except that it will be executed on a different
+-- sprockell. Therefore its local arguments are passed on call-by-value. Any global
+-- variables that are passed as arguments are referenced, but will only be visible
+-- after the procedure behind the fork call finishes. This can be ensured with the
+-- join keyword.
+codeGen (ASTFork pName astArgs
     checkType@(functions, globals, variables)) threads
         =   
             [ TestAndSet (DirAddr fork_record_wr)     -- Grab wr lock
@@ -329,7 +347,9 @@ codeGen (ASTFork pName astArgs -- TODO: Add code to insert global and local vari
             , Branch regE (Rel 2)           -- successful lock -> +2
             , Jump (Rel (-3))               -- otherwise try again
             ] ++ (concat $ reverse $ map (\x -> codeGen x threads) $ astArgs) ++
+                                            -- evaluate arguments to stack
             [ Load (ImmValue (fork_record_args)) regC
+                                            -- prepare record for emission
             ]
             ++ (forkArgRecords astArgs variables globals threads) ++
             [ Load (ImmValue (length astArgs)) regD
@@ -347,6 +367,54 @@ codeGen (ASTFork pName astArgs -- TODO: Add code to insert global and local vari
             , Branch regE (Rel 2)           -- if zero: continue;
             , Jump (Rel (-3))               -- otherwise wait for thread to start our fork instance
             ]
+            
+        where
+            forkArgRecords :: [AST] -> [[VariableType]] -> [VariableType] -> Int -> [Instruction]
+            forkArgRecords [] _ _ _ = []
+            forkArgRecords (x@(ASTVar name _) : xs) variables globals threads =
+                [ Pop regB                      -- Store value
+                , WriteInstr regB (IndAddr regC)
+                , Compute Incr regC reg0 regC   
+                ] 
+                ++ emitLocalArg coords ++ 
+                [ Compute Incr regC reg0 regC 
+                , Load (ImmValue (gIndex)) regB
+                , WriteInstr regB (IndAddr regC)     -- Store global memory pointer in local 
+                                                -- memory (if argument has one...)
+                , Compute Incr regC reg0 regC
+                ]
+                ++ forkArgRecords xs variables globals threads
+                where
+                    gIndex  | globalIndex name globals >= 0 =
+                         fork_record_size + threads + (global_record_size * (globalIndex name globals))
+                            | otherwise = (-1)
+                    coords = findVar (0,0) name variables
+                    
+                    emitLocalArg (-1,-1) = 
+                        [ Load (ImmValue (-1)) regB 
+                        , WriteInstr regB (IndAddr regC) 
+                        ]
+                    emitLocalArg (x,y) = 
+                        [ Compute Add regARP reg0 regE] ++
+                        (replicate x (Load (IndAddr regE) regE) ++
+                        [ ComputeI Add regE (y + 1) regE
+                        , WriteInstr regE (IndAddr regC)
+                        ])
+            forkArgRecords (x : xs) variables globals threads =
+                [ Pop regB                      -- Store value
+                , WriteInstr regB (IndAddr regC)
+                , Compute Incr regC reg0 regC   
+                
+                , Load (ImmValue (-1)) regB
+                , WriteInstr regB (IndAddr regC)    -- Store -1 as global memory pointer
+                , Compute Incr regC reg0 regC
+                , Load (ImmValue (-1)) regB     -- Store -1 as local memory pointer
+                , WriteInstr regB (IndAddr regC)
+                , Compute Incr regC reg0 regC ]
+                ++ forkArgRecords xs variables globals threads
+
+-- Join statement, iterates over all thread's occupation bits and ensures that 
+-- they are all zero before continuing.
 codeGen (ASTJoin 
     checkType@(functions, globals, variables)) threads
         =   [ Compute Equal reg0 regSprID regE
@@ -366,6 +434,11 @@ codeGen (ASTJoin
             , Branch regE (Rel 2)
             , Jump (Rel (-10))
             ]
+            
+            
+-- Calls a procedure sequentially. Any separate variables that are given as an 
+-- argument are handled call-by-reference. Sets up the AR before jumping to the
+-- procedure.
 codeGen (ASTCall pName astArgs -- TODO: Rewrite stuff so it actally pushes the indexes we need
     checkType@(functions, globals, variables)) threads
         =   concat ( reverse $ map (\x -> codeGen x threads) astArgs ) ++
@@ -388,11 +461,15 @@ codeGen (ASTCall pName astArgs -- TODO: Rewrite stuff so it actally pushes the i
             , Debug ("**a" ++ pName)
             ]
             
+-- Naked expression as a statement. Executes the expression, and pops the value
+-- it produced as it is not needed anymore and would fill up the stack otherwise.
 codeGen (ASTExpr astExpr _ 
     checkType@(functions, globals, variables)) threads
         =   codeGen astExpr threads ++ 
             [ Pop reg0 ]
 
+-- Assignment. Local variables are stored in their declared AR's, global variables
+-- are written (but NOT assigned!) atomically.
 codeGen (ASTAss astVar astExpr _
     checkType@(functions, globals, variables)) threads
         | (findVar (0,0) (getStr astVar) variables) /= ((-1),(-1)) =
@@ -419,6 +496,10 @@ codeGen (ASTAss astVar astExpr _
                 gIndex = globalIndex name globals
                 addr = fork_record_size + threads 
                     + (global_record_size * (globalIndex (getStr astVar) globals))
+
+
+-- A naked variable, as used in expressions. Pushes its value to stack. Global
+-- variables are read atomically.
 codeGen (ASTVar varName 
     checkType@(functions, globals, variables)) threads
         | (findVar (0,0) varName variables) /= ((-1),(-1)) =
@@ -442,10 +523,16 @@ codeGen (ASTVar varName
             where
                 addr = fork_record_size + threads 
                     + (global_record_size * (globalIndex varName globals))
+                    
+                    
+-- Literal integer value, is pushed to the stack.
 codeGen (ASTInt value 
     checkType@(functions, globals, variables)) threads
         =   [ Load (ImmValue (read value :: Int)) regE  -- Load the integer value read from String
             , Push regE ]                       -- Push to stack
+
+
+-- Literal boolean value, is pushed to the stack.
 codeGen (ASTBool value 
     checkType@(functions, globals, variables)) threads
         =   [ Load (ImmValue bool) regE         -- Load boolean value read from String
@@ -457,7 +544,11 @@ codeGen (ASTBool value
                         otherwise -> error "Parse error on boolean when emitting codegen (ASTBool _ _ _)"
 codeGen (ASTType typeStr 
     checkType@(functions, globals, variables)) threads
-        = [Nop] -- Intentionally left blank
+        = [Nop] -- Intentionally left blank; never called.
+
+
+-- Binary operation. Evaluates both expressions in order, calculates the result 
+-- and pushes its result to the stack.
 codeGen (ASTOp astL op astR _
     checkType@(functions, globals, variables)) threads
         =   (codeGen astL threads) ++ 
@@ -483,6 +574,10 @@ codeGen (ASTOp astL op astR _
                         ">"     -> Gt
                         ">>"    -> RShift
                         "<<"    -> LShift
+
+
+-- Unary Operator. Evaluates the expression, calculates the result and pushes 
+-- the result to the stack.
 codeGen (ASTUnary op astV _
     checkType@(functions, globals, variables)) threads
         | op == "!" = 
@@ -511,6 +606,9 @@ codeGen (ASTUnary op astV _
             , Push regC                     -- push result to stack
             ]
 
+-- Print statement. Prints its arguments in order, one argument per line. Uses the
+-- self-defined non-standard SprIL instruction PrintOut, that uses trace to print
+-- the value to stdout.
 codeGen (ASTPrint astExprs 
     checkType@(functions, globals, variables)) threads
     =   (concat $ map (\x -> codeGen x threads) $reverse astExprs) ++ 
@@ -660,49 +758,7 @@ emitArgRecords (x : xs) variables globals threads =
     , Compute Incr regC reg0 regC ]
     ++ emitArgRecords xs variables globals threads
         
-forkArgRecords :: [AST] -> [[VariableType]] -> [VariableType] -> Int -> [Instruction]
-forkArgRecords [] _ _ _ = []
-forkArgRecords (x@(ASTVar name _) : xs) variables globals threads =
-    [ Pop regB                      -- Store value
-    , WriteInstr regB (IndAddr regC)
-    , Compute Incr regC reg0 regC   
-    ] 
-    ++ emitLocalArg coords ++ 
-    [ Compute Incr regC reg0 regC 
-    , Load (ImmValue (gIndex)) regB
-    , WriteInstr regB (IndAddr regC)     -- Store global memory pointer in local 
-                                    -- memory (if argument has one...)
-    , Compute Incr regC reg0 regC
-    ]
-    ++ forkArgRecords xs variables globals threads
-    where
-        gIndex  | globalIndex name globals >= 0 =
-             fork_record_size + threads + (global_record_size * (globalIndex name globals))
-                | otherwise = (-1)
-        coords = findVar (0,0) name variables
-        
-        emitLocalArg (-1,-1) = 
-            [ Load (ImmValue (-1)) regB 
-            , WriteInstr regB (IndAddr regC) 
-            ]
-        emitLocalArg (x,y) = 
-            [ Compute Add regARP reg0 regE] ++
-            (replicate x (Load (IndAddr regE) regE) ++
-            [ ComputeI Add regE (y + 1) regE
-            , WriteInstr regE (IndAddr regC)
-            ])
-forkArgRecords (x : xs) variables globals threads =
-    [ Pop regB                      -- Store value
-    , WriteInstr regB (IndAddr regC)
-    , Compute Incr regC reg0 regC   
-    
-    , Load (ImmValue (-1)) regB
-    , WriteInstr regB (IndAddr regC)     -- Store -1 as global memory pointer
-    , Compute Incr regC reg0 regC
-    , Load (ImmValue (-1)) regB     -- Store -1 as local memory pointer
-    , WriteInstr regB (IndAddr regC)
-    , Compute Incr regC reg0 regC ]
-    ++ forkArgRecords xs variables globals threads
+
         
 
 
