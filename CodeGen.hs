@@ -47,7 +47,7 @@ codeGen (ASTProgram asts
             ]
         where
             threadControl = 
-                [ Branch regSprID (Rel 7)       -- SprID > 0 --> thread control loop
+                [ Branch regSprID (Rel 6)       -- SprID > 0 --> thread control loop
                 , TestAndSet (DirAddr (fork_record_rd))
                                                 -- Set rd value to default state
                 , Receive (regE)                --
@@ -272,8 +272,8 @@ codeGen (ASTBlock astStats
 -- by the block this variable belongs to, where the value is saved.
 codeGen (ASTDecl vartype astVar@(ASTVar _ _) Nothing 
     checkType@(functions, globals, variables)) threads
-        = (getMemAddr varNameStr variables) ++  -- Initialises with 0
-            [ Store reg0 (IndAddr regE) ]
+        = (getMemAddr varNameStr variables) ++  -- 
+            [ Store reg0 (IndAddr regE) ]       -- Initialises with 0
                 where 
                     varNameStr = getStr astVar
 codeGen (ASTDecl vartype astVar Nothing 
@@ -282,7 +282,7 @@ codeGen (ASTDecl vartype astVar Nothing
                                                 -- is a primitive data type
 codeGen (ASTDecl vartype astVar (Just astExpr) 
     checkType@(functions, globals, variables)) threads
-        =   (codeGen astExpr threads) ++
+        =   (codeGen astExpr threads) ++        -- Evaluate expression
             (getMemAddr varNameStr variables) ++
             [ Pop regD
             , Store regD (IndAddr regE) ]
