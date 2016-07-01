@@ -330,7 +330,6 @@ Execute a section of code based on an expression. The type of this expression mu
 \subsubsection*{Semantics}
 If the expression evaluates to \emph{true}, execute the first statement. If it evaluates to \emph{false}, execute the code after the first statement, which can be either the second statement or the code that comes after the if statement.
 \subsubsection*{Code Generation}
-%TODO Martijn
 First the expression will be evaluated, after which a branch jumps to the else block upon a false result, or to the next expression if no else block is present. After the if-block, a jump to after the else block is placed when an else block is present.
 
 \subsection{While}
@@ -503,7 +502,7 @@ Prints values of evaluated expressions to the console.
 \subsubsection*{Semantics}
 Evaluates the expressions and prints the values as they appear in memory, meaning a boolean is represented as either a zero (\emph{false}) or a one (\emph{true}).
 \subsubsection*{Code Generation}
-As SprIL does not have a print instruction, a new one was created and added to the Sprockell source code. See also chapter \ref{sprockell_extensions}.
+As SprIL does not have a print instruction, a new one was created and added to the Sprockell source code. See also chapter \ref{sprockell_extensions}. This statement simply evaluates all expressions in its arguments and prints them one per line.
 
 
 \section{Expressions}
@@ -526,7 +525,7 @@ Parentheses are used to enforce which operator is used (see the example above). 
 \subsubsection*{Semantics}
 Everything between the parentheses is evaluated and the value is returned as the result of this expression.
 \subsubsection*{Code Generation}
-%TODO Martijn
+Required around any binary expression and optional around unary expressions to, as in the example, differentiate between the negation and decrement operator. The result of the inner expression is pushed to stack.
 
 
 \subsection{Assignment}
@@ -548,7 +547,7 @@ The type of the expression must match the type of the variable.
 \subsubsection*{Semantics}
 Assignment evaluates the expression and writes it to the address of the variable.
 \subsubsection*{Code Generation}
-%TODO Martijn
+First, the expression will be evaluated. The result is assigned to the variable, may it be in local or global memory. These are resolved by AR traversal and lookup in a static table respectively. The result is pushed to stack.
 
 
 \subsection{Variable}
@@ -568,7 +567,7 @@ A variable must be declared (see \fullref{def:declaration}) before use. It has a
 \subsubsection*{Semantics}
 Evaluation of a variable returns its value.
 \subsubsection*{Code Generation}
-%TODO Martijn
+The variable's value is looked up in the AR stack or loaded from global memory and pushed to stack.
 
 
 \subsection{Integer}
@@ -589,7 +588,7 @@ Takes the value of the integer, removes leading zeros.
 \subsubsection*{Semantics}
 Upon evaluation it returns its integer value.
 \subsubsection*{Code Generation}
-%TODO Martijn
+Its value is pushed to stack.
 
 
 \subsection{Boolean}
@@ -609,7 +608,7 @@ Takes the value of the boolean (either one or zero) and returns it.
 \subsubsection*{Semantics}
 Upon evaluation, return the corresponding binary representation of the boolean, where \emph{false} equals zero and \emph{true} equals one.
 \subsubsection*{Code Generation}
-%TODO Martijn
+Its value is pushed to stack.
 
 
 \subsection{Operation}
@@ -630,7 +629,7 @@ Apply operator on two expressions. Both expressions must be of the same type, wh
 \subsubsection*{Semantics}
 After both expressions have been evaluated, the operation is evaluated and its result will be returned.
 \subsubsection*{Code Generation}
-%TODO Martijn
+It's left- and right hand side are evaluated, and its results are used as arguments to the operation. The result of the operation is pushed to stack.
 
 
 \subsection{Unary Operation}
@@ -651,7 +650,7 @@ Apply operator on the expression. The expression type must match one of the type
 \subsubsection*{Semantics}
 After the expression has been evaluated, the operation is evaluated and its result will be returned.
 \subsubsection*{Code Generation}
-%TODO Martijn
+It's right hand side is evaluated, fed to the operator and its result is pushed to stack.
 
 
 \section{Other Features}
@@ -698,19 +697,27 @@ Beware that using decrement and increment on a variable does not assign the new 
 
 \subsection{Call-by-reference}
 \label{def:call-by-refence}
-%TODO Martijn
+SHL uses call-by-reference on calls to procedures. This is almost essential to make procedures useful, as the only other option to communicate values between a procedure and its caller would be through global memory. 
+
+It is implemented by passing an optional return address in shared and local memory to write the result back to after the procedure is complete. In theory an argument could be written to both at the same time, as a memory slot is used for each (and makes them distinguishable). These are used to write the results back to their memory locations before returning to the caller.
+
+
+To make use of it, pass any variable as a naked argument to a call to any procedure in the program. Expressions like \texttt{(i+3)} or \texttt{i = 12} do NOT work, as the argument will only be seen as an expression and will therefore not have a memory location associated with it. Keep in mind that any global variables passed as an argument will be written to global memory upon completion of the procedure. This does not influence any assignment inside the procedure, these are still done as they are evaluated.
 
 
 \subsection{Error Handling}
 \label{def:error_handling}
-The SHL compiler does not support proper exception handling, but does throw errors of varying usefulness. During the tokenising phase, the only error thrown is an illegal character error.
+The SHL compiler does not support proper exception handling, but does throw errors of varying usefulness. During the tokenization phase, the only error thrown is an illegal character error.
 
 During the parsing phase, the only error which might be thrown is a non-exhaustive pattern error, indicating the grammar cannot parse the token list.
 
 The checker phase thrown different kinds of errors, all related to context constraints, they generally indicate the function which throws the error as well as printing some of the responsible data.
 
 The code generation and runtime phases thrown the following kinds of errors:
-%TODO Martijn, beschrijf kort de error handling van de codegen
+
+Upon code generation, an error is thrown when a user attempts to compile code with a fork statement with the intention of using only one thread.
+
+During runtime, when a join statement is executed by a thread other than the main thread, it prints an error code and ceases operation. This may turn out unhelpful, as the other threads are not notified and useful operation ceases. Since the occupation bit cannot be unset at this stage, any subsequent join statement will deadlock. Any values it would have returned are lost.
 
 %------------------------------------------------
 \chapter{Description of the Software}
@@ -727,10 +734,10 @@ Part of the Sprockell. Any changes in the Sprockell code have been annotated wit
 The checker checks an AST and adds information about scopes to it. It works in two passes, first collecting information about global variables and procedures, then checking for all context constraints.
 
 \section{CodeGen.hs}
-CodeGen takes a checked AST and generates a set of SprIL instructions. %TODO Martijn, is this enough, do you wish to elaborate?
+CodeGen takes a checked AST and generates a program of SprIL instructions, runnable on Sprockells.
 
 \section{Constants.hs}
-Constants stores constant values used in the code generation. %TODO Martijn, is this enough, do you wish to elaborate?
+Constants stores constant values used in the code generation. Simply aliases for memory addresses and offsets.
 
 \section{FP\_{}ParserGen.hs}
 Parser generator supplied by the course.
