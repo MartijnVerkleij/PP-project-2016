@@ -326,7 +326,6 @@ The id of a variable is unique in the scope it is defined in. No other variable 
 \subsubsection*{Semantics}
 The variable declaration writes the value of the variable to the Local Data Area of where it was (most recently) defined. All variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
 \subsubsection*{Code Generation}
-%TODO Martijn
 A declaration evaluates the expression behind it before assigning it to the variable. The variable's value is saved in the appropriate Local Data Area, by following the scopes upward until the right scope is reached, after which it is saved with an offset.
 
 \subsection{If}
@@ -352,7 +351,7 @@ Execute a section of code based on an expression. The type of this expression mu
 If the expression evaluates to \emph{true}, execute the first statement. If it evaluates to \emph{false}, execute the code after the first statement, which can be either the second statement or the code that comes after the if statement.
 \subsubsection*{Code Generation}
 %TODO Martijn
-
+First the expression will be evaluated, after which a branch jumps to the else block upon a false result, or to the next expression if no else block is present. After the if-block, a jump to after the else block is placed when an else block is present.
 
 \subsection{While}
 \label{def:while}
@@ -373,7 +372,7 @@ Execute a section of code while the expression is \emph{true}. The type of this 
 \subsubsection*{Semantics}
 If the expression evaluates to \emph{true}, execute the statement. Repeat this for as long as the expression keeps evaluating to \emph{true}.
 \subsubsection*{Code Generation}
-%TODO Martijn
+As long as the expression is true, the code in the following block will be executed. The expression is re-evaluated after each execution of the block.
 
 
 \subsection{Fork}
@@ -395,9 +394,27 @@ Run a procedure, which must have been declared somewhere, on a separate thread. 
 \subsubsection*{Semantics}
 Writes the argument to shared memory and tells the thread pool to start parallel execution of the procedure.
 
-Beware, if more procedures are given to the thread pool than there are threads, fork may have to wait for a thread to finish its work before continuing execution. In the case where only a single thread exists, this will cause the code to enter an infinite loop.
+Beware, if more procedures are given to the thread pool than there are threads, fork may have to wait for a thread to finish its work before continuing execution. In the case where programs with forks are executed on only one sprockell, it will deadlock.
 \subsubsection*{Code Generation}
-%TODO Martijn
+A fork call must start a procedure in another thread. To accomplish this, the first 30 addresses in global memory are reserved for this purpose. A further few addresses, namely as much as there atre threads, are reserved for an occupation bit. In practise this means that procedures with more than 7 arguments cannot be forked without memory corrupting.
+
+The addresses are reserved as follows:
+
+\begin{compactitem}
+	\item \textbf{End flag} \\ Set when the auxilary threads may cease execution. Each auxilary sprockell checks this record before attempting to read an AR from shared memory  
+	\item \textbf{Wr flag} \\ Used to set the AR space as occupied by an AR that may be executed. An auxilary threads sets it to 0 when it has read the AR.
+	\item \textbf{Rd flag} \\ Read-protects the AR as it is being written, and to exclude other sprockells from handling the request.
+	\item \textbf{Jump index} \\ line number of the procedure to execute.
+	\item \textbf{Argument count} \\ Number of arguments that follow.
+	\item \textbf{Arguments...}
+	\begin{compactitem}
+		\item \textbf{Value}
+		\item \textbf{Local address} \\ The address to write the result back to, if the argument has one. For example, an expression has none.
+		\item \textbf{Global address} \\  Idem.
+	\end{compactitem}
+\end{compactitem}
+
+
 
 
 \subsection{Join}
@@ -409,11 +426,11 @@ Beware, if more procedures are given to the thread pool than there are threads, 
 join;
 \end{minted}
 \subsubsection*{Usage}
-Ensures all thread have are done before continuing. May only be called in the main thread.
+Ensures all auxilary threads have finished execution before continuing. 
 \subsubsection*{Semantics}
-Blocks execution of the main thread until all other threads have finished their work.
+Blocks execution of the main thread until all other threads have finished their work. May only be called in code that is not executed in auxilary threads, for example by calling a procedure with fork that contains a join statement.
 \subsubsection*{Code Generation}
-%TODO Martijn
+A join statement iterates over the occupation bits of all auxilary threads. Only if they are all zero, this statement may end. It will therefore throw an error when called from an auxilary thread, as can happen when used in a procedure.
 
 
 \subsection{Call}
@@ -431,11 +448,11 @@ proc1(flag);
 proc2(5, flag = true);
 \end{minted}
 \subsubsection*{Usage}
-Execute the called procedure, which must have been declared somewhere. The expressions must have the same types as the procedure as defined in its declaration (see \fullref{def:procedure})
+Execute the called procedure sequentially, which must have been declared. The expressions must have the same types as the procedure's as defined in its declaration (see \fullref{def:procedure})
 \subsubsection*{Semantics}
 Go to the procedure code and execute the procedure with the expressions, then return to the call.
 \subsubsection*{Code Generation}
-%TODO Martijn
+Calls a procedure sequentially. Any separate variables that are given as an argument are handled call-by-reference. Sets up the AR before jumping to the procedure. 
 
 
 \subsection{Expression}
@@ -456,7 +473,7 @@ Allows expressions to be executed as statements, mostly for the purpose of enabl
 \subsubsection*{Semantics}
 Execute the expression, this generally has no effects, except for an assignment.
 \subsubsection*{Code Generation}
-%TODO Martijn
+As expressions have a result on stack, one must pop this value if the expression is defined as a statement. Otherwise the stack would fill up.
 
 
 \subsection{Block}
@@ -485,7 +502,7 @@ A block is a single statement that contains zero or more statements. It is mostl
 \subsubsection*{Semantics}
 A block opens a new scope, then executes the code within. When exiting a block, the scope is closed.
 \subsubsection*{Code Generation}
-%TODO Martijn
+As any block opens a new scope, a new mini-AR is created for each scope. It only contains a pointer to it's parent's AR and all variables declared in this scope in a Local Data Area.
 
 
 \subsection{Print}
@@ -506,7 +523,7 @@ Prints values of evaluated expressions to the console.
 \subsubsection*{Semantics}
 Evaluates the expressions and prints the values as they appear in memory, meaning a boolean is represented as either a zero (\emph{false}) or a one (\emph{true}).
 \subsubsection*{Code Generation}
-%TODO Martijn
+As SprIL does not have a print instruction, a new one was created and added to the Sprockell source code. See also chapter \ref{sprockell_extensions}.
 
 
 \section{Expressions}
