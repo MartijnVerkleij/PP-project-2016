@@ -1,3 +1,4 @@
 // Just random, single threaded stuff of which I want to know what it does.
 int a = (5 + (--6));
-----------a;
+-++++++++++a;
+-(-(-(-(-(-(-(-a)))))));

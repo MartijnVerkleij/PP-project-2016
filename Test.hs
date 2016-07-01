@@ -42,6 +42,7 @@ testSingle =    [ "cyclic_recursion"
 testMulti :: [(String, Int)]
 testMulti =     [ ("banking", 4)
                 , ("peterson", 3)
+                , ("simple_concurrency", 3)
                 ]
 
 testAll :: [(String, Int)]
@@ -75,6 +76,8 @@ alias x | x `elem` ["cyclic", "cycl"]
             = "blocks"
         | x `elem` ["simplep"]
             = "simple_proc"
+        | x `elem` ["simplec", "simple_c", "concurrency", "con"]
+            = "simple_concurrency"
         | otherwise
             = x
 

@@ -205,6 +205,8 @@ global int number;
 \end{minted}
 \subsubsection*{Usage}
 Used to declare global variables and an optional assignment.  The type of the expression must match the type of the global variable.
+
+The id of a global variable is unique in the whole program. No other variable of procedure may use the same id.
 \subsubsection*{Semantics}
 The global variable declaration reserves a space in shared memory and writes a value to it. All global variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
 
@@ -236,6 +238,8 @@ procedure other(int num, bool flip) {
 \end{minted}
 \subsubsection*{Usage}
 Used to declare a procedure. Because call-by-reference (see \fullref{def:call_by_reference}) is used, a variable passed as an argument can be used to write resulting values. One could also use the global variables (see \fullref{def:global}), as they are accessible from everywhere.
+
+The id of a procedure is unique in the whole program. No other variable of procedure may use the same id.
 \subsubsection*{Semantics}
 A procedure is section of code that can be executed from anywhere, using a call statement (see \fullref{def:call}) and passing it the appropriate number of arguments.
 \subsubsection*{Code Generation}
@@ -261,6 +265,8 @@ bool flag;
 \end{minted}
 \subsubsection*{Usage}
 Used to declare local variables and an optional assignment. The type of the expression must match the type of the variable.
+
+The id of a variable is unique in the scope it is defined in. No other variable in that scope may use the same id.
 \subsubsection*{Semantics} %TODO Martijn, check this
 The variable declaration writes the value of the variable to the Activation Record of the current scope. All variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
 \subsubsection*{Code Generation}
@@ -386,6 +392,8 @@ Go to the procedure code and execute the procedure with the expressions, then re
 \paragraph{Examples}
 \begin{minted}[tabsize=4]{text}
 a = (5 + (--6));
+true;
+-++++++++++a;
 \end{minted}
 \subsubsection*{Usage}
 Allows expressions to be executed as statements, mostly for the purpose of enabling an assignment (see \fullref{def:assignment}) as a statement, since an assignment is an expression.
@@ -398,12 +406,23 @@ Execute the expression, this generally has no effects, except for an assignment.
 \subsection{Block}
 \label{def:block}
 \subsubsection*{Syntax}
-\texttt{}
+\texttt{\{ [STATEMENT]\ldots \}}
 \begin{mycompactdesc}
-	
+	\item[STATEMENT] A statement as defined in \fullref{def:statements}
 \end{mycompactdesc}
-\paragraph{Examples}
+\paragraph{Example}
 \begin{minted}[tabsize=4]{text}
+{
+	int i = 0;
+	{
+		i = ++i;
+		{
+			int i = 5;
+		}
+		print((i == 1));
+	}
+	print((i == 1));
+}
 \end{minted}
 \subsubsection*{Usage}
 \subsubsection*{Semantics}

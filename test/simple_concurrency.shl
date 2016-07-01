@@ -1,0 +1,14 @@
+global int num = 5;
+
+procedure set_four() {
+	num = 4;
+}
+
+procedure set_six() {
+	num = 6;
+}
+
+fork set_four();
+fork set_six();
+join;
+print(num);
