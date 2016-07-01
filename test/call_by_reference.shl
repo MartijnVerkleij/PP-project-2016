@@ -1,8 +1,11 @@
+global int var = 100;
+global int y = 0;
+
 procedure write(int input, int output) {
 	output = input;
 }
 
-int var = 100;
-print (var);
-write(42, var);
-print(var);
+print (y);
+fork write(var, y);
+join;
+print(y);

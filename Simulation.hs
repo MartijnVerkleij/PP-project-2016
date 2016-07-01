@@ -22,7 +22,7 @@ sprockellSim instrs s (i:is) | instr /= EndProg    = (instr,s',o) : sprockellSim
                   (s',o) = sprockell instrs s i
                   instr  = instrs ! pc s
 
-localMemSize = 1024 :: Int
+localMemSize = 256 :: Int
 regbankSize  = 8  :: Int
 
 initSprockellState :: Value -> SprockellState
@@ -57,7 +57,7 @@ systemSim instrss s (t:ts) | not sysHalted = deepseq s $ (instrs,s') : systemSim
 
 nrOfSprockells  = 4 :: Int
 shMemSize       = 64 :: Int
-channelDelay    = 4 :: Int
+channelDelay    = 2 :: Int
 
 initSystemState = SystemState
         { sprStates     = map initSprockellState [0 .. nrOfSprockells-1]

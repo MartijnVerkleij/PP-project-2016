@@ -22,10 +22,14 @@ procedure transfer(int sender, int target, int amount) {
 procedure test1() {
 	print(john, jane, martijn);
 	fork deposit(jane, 100);
+	print(0);
 	fork deposit(john, 100);
+	print(0);
 	fork deposit(martijn, 1);
+	print(0);
 	join;
 	print(john, jane, martijn);
+	/*
 	fork deposit(jane, 200);
 	fork withdraw(john, 200);
 	fork deposit(martijn, 2000000);
@@ -48,6 +52,7 @@ procedure test1() {
 	fork transfer(martijn, jane, 100000);
 	join;
 	print(john, jane, martijn);
+	*/
 }
 
 test1();

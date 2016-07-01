@@ -21,10 +21,10 @@ import Simulation
 
 -- ==================== Lists of Test Files and Conversions ====================
 testSingle :: [String]
-testSingle =    [ "cyclic_recursion"
-                , "deep_expression"
-                , "division_zero"
-                , "fib"
+testSingle =    [ "cyclic_recursion"    -- Run this one with more local memory
+                , "deep_expression"     
+                , "division_zero"       -- Deprecated
+                , "fib"                 -- Run this one with more local memory
                 , "if"
                 , "ifelse"
                 , "infinite_busy_loop"
@@ -33,7 +33,7 @@ testSingle =    [ "cyclic_recursion"
                 , "prime"
                 , "recursion"
                 , "while"
-                , "call_by_reference"
+                --, "call_by_reference"
                 , "blocks"
                 , "stuff"
                 , "simple_proc"
@@ -43,6 +43,9 @@ testMulti :: [(String, Int)]
 testMulti =     [ ("banking", 4)
                 , ("peterson", 3)
                 , ("simple_concurrency", 3)
+                , ("multiple_globals", 3)
+                , ("join_test", 2)
+                , ("call_by_reference", 2)
                 ]
 
 testAll :: [(String, Int)]
@@ -78,6 +81,8 @@ alias x | x `elem` ["cyclic", "cycl"]
             = "simple_proc"
         | x `elem` ["simplec", "simple_c", "concurrency", "con"]
             = "simple_concurrency"
+        | x `elem` ["global", "globals"]
+            = "multiple_globals"
         | otherwise
             = x
 
