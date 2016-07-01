@@ -139,19 +139,39 @@ During the process of building the type checker and code generation, which was d
 \section{Time}
 If only the schedule made at the beginning of every project works out and no unexpected problems arise, this would not be a problem. Reality, unfortunately, has not been that kind. Many unscheduled delays and problems arose to delay the schedule more than expected. The solution for this is working evenings and parts of the night on the final days.
 
+\section{Concurrency}
+The problem with concurrency was mostly that the direction it was being taken changed several times. The addition of explicit locks was discussed and partly executed, then eventually reverted. The way global variables were handled was changed multiple times, as well as some other things. Until time was taken to really think it through, and determine what it should and should not do, and what it could and could not do. 
 
-- Something about concurrency
+\section{Call-by-reference}
+Call-by-reference became a bit of a problem because of some design flaws. Because of the way our ARs work and the visibility of certain aspects of variables when passed as arguments, changes had to be made to the old design to what it currently is (see \fullref{def:call-by-reference}). These changes caused quite some work during their implementation.
 
-- Something about call-by-reference
-
-- Something about other stuff
-%TODO somewhere at the end
+\section{Code Generation}
+%TODO
 
 
 %------------------------------------------------
 \chapter{Sprockell Extensions}
 \label{sprockell_extensions}
-%TODO 
+
+\section{Shared Memory Bug}
+\label{shared_memory_bug}
+A bug in shared memory has been resolved. Whenever a value was written to shared memory to an out of bounds index, shared memory would be extended with that value. The list would be longer by one with the new value at either the first or last position in the list, depending on whether the index was too low or too high.
+
+The extension causes an error to be thrown instead. This allows for easier debugging of code generation.
+
+\section{PrintOut Instruction}
+\label{printout_instruction}
+A print instruction, \texttt{PrintOut reg}, was added to print registers to stdout. The instruction uses \texttt{trace} from the package \texttt{Debug.Trace} to do this.
+
+\section{ComputeI Instruction}
+\label{computei_instruction}
+A compute with immediate value, \texttt{ComputeI operator reg value reg}. This instruction takes a register and a value to do a computation with the operator, which is then written to the second register. It is mostly used to calculate ARP offsets. 
+
+This instruction was inspired by the \emph{iloc} instructions using an immediate value (eg. \texttt{AddI, SubI}.
+
+\section{Incr4 \& Decr4}
+\label{incr4_and_decr4}
+Two \texttt{Operator}s were added to the alu operators: Incr4 and Decr4. They were originally added to more easily do the steps of four to calculate offsets, before \texttt{ComputeI} was added. They are currently unused.
 
 
 %------------------------------------------------
@@ -680,7 +700,7 @@ Beware that using decrement and increment on a variable does not assign the new 
 
 
 \subsection{Call-by-reference}
-\label{def:call-by-refence}
+\label{def:call-by-reference}
 %TODO Martijn
 
 
@@ -758,6 +778,8 @@ Following is a list of all the test files that have been used to test the compil
 	\item[syntax3] Tests incorrect variable syntax
 	\item[syntax4] Tests incorrect if syntax
 	\item[syntax5] Tests incorrect expression syntax
+	\item[wrong\_{}type] Tests whether a wrong type is detected
+	\item[not\_{}declared] Tests whether a variable which has not been declared is detected
     \item[cyclic\_{}recursion] Tests for correct cyclic recursion
     \item[deep\_{}expression] Tests for correct evaluation of nested expressions
     \item[fib] Tests for correct evaluation of a Fibonacci procedure 
@@ -780,7 +802,7 @@ Following is a list of all the test files that have been used to test the compil
 
 
 \section{Test Plan}
-The testing has been roughly divided into three cases: syntax, context constraints and semantics. For the first two phases most of the testing of correct code occurs during the semantic testing and as informal testing during the building of those parts of the compiler. Some test files have been made to more formally test the incorrect code.
+The testing has been roughly divided into three cases: syntax, context constraints and semantics. For the first two phases most of the testing of correct code occurs during the semantic testing and as informal testing during the building of those parts of the compiler. Some additional tests have been written to more formally test the incorrect code.
 
 The shape of the parse tree and Abstract Syntax Tree have been extensively observed and checked during the building of the checking part of the compiler. This has mostly been done by slightly tweaking a program a multitude of times, to produce all intended shapes of the tree and attempting to produce unintended shapes, and building the trees. This part of the testing, as well as the previous part, have not been documented very well, and might therefore appear somewhat lacking compared to the semantic testing.
 
@@ -826,11 +848,7 @@ I finish this up, I enjoyed this module, with the exception of CP. There were a 
 
 %------------------------------------------------
 \chapter{Extended Test Program}
-%TODO
 \label{extended_test_program}
-\section{Listing of test program}
-\section{generated target code of test program}
-\section{one or more example executions showing correct functioning of the generated code}
 The extended test program shown here is Peterson's algorithm. It shows how, using the available methods for concurrency, two thread using the same variable have mutually exclusive access to it.
 
 \section{Peterson's Algorithm Test}
