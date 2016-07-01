@@ -10,9 +10,6 @@ print(x,y,a,b);
 	bool b = false;
 	print(x,y,a,b);
 	{   {}
-	
-	
-	    /* ----------------------------------
 		int x = 3;
 		int y = 123;
 		bool a = false;
@@ -50,9 +47,6 @@ print(x,y,a,b);
 			print(x,y,a,b);
 		}
 		print(x,y,a,b);
-		--------------------------------------------------------*/
-		
-		
 	}
 	print(x,y,a,b);
 	{
