@@ -35,6 +35,7 @@ testSingle =    [ "cyclic_recursion"
                 , "while"
                 , "call_by_reference"
                 , "blocks"
+                , "stuff"
                 ]
 
 testMulti :: [(String, Int)]
@@ -50,28 +51,28 @@ testAll =   single ++ multi
 
 testConversion :: String -> String
 testConversion x    = "test/" ++ (alias x) ++ ".shl"
-    where
-        alias :: String -> String
-        alias x | x `elem` ["cyclic", "cycl"]
-                    = "cyclic_recursion"
-                | x `elem` ["deep", "expression"]
-                    = "deep_expression"
-                | x `elem` ["else"]
-                    = "ifelse"
-                | x `elem` ["inf", "loop", "infinite"]
-                    = "infinite_loop"
-                | x `elem` ["infbusy", "busy", "busyloop", "busy_loop", "infinite_busy", "infinitebusy"] 
-                    = "infinite_busy_loop"
-                | x `elem` ["nest", "nested", "proc", "procedures"]
-                    = "nested_procedures"
-                | x `elem` ["rec"]
-                    = "recursion"
-                | x `elem` ["call", "callby", "call_by", "ref", "reference"]
-                    = "call_by_reference"
-                | x `elem` ["block"]
-                    = "blocks"
-                | otherwise                                         
-                    = x
+
+alias :: String -> String
+alias x | x `elem` ["cyclic", "cycl"]
+            = "cyclic_recursion"
+        | x `elem` ["deep", "expression"]
+            = "deep_expression"
+        | x `elem` ["else"]
+            = "ifelse"
+        | x `elem` ["inf", "loop", "infinite"]
+            = "infinite_loop"
+        | x `elem` ["infbusy", "busy", "busyloop", "busy_loop", "infinite_busy", "infinitebusy"] 
+            = "infinite_busy_loop"
+        | x `elem` ["nest", "nested", "proc", "procedures"]
+            = "nested_procedures"
+        | x `elem` ["rec"]
+            = "recursion"
+        | x `elem` ["call", "callby", "call_by", "ref", "reference"]
+            = "call_by_reference"
+        | x `elem` ["block"]
+            = "blocks"
+        | otherwise                                         
+            = x
 
 
 -- ==================== Generalized Testing ====================
@@ -153,7 +154,7 @@ debug name = do
 write :: String -> IO ()
 write name = do
     a <- readFile $ testConversion name
-    writeFile ("gen/debug_" ++ name ++ ".txt") 
+    writeFile ("gen/debug_" ++ (alias name) ++ ".txt") 
             (runTestStr $
             replicate ((Map.fromList testAll)Map.!(testConversion name)) $
             codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
@@ -173,6 +174,7 @@ write name = do
     
 
 -- ==================== Checker test ====================
+checkChecker :: IO()
 checkChecker = do
     a <- readFile "test/checker.txt"
     showTree $

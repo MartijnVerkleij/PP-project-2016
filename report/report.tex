@@ -154,53 +154,277 @@ This chapter will describe every feature of SHL in detail: providing a basic des
 %\subsubsection*{Semantics}
 %\subsubsection*{Code Generation}
 
+
 \subsection{Program}
 \label{def:program}
 \subsubsection*{Syntax}
-\texttt{[globals] [procedures] [statements]}\\
+\texttt{[GLOBAL]\ldots [PROCEDURE]\ldots [STATEMENTS]\ldots}\\
 \begin{mycompactdesc}
-	\item[globals] Global variable declarations as defined in \fullref{def:global}
-	\item[procedures] Procedures as defined in \fullref{def:procedure}
-	\item[statements] Statements as defined in \fullref{def:statements}
+	\item[GLOBAL] Global variable declarations as defined in \fullref{def:global}
+	\item[PROCEDURE] Procedures as defined in \fullref{def:procedure}
+	\item[STATEMENTS] Statements as defined in \fullref{def:statements}
 \end{mycompactdesc}
 \paragraph{Example}
-\inputminted{text}{../test/prime.shl}
-\subsubsection*{Usage}
-All files must follow the Program syntax, and may only contain a single Program.
-\subsubsection*{Semantics}
-A Program is a collection of code which can be used to create an executable program. It is the root node of the AST.
-\subsubsection*{Code Generation}
-%TODO
+\begin{minted}[tabsize=4]{text}
+global int number = 5;
 
-\subsection{Procedure}
-\label{def:procedure}
-\subsubsection*{Syntax}
+procedure eq(int num1, int num2, bool out) {
+	if ((num1 == num2)) {
+		out = true;
+	} else {
+		out = false;
+	}
+}
+
+int otherNumber = 6;
+bool out;
+eq(number, otherNumber, out);
+print(out);
+\end{minted}
 \subsubsection*{Usage}
+All files must follow the program syntax, and may only contain a single program.
 \subsubsection*{Semantics}
+A program is a collection of code which can be used to create an executable set of instructions. It is the root node of the Abstract Syntax Tree.
 \subsubsection*{Code Generation}
+%TODO Martijn
+
 
 \subsection{Global}
 \label{def:global}
 \subsubsection*{Syntax}
+\texttt{global <TYPE> <ID> [= <EXPRESSION>] ;}
+\begin{mycompactdesc}
+	\item[TYPE] A type as defined in \fullref{def:type}
+	\item[ID] A string as defined by \fullref{def:variable}
+	\item[EXPRESSION] An expression as defined in \fullref{def:expressions}
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+global bool flag = true;
+global int number;
+\end{minted}
 \subsubsection*{Usage}
+Used to declare global variables and an optional assignment.  The type of the expression must match the type of the global variable.
 \subsubsection*{Semantics}
+The global variable declaration reserves a space in shared memory and writes a value to it. All global variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
+
+Global variables are reachable from anywhere below its declaration in the code, in any thread. Beware, however, that the variable can be written to from any thread as well, and using the shared memory is significantly slower than using the local memory.
 \subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Procedure}
+\label{def:procedure}
+\subsubsection*{Syntax}
+\texttt{procedure <ID> ( [<TYPE> <VAR>] [, <TYPE> <VAR>]\ldots ) <STATEMENT>...}
+\begin{mycompactdesc}
+	\item[ID] A string as defined in \fullref{def:variable}
+	\item[TYPE] A type as defined in \fullref{def:type}
+	\item[VAR] A variable as defined in \fullref{def:variable}
+	\item[STATEMENT] A statement as defined in \fullref{def:statements}
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+procedure empty() print(0);
+procedure other(int num, bool flip) {
+	while ((num > 0)) {
+		num = --num;
+		flip = !flip;
+	}
+	print(num, flip);
+}
+\end{minted}
+\subsubsection*{Usage}
+Used to declare a procedure. Because call-by-reference (see \fullref{def:call_by_reference}) is used, a variable passed as an argument can be used to write resulting values. One could also use the global variables (see \fullref{def:global}), as they are accessible from everywhere.
+\subsubsection*{Semantics}
+A procedure is section of code that can be executed from anywhere, using a call statement (see \fullref{def:call}) and passing it the appropriate number of arguments.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
 
 \section{Statements}
 \label{def:statements}
 
+
 \subsection{Declaration}
 \subsubsection*{Syntax}
+\texttt{<TYPE> <ID> [= <EXPRESSION>] ;}
+\begin{mycompactdesc}
+	\item[TYPE] A type as defined in \fullref{def:type}
+	\item[ID] A string as defined in \fullref{def:variable}
+	\item[EXPRESSION] An expression as defined in \fullref{def:expressions}
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+int number = (1+1);
+bool flag;
+\end{minted}
 \subsubsection*{Usage}
-\subsubsection*{Semantics}
+Used to declare local variables and an optional assignment. The type of the expression must match the type of the variable.
+\subsubsection*{Semantics} %TODO Martijn, check this
+The variable declaration writes the value of the variable to the Activation Record of the current scope. All variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
 \subsubsection*{Code Generation}
+%TODO Martijn
+
 
 \subsection{If}
+\label{def:if}
 \subsubsection*{Syntax}
+\texttt{if ( <EXPRESSION> ) <STATEMENT> [else <STATEMENT>]}
+\begin{mycompactdesc}
+	\item[EXPRESSION] An expression as defined in \fullref{def:expressions}
+	\item[STATEMENT] A statement as defined in \fullref{def:statements}
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+if (flag) {
+	// do something
+}
+if (flag) print(flag); else {
+	// do something
+}
+\end{minted}
+\subsubsection*{Usage}
+Execute a section of code based on an expression. The type of this expression must be a boolean.
+\subsubsection*{Semantics}
+If the expression evaluates to \emph{true}, execute the first statement. If it evaluates to \emph{false}, execute the code after the first statement, which can be either the second statement or the code that comes after the if statement.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{While}
+\label{def:while}
+\subsubsection*{Syntax}
+\texttt{while ( <EXPRESSION> ) <STATEMENT>}
+\begin{mycompactdesc}
+	\item[EXPRESSION] An expression as defined in \fullref{def:expressions}
+	\item[STATEMENT] A statement as defined in \fullref{def:statements}
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+while (flag) {
+	// do something
+}
+\end{minted}
+\subsubsection*{Usage}
+Execute a section of code while the expression is \emph{true}. The type of this expression must be a boolean.
+\subsubsection*{Semantics}
+If the expression evaluates to \emph{true}, execute the statement. Repeat this for as long as the expression keeps evaluating to \emph{true}.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Fork}
+\label{def:fork}
+\subsubsection*{Syntax}
+\texttt{fork <ID> ( [<EXPRESSION> [, <EXPRESSION>]\ldots] ) ;}
+\begin{mycompactdesc}
+	\item[ID] A string as defined by \fullref{def:variable}
+	\item[EXPRESSION] An expression as defined by \fullref{def:expression}
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+fork proc0();
+fork proc1(flag);
+fork proc2(5, flag = true);
+\end{minted}
+\subsubsection*{Usage}
+Run a procedure on a separate thread. The expression types must match the types defined during the procedure declaration (see \fullref{def:procedure}).
+\subsubsection*{Semantics}
+Writes the argument to shared memory and tells the thread pool to start parallel execution of the procedure.
+
+Beware, if more procedures are given to the thread pool than there are threads, fork may have to wait for a thread to finish its work before continuing execution.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Join}
+\label{def:join}
+\subsubsection*{Syntax}
+\texttt{join ;}
+\paragraph{Example}
+\begin{minted}[tabsize=4]{text}
+join;
+\end{minted}
+\subsubsection*{Usage}
+Ensures all thread have are done before continuing. May only be called in the main thread.
+\subsubsection*{Semantics}
+Blocks execution of the main thread until all other threads have finished their work.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Call}
+\label{def:call}
+\subsubsection*{Syntax}
+\texttt{<ID> ( [<EXPRESSION> [, <EXPRESSION>]\ldots] ) ;}
+\begin{mycompactdesc}
+	\item[ID] A string as defined by \fullref{def:variable}
+	\item[EXPRESSION] An expression as defined by \fullref{def:expression}
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+proc0();
+proc1(flag);
+proc2(5, flag = true);
+\end{minted}
+\subsubsection*{Usage}
+Execute the called procedure. The expressions must have the same types as the procedure as defined in its declaration (see \fullref{def:procedure})
+\subsubsection*{Semantics}
+Go to the procedure code and execute the procedure with the expressions, then return to the call.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Expression}
+\label{def:expression_statement}
+\subsubsection*{Syntax}
+\texttt{<EXPRESSION> ;}
+\begin{mycompactdesc}
+	\item[EXPRESSION] An expression as defined in \fullref{def:expressions}
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+a = (5 + (--6));
+\end{minted}
+\subsubsection*{Usage}
+Allows expressions to be executed as statements, mostly for the purpose of enabling an assignment (see \fullref{def:assignment}) as a statement, since an assignment is an expression.
+\subsubsection*{Semantics}
+Execute the expression, this generally has no effects, except for an assignment.
+\subsubsection*{Code Generation}
+%TODO Martijn
+
+
+\subsection{Block}
+\label{def:block}
+\subsubsection*{Syntax}
+\texttt{}
+\begin{mycompactdesc}
+	
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+\end{minted}
 \subsubsection*{Usage}
 \subsubsection*{Semantics}
 \subsubsection*{Code Generation}
+%TODO Martijn
 
+
+\subsection{Print}
+\label{def:print}
+\subsubsection*{Syntax}
+\texttt{}
+\begin{mycompactdesc}
+	
+\end{mycompactdesc}
+\paragraph{Examples}
+\begin{minted}[tabsize=4]{text}
+\end{minted}
+\subsubsection*{Usage}
+\subsubsection*{Semantics}
+\subsubsection*{Code Generation}
+%TODO Martijn
 
 
 %------------------------------------------------
@@ -225,8 +449,8 @@ A Program is a collection of code which can be used to create an executable prog
 %------------------------------------------------
 %	REFERENCE LIST
 %------------------------------------------------
-\label{references}
 \printbibliography
+\label{references}
 %bibliography{references}
 
 %------------------------------------------------
@@ -240,7 +464,7 @@ A Program is a collection of code which can be used to create an executable prog
 \chapter{Grammar Specification}
 \label{grammar_specification}
 \begin{landscape}
-\inputminted[firstline=66, lastline=111]{haskell}{../Grammar.hs}
+\inputminted[firstline=66, lastline=111, tabsize=4]{haskell}{../Grammar.hs}
 \end{landscape}
 
 
