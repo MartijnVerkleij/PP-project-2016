@@ -26,7 +26,7 @@ fs |$| xs = zipWith (\f x -> f x) fs xs                         -- parallel appl
 xs ! i = xs !! i
 
 (<~) :: [a] -> (Int, a) -> [a]                                  -- put value x at address i in xs
-xs <~ (i,x) | i >= 0    = take i xs ++ [x] ++ drop (i+1) xs
+xs <~ (i,x) | i >= 0 && i <= length xs = take i xs ++ [x] ++ drop (i+1) xs
             | otherwise = error "You are (most likely) writing to a negative address in shared memory!" -- PP26: Why can global memory grow???
 
 (<~!) :: [a] -> (Int, a) -> [a]                                 -- ibid, but leave address 0 unchanged
