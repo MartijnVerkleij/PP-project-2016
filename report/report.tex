@@ -193,7 +193,20 @@ All files must follow the program syntax, and may only contain a single program.
 \subsubsection*{Semantics}
 A program is a collection of code which can be used to create an executable set of instructions. It is the root node of the Abstract Syntax Tree.
 \subsubsection*{Code Generation}
-%TODO Martijn
+Any program is generally built up as follows:
+\begin{compactitem}
+	\item \textbf{Thread control code}
+	\begin{compactitem}
+		\item \textbf{Thread Control Loop} \\ All extra threads loop here, waiting to accept fork calls.
+		\item \textbf{PreCall forked procedures} \\ Once a sprockell accepts a fork call, it reads the AR from global memory, and starts execution.
+		\item \textbf{PostCall forked procedures} \\ Once an auxilary sprockell finishes the procedure, this code handles cleanup.
+	\end{compactitem}
+	\item \textbf{Procedures \ref{def:procedure}}
+	\item \textbf{Global declarations \ref{def:global}}
+	\item \textbf{Main code}
+	
+	\item \textbf{Post-program code} \\ Stops auxilary threads.
+\end{compactitem}
 
 
 \subsection{Global}
@@ -213,13 +226,18 @@ global int number;
 \subsubsection*{Usage}
 Used to declare global variables and an optional assignment.  The type of the expression must match the type of the global variable.
 
-The id of a global variable is unique in the whole program. No other variable of procedure may use the same id.
+All global variables MUST be defined at the top of the program, even before procedures.
+
+The id of a global variable is unique in the whole program. No other variable of procedure may use the same id. They can therefore not be shadowed.
 \subsubsection*{Semantics}
 The global variable declaration reserves a space in shared memory and writes a value to it. All global variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
 
 Global variables are reachable from anywhere below its declaration in the code, in any thread. Beware, however, that the variable can be written to from any thread as well, and using the shared memory is significantly slower than using the local memory.
+
+Globals that are passed as arguments to a procedure have their own intricacies, see \ref{def:call-by-refence} for more information.
+
 \subsubsection*{Code Generation}
-%TODO Martijn
+All globals are saved in global memory. Writes and reads to globals are done atomically, but assignments are not. This avoids data races, but to ensure atomicity on the whole assignment, one must implement his own mutual exclusion.
 
 
 \subsection{Procedure}
@@ -248,9 +266,14 @@ Used to declare a procedure. Because call-by-reference (see \fullref{def:call-by
 
 The id of a procedure is unique in the whole program. No other variable of procedure may use the same id.
 \subsubsection*{Semantics}
-A procedure is section of code that can be executed from anywhere, using a call statement (see \fullref{def:call}) and passing it the appropriate number of arguments.
+A procedure is section of code that can be executed from anywhere, using a call or fork statement (see \fullref{def:call} and \fullref{def:fork}) and passing the appropriate number of arguments to it.
 \subsubsection*{Code Generation}
-%TODO Martijn
+Procedure code has the following structure:
+\begin{compactitem}
+	\item \textbf{PostCall code} \\ Copies all arguments into the local data area for use. 
+	\item \textbf{Procedure's statements}
+	\item \textbf{PreReturn code} \\ The final result of all arguments is read, and if they are global or local variables, saved to the appropriate location.
+\end{compactitem}
 
 
 \section{Statements}
@@ -275,8 +298,8 @@ bool flag;
 Used to declare local variables and an optional assignment. The type of the expression must match the type of the variable.
 
 The id of a variable is unique in the scope it is defined in. No other variable in that scope may use the same id.
-\subsubsection*{Semantics} %TODO Martijn, check this
-The variable declaration writes the value of the variable to the Activation Record of the current scope. All variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
+\subsubsection*{Semantics}
+The variable declaration writes the value of the variable to the Local Data Area of where it was (most recently) defined. All variables are initialized to the default value (see \fullref{def:integer} and \fullref{def:boolean}) if no value is explicitly assigned.
 \subsubsection*{Code Generation}
 %TODO Martijn
 
