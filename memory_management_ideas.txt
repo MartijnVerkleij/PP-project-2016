@@ -1,0 +1,50 @@
+Fork PreCall:
+    - Get wr lock on Fork record
+    - Populate record:
+        +---------------+
+        |wr lock        |
+        +---------------+
+        |rd lock        |
+        +---------------+
+        |procedure jump |
+        +---------------+
+        |procedure argc |
+        +---------------+
+        |procedure arg* |
+        |               |
+        +---------------+
+        |procedure args |
+        |(non-global)   |
+        +---------------+
+        
+    - Unset rd lock
+
+Fork PostCall does a Procedure PreCall
+
+
+
+
+Procedure PreCall: 
+
+    - Build ARP:
+        +---------------+
+        |Arguments      |
+        |               |
+        +---------------+
+        |Return address |
+        +---------------+
+        |Caller's ARP   |
+        +---------------+
+        |(Local data)   |
+        |               |
+        +---------------+
+    - Jump to procedure
+    
+Procedure PostCall:
+    // None as of yet
+
+Procedure PreReturn:
+    - Load and jump to return address from ARP
+Procedure PostReturn:
+    - set ARP to current ARP
+    - 

@@ -289,11 +289,11 @@ codeGen (ASTFork pName astArgs -- TODO: Add code to insert global and local vari
             , Branch regE (Rel 2)           -- successful lock -> +2
             , Jump (Rel (-3))               -- otherwise try again
             ] ++ (concat $ reverse $ map (\x -> codeGen x threads) $ astArgs) ++
-            [ Load (ImmValue (length astArgs)) regD
-            , ComputeI Add regD fork_record_args regC
+            [ Load (ImmValue fork_record_args) regC
             ]
-            ++ (emitArgRecords astArgs variables globals threads) ++
-            [ WriteInstr regD (DirAddr fork_record_argc)
+            ++ (forkArgRecords astArgs variables globals threads) ++
+            [ Load (ImmValue (length astArgs)) regD
+            , WriteInstr regD (DirAddr fork_record_argc)
             , Debug ("**c" ++ pName)        -- line of jump addr. is not known
             , Debug ""
             , Pop regD
@@ -620,6 +620,51 @@ emitArgRecords (x : xs) variables globals threads =
     , Compute Incr regC reg0 regC ]
     ++ emitArgRecords xs variables globals threads
         
+forkArgRecords :: [AST] -> [[VariableType]] -> [VariableType] -> Int -> [Instruction]
+forkArgRecords [] _ _ _ = []
+forkArgRecords (x@(ASTVar name _) : xs) variables globals threads =
+    [ Pop regB                      -- Store value
+    , WriteInstr regB (IndAddr regC)
+    , Compute Incr regC reg0 regC   
+    ] 
+    ++ emitLocalArg coords ++ 
+    [ Compute Incr regC reg0 regC 
+    , Load (ImmValue (gIndex)) regB
+    , WriteInstr regB (IndAddr regC)     -- Store global memory pointer in local 
+                                    -- memory (if argument has one...)
+    , Compute Incr regC reg0 regC
+    ]
+    ++ forkArgRecords xs variables globals threads
+    where
+        gIndex  | globalIndex name globals >= 0 =
+             fork_record_size + threads + (global_record_size * (globalIndex name globals))
+                | otherwise = (-1)
+        coords = findVar (0,0) name variables
+        
+        emitLocalArg (-1,-1) = 
+            [ Load (ImmValue (-1)) regB 
+            , WriteInstr regB (IndAddr regC) 
+            ]
+        emitLocalArg (x,y) = 
+            [ Compute Add regARP reg0 regE] ++
+            (replicate x (Load (IndAddr regE) regE) ++
+            [ ComputeI Add regE (y + 1) regE
+            , WriteInstr regE (IndAddr regC)
+            ])
+forkArgRecords (x : xs) variables globals threads =
+    [ Pop regB                      -- Store value
+    , WriteInstr regB (IndAddr regC)
+    , Compute Incr regC reg0 regC   
+    
+    , Load (ImmValue (-1)) regB
+    , WriteInstr regB (IndAddr regC)     -- Store -1 as global memory pointer
+    , Compute Incr regC reg0 regC
+    , Load (ImmValue (-1)) regB     -- Store -1 as local memory pointer
+    , WriteInstr regB (IndAddr regC)
+    , Compute Incr regC reg0 regC ]
+    ++ forkArgRecords xs variables globals threads
+        
+
 
 -- | Builds up the instructions to add the global index of an 
 -- | argument i it has one, or -1 if it doesn't. Used to write

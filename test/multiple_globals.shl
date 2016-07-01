@@ -1,0 +1,20 @@
+global int a = 8;
+global int b = 9;
+global int c = 10;
+global int d = 11;
+global int e = 12;
+global int f = 13;
+
+procedure printAll() {
+    print(a,b,c,d,e,f);
+}
+
+procedure printAllBW() {
+    print(f,e,d,c,b,a);
+}
+
+
+fork printAll();
+fork printAllBW();
+join;
+

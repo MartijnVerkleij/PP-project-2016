@@ -1,0 +1,10 @@
+global bool forever = true;
+
+procedure neverending(bool j) {
+    while(j){
+    
+    }
+}
+
+fork neverending(forever);
+join;
