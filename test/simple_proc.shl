@@ -1,0 +1,13 @@
+global int a = 3;
+
+procedure p0(int c) {
+    a = c;
+    c = (c + 2);     
+}
+
+int b = 2;
+print(b); // should print 2
+p0(b);
+print(b); // should print 4 
+print(0);
+print(a); // should print 2
