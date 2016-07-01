@@ -13,7 +13,7 @@ import qualified Data.Map.Strict as Map
 
 import Debug.Trace
 
-codeGen' int ast = insertErrorPointers ( insertACallPointers (insertFPointers instrss (pPointers, cPointers)) (pPointers, cPointers)) (pPointers, cPointers)
+codeGen' int ast = insertACallPointers (insertFPointers instrss (pPointers, cPointers)) (pPointers, cPointers)
     where 
         (instrss, pPointers, cPointers) = findPointers' $ codeGen ast int
 
@@ -341,7 +341,7 @@ codeGen (ASTWhile astExpr astStat
 -- join keyword.
 codeGen (ASTFork pName astArgs
     checkType@(functions, globals, variables)) threads
-        =   
+        | threads > 1 =    
             [ TestAndSet (DirAddr fork_record_wr)     -- Grab wr lock
             , Receive regE
             , Branch regE (Rel 2)           -- successful lock -> +2
@@ -368,6 +368,8 @@ codeGen (ASTFork pName astArgs
             , Jump (Rel (-3))               -- otherwise wait for thread to start our fork instance
             ]
             
+        | otherwise     = error ("Insufficient threads avaiable for parallel execution " ++
+            "in fork call to " ++ pName)
         where
             forkArgRecords :: [AST] -> [[VariableType]] -> [VariableType] -> Int -> [Instruction]
             forkArgRecords [] _ _ _ = []
@@ -412,7 +414,6 @@ codeGen (ASTFork pName astArgs
                 , WriteInstr regB (IndAddr regC)
                 , Compute Incr regC reg0 regC ]
                 ++ forkArgRecords xs variables globals threads
-
 -- Join statement, iterates over all thread's occupation bits and ensures that 
 -- they are all zero before continuing.
 codeGen (ASTJoin 
@@ -637,14 +638,18 @@ getMemAddr varStr variables
 
 
 
-
+-- Finds the closest declaration of a variable by its name and the checker's scope
+-- state for a given node. 
+-- First argument is the number of scopes one must traverse upwards
+-- Second argument is the offset from the ARP in that scope
 findVar :: (Int,Int) -> String -> [[VariableType]] -> (Int,Int)
-findVar _ str [] = ((-1),(-1)) --  error ("Variable -|" ++ str ++ "|- was not found when calling getMemAddr.") 
+findVar _ str [] = ((-1),(-1))
 findVar (x,y) str ([]:scopes) = findVar (x+1,0) str scopes
 findVar (x,y) str (scope@(var@(str2,_):vars):scopes)
     | str == str2   = (x,y)
     | otherwise     = findVar (x,y+1) str (vars:scopes)
 
+-- Prettyprints SprIL code
 sprILprpr :: [Instruction] -> String
 sprILprpr = sprILprpr' 0
 
@@ -657,6 +662,13 @@ sprILprpr' i (x:xs) =  (show i) ++ "    " ++ (show x) ++ "\n" ++ (sprILprpr' (i+
 type ProcPointer = (String, Int)
 type CallPointer = (String, Int)
 
+-- Second pass in the code generator. 
+-- 
+-- Finds pointers placed in the code by their uniqe debug instructions.
+--
+-- **a : After-call pointer used to locate the return address for a call.
+-- **p : Procedure pointer used to locate the jump address for a call or fork.
+--
 findPointers' :: [Instruction] -> ([Instruction], [ProcPointer], [CallPointer])
 findPointers' instrss = findPointers instrss 0 
 
@@ -669,7 +681,7 @@ findPointers (x@(Debug ('*':'*':'p':fName)):xs) i = (resCode,((fName, i):fPointe
 findPointers (x:xs) i = ((x:instrss),(fPointers),(cPointers))
     where (instrss,fPointers,cPointers) = findPointers xs (i+1)
 
-
+-- Inserts found procedure pointer in the code by the keyword '**c'. Pushes it to stack.
 insertFPointers :: [Instruction] -> ([ProcPointer], [CallPointer]) -> [Instruction]
 insertFPointers []  _ = []
 insertFPointers [x]  _ = [x]
@@ -680,7 +692,7 @@ insertFPointers (x@(Debug ('*':'*':'c':fName)):(Debug ""):xs) ptrs@(progP,_)
         ++ (insertFPointers xs ptrs)
 insertFPointers (x:xs) ptrs = (x: (insertFPointers xs ptrs))
 
-
+-- Inserts found call return addresses in the code by the keyword '**r'. Pushes it to stack.
 insertACallPointers :: [Instruction] -> ([ProcPointer], [CallPointer]) -> [Instruction]
 insertACallPointers [] _ = []
 insertACallPointers [x]  _ = [x]
@@ -689,6 +701,7 @@ insertACallPointers (x@(Debug ('*':'*':'r':cName)):(Debug ""):xs) (progP, callP)
         , Push regE
         ] ++ (insertACallPointers xs (progP, newCallP))
     where
+        (v,newCallP) = takeItem callP cName
         takeItem :: [CallPointer] -> String -> (Int, [CallPointer])
         takeItem [] _ = (999999,[])
         takeItem (x@(cNameStr,number):xs) str 
@@ -696,14 +709,14 @@ insertACallPointers (x@(Debug ('*':'*':'r':cName)):(Debug ""):xs) (progP, callP)
             | otherwise = (nr,x:nxs)
                 where (nr,nxs) = takeItem xs str
         
-        (v,newCallP) = takeItem callP cName
+-- fall-through
 insertACallPointers (x:xs) ptrs@(progP, callP)
     = x : (insertACallPointers xs ptrs) 
 
-insertErrorPointers :: [Instruction] -> ([ProcPointer], [CallPointer]) -> [Instruction]
-insertErrorPointers l _ = l
 
- -- Helper function to accurately determine the final length of a certain piece of instructions.
+ -- Helper function to accurately determine the final length of a certain piece 
+ -- Needed because aforementioned labels may occur in the code that do not count
+ -- for the final code length.
 lengthNoDebug :: [Instruction] -> Int 
 lengthNoDebug [] = 0
 lengthNoDebug ((Debug ('*':'*':'p':_)):xs) = lengthNoDebug xs
