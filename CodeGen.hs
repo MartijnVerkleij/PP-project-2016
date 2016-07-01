@@ -21,29 +21,43 @@ codeGen :: AST -> Int -> [Instruction]
 
 codeGen (ASTProgram asts 
     checkType@(functions, globals, variables)) threads
-        =   threadControl ++
+        =   threadControl 
+            ++
+            -----------------------------------------
+            -- Post-return for fork-run procedures --
+            -----------------------------------------
             [ ComputeI Add regSprID fork_record_size regB 
-                                            -- unset occupation bit 
+                                                -- unset occupation bit 
             , WriteInstr reg0 (IndAddr regB)
-            , Jump (Abs 9)               -- Back to thread control loop
+            , Jump (Abs 9)                      -- Back to thread control loop
             ]
-            ++ procsCode ++ globalsCode ++ exprsCode ++ 
-            [ Load (ImmValue 1) regA
+            ++ 
+            procsCode                           -- Procedures
+            ++ 
+            globalsCode                         -- Global declarations
+            ++ 
+            exprsCode                           -- Main code
+            ++ 
+            -----------------------
+            -- Post-program code --
+            -----------------------
+            [ Load (ImmValue 1) regA            -- Set endP record to 1
             , WriteInstr regA (DirAddr fork_record_endp)
-            , EndProg
+            , EndProg                           -- Which tells threads to stop execution
             ]
         where
             threadControl = 
-                [ Compute Equal regSprID reg0 regE
-                , Branch regE (Rel 2)
-                , Jump (Rel 7)
+                [ Branch regSprID (Rel 7)       -- SprID > 0 --> thread control loop
                 , TestAndSet (DirAddr (fork_record_rd))
-                , Receive (regE)
-                , Branch regE (Rel 2)
-                , Jump (Rel (-3))
-                , Load (ImmValue 0) regARP
-                , Jump (Rel begin_of_code)
+                                                -- Set rd value to default state
+                , Receive (regE)                --
+                , Branch regE (Rel 2)           --
+                , Jump (Rel (-3))               --
+                , Jump (Rel begin_of_code)      -- Jump to exprsCode
                 
+                -------------------------
+                -- Thread Control Loop --
+                -------------------------
                 , ReadInstr (DirAddr fork_record_endp)
                 , Receive regB                  -- Read end of program address
                 , Compute Equal regB reg0 regE
@@ -54,7 +68,9 @@ codeGen (ASTProgram asts
                 , Branch regE (Rel 2)           -- successful lock -> +2
                 , Jump (Rel (-8))               -- otherwise try again
                 
-                
+                ------------------------------
+                -- Fork-run threads PreCall --
+                ------------------------------
                 , ComputeI Add regSprID fork_record_size regB 
                                                 -- compute thread occupation bit 
                 , TestAndSet (IndAddr regB)     -- Grab occupation bit
