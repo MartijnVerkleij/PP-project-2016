@@ -16,6 +16,8 @@ Now simply run main and follow the instructions:
 
 `./Main`
 
+These commands have only been tested on Ubuntu.
+
 All our test files are located in `test/`
 
 Make sure your program has the `.shl` extension
