@@ -119,11 +119,11 @@ codeGen (ASTProgram asts
                 , Jump (Ind regA)               -- jump to procedure
                 ]
             
-            begin_of_code = (lengthNoDebug (threadControl ++ procsCode)) - 5
+            begin_of_code = (lengthNoDebug (threadControl ++ procsCode)) - 2
                 -- Computes line number that regular code starts at.
             (globalAsts, procexprs) = span isGlobal asts
             (procs, exprs) = span isProcedure procexprs
-            procsCode = concat $ map (\x -> codeGen x threads) procs
+            procsCode = (concat $ map (\x -> codeGen x threads) procs) ++ [Nop, Nop]
             globalsCode = concat $ map (\x -> codeGen x threads) globalAsts
             exprsCode = concat $ map (\x -> codeGen x threads) exprs
             
@@ -237,26 +237,35 @@ codeGen (ASTProc pName astArgs astStat
             , Jump (Ind regE)                   -- Jump to it
             ]
                 
-            
+-- Resolves the memory address of the argument (in local memory)
+-- and pushes it to stack. Only found in procedure declarations, so 
+-- it does not return its value, as one might expect.
 codeGen (ASTArg astType astVar 
     checkType@(functions, globals, variables)) threads
         = getMemAddr astStr variables ++
             [ Push regE ]
             where
                 astStr = getStr astVar
+            
+-- Starts a block statement. Any block is preceded by opening a new scope
+-- with an AR-like structure, that simply contains a pointer to the 
+-- higher scope's parent AR, followed by any variables declared 
+-- in this scope.
 codeGen (ASTBlock astStats 
     checkType@(functions, globals, variables)) threads
-        =   [ Compute Add regARP reg0 regC    -- Load ARP = regC
+        =   [ Compute Add regARP reg0 regC      -- Load ARP = regC
             , ComputeI Add regC (length (variables!1) + 1) regC -- Skip local data area
-            , Store regARP (IndAddr regC)   -- Caller's ARP
-            , Compute Add regC reg0 regARP    -- Set mini-ARP to new scope
+            , Store regARP (IndAddr regC)       -- Caller's ARP
+            , Compute Add regC reg0 regARP      -- Set mini-ARP to new scope
             ] 
             ++ concat ( map (\x -> codeGen x threads) astStats ) ++
-            [ Load (IndAddr regARP) regARP
+            [ Load (IndAddr regARP) regARP      -- Exit scope by assigning parent's ARP
             ]
+            
+-- Declares a variable in the current scope. A free memory address has been 
 codeGen (ASTDecl vartype astVar@(ASTVar _ _) Nothing 
     checkType@(functions, globals, variables)) threads
-        = (getMemAddr varNameStr variables) ++
+        = (getMemAddr varNameStr variables) ++  -- 
             [ Store reg0 (IndAddr regE) ]
                 where 
                     varNameStr = getStr astVar
