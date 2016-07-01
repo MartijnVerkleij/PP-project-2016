@@ -220,7 +220,7 @@ load ldCode (immval,aluOutput,aluIOutput,memval,pc,reply) = case (ldCode, reply)
         (LdInp, Just rx) -> rx
         (LdInp, Nothing) -> 0
 
-        (_    , Just rx) -> error ("Sprockell ignored a system response of value: " ++ show rx)
+        (y    , Just rx) -> error ("Sprockell ignored a system response of value: " ++ show y ++ "," ++show rx)
 
 -- =====================================================================================
 -- store: to store data in local memory

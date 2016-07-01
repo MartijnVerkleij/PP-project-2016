@@ -1,11 +1,14 @@
 global int num = 5;
 
 procedure set_four() {
+    (3+(2*(2*(2*332))));
 	num = 4;
+	print(num);
 }
 
 procedure set_six() {
 	num = 6;
+	print(num);
 }
 
 fork set_four();

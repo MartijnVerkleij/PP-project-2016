@@ -33,8 +33,23 @@ procedure test1() {
 	join;
 	print(i);
 
+	fork p_0();
+	fork p_1();
+	join;
+	print(i);
+
+    flag_0 = false;
+    flag_1 = false;
+    turn = 0;    
+    
+	fork p_0();
+	fork p_1();
+	join;
+	print(i);
+
 	fork p_1();
 	fork p_0();
+	join;
 	print(i);
 
 	fork p_0();
@@ -53,15 +68,7 @@ procedure test1() {
 
 	fork p_1();
 	fork p_0();
-	print(i);
-
-	fork p_0();
-	fork p_1();
 	join;
-	print(i);
-
-	fork p_1();
-	fork p_0();
 	print(i);
 }
 

@@ -7,6 +7,9 @@ procedure p0(int c) {
 
 int b = 2;
 print(b); // should print 2
+
+a = 1;
+
 p0(b);
 print(b); // should print 4 
 print(0);

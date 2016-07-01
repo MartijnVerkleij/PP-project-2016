@@ -1,15 +1,19 @@
 procedure fib(int i, int res) {
-    if ((i < (-3))) {
-        res = i;
+    print(i);
+    
+    
+    if ((i < (3))) {
+        res = 1;
     } else {
         int a;
         int b;
         fib((i-1), a);
         fib((i-2), b);
         res = (a + b);
+        
     }
 }
 
-int a;
-print (a);
-fib(4, a);
+int a = 0;
+fib(6, a);
+print(a);

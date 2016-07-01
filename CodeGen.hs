@@ -21,79 +21,88 @@ codeGen :: AST -> Int -> [Instruction]
 
 codeGen (ASTProgram asts 
     checkType@(functions, globals, variables)) threads
-        =   threadControl ++ procsCode ++ [Nop,Nop,Nop] ++ globalsCode ++ exprsCode ++ [Nop,EndProg]
+        =   threadControl ++
+            [ ComputeI Add regSprID fork_record_size regB 
+                                            -- unset occupation bit 
+            , WriteInstr reg0 (IndAddr regB)
+            , Jump (Abs 9)               -- Back to thread control loop
+            ]
+            ++ procsCode ++ globalsCode ++ exprsCode ++ 
+            [ Load (ImmValue 1) regA
+            , WriteInstr regA (DirAddr fork_record_endp)
+            , EndProg
+            ]
         where
             threadControl = 
                 [ Compute Equal regSprID reg0 regE
                 , Branch regE (Rel 2)
-                , Jump (Rel 6)
-                , TestAndSet (DirAddr (threadControlAddr + 1))
+                , Jump (Rel 7)
+                , TestAndSet (DirAddr (fork_record_rd))
                 , Receive (regE)
                 , Branch regE (Rel 2)
                 , Jump (Rel (-3))
                 , Load (ImmValue 1) regARP
                 , Jump (Rel begin_of_code)
-                , Load (ImmValue threadControlAddr) regA 
-                                                -- Begin of thread control loop
+                
                 , ReadInstr (DirAddr fork_record_endp)
                 , Receive regB                  -- Read end of program address
                 , Compute Equal regB reg0 regE
                 , Branch regE (Rel 2)           -- jump over endprog if not done
                 , EndProg                       -- Endprog if done bit is set by main thread
-                , TestAndSet (IndAddr regA)     -- Grab rd lock
+                , TestAndSet (DirAddr fork_record_rd) -- Grab rd lock
                 , Receive regE
                 , Branch regE (Rel 2)           -- successful lock -> +2
                 , Jump (Rel (-8))               -- otherwise try again
-                , Compute Incr regA reg0 regA
-                , Compute Incr regA reg0 regA
-                , ReadInstr (IndAddr regA)      -- Read jump address
-                , Receive regB                  -- 
-                , Push regB                     -- Need dem registers...
-                , Compute Incr regA reg0 regA
-                , Compute Add regARP reg0 regC  -- Load ARP (now 0) = regC
-                , ReadInstr (IndAddr regA)      -- Read argcount = regD
-                , Receive regD
-                , Compute Add regD reg0 regB    -- hold on to argc
                 
-                , Compute Equal regD reg0 regE  -- while still args left
-                , Branch regE (Rel 16)           
-                , Compute Incr regA reg0 regA
-                , ReadInstr (IndAddr regA)      -- Read argument
-                , Receive regB
-                , Store regB (IndAddr regC)     -- Store in local memory
-                , Compute Incr regC reg0 regC
-                , ReadInstr (IndAddr regA)      -- Read global_arg_addr
-                , Receive regB
-                , Store regB (IndAddr regC)     -- Store in local memory
-                , Compute Incr regA reg0 regA
-                , ReadInstr (IndAddr regA)      -- Read local_arg_addr
-                , Receive regB
-                , Store regB (IndAddr regC)     -- Store in local memory
-                , Compute Incr regC reg0 regC
-                , Compute Decr regD reg0 regD
-                , Jump (Rel (-16))               -- Back to while
                 
-                , Compute Incr regC reg0 regC
-                , Load (ImmValue 10) regD        -- return address
-                , Store regD (IndAddr regC)
-                , Compute Incr regC reg0 regC
-                , Store regARP (IndAddr regC)   -- Caller's ARP
-                , Compute Add regC reg0 regARP  -- Set ARP to new scope
-                , Pop regA                      -- pop procedure address
                 , ComputeI Add regSprID fork_record_size regB 
                                                 -- compute thread occupation bit 
                 , TestAndSet (IndAddr regB)     -- Grab occupation bit
                 , Receive regE
                 , Branch regE (Rel 2)           -- successfully set -> +2
                 , Jump (Rel (-3))               -- otherwise try again
+                , ReadInstr (DirAddr fork_record_jump) -- Read jump address
+                , Receive regB                  -- 
+                , Push regB                     -- Need dem registers...
+                , ComputeI Add regARP 1 regC    -- Load ARP + 1 = regC
+                , ReadInstr (DirAddr fork_record_argc)      -- Read argcount = regD
+                , Receive regD
+                , Load (ImmValue fork_record_args) regA
+                                                -- set regA to first argument pointer
+                
+                , Compute Equal regD reg0 regE  -- while still args left
+                , Branch regE (Rel 18)           
+                , ReadInstr (IndAddr regA)      -- Read argument
+                , Receive regB
+                , Store regB (IndAddr regC)     -- Store in local memory
+                , Compute Incr regA reg0 regA
+                , Compute Incr regC reg0 regC
+                , ReadInstr (IndAddr regA)      -- Read global_arg_addr
+                , Receive regB
+                , Store regB (IndAddr regC)     -- Store in local memory
+                , Compute Incr regA reg0 regA
+                , Compute Incr regC reg0 regC
+                , ReadInstr (IndAddr regA)      -- Read local_arg_addr
+                , Receive regB
+                , Store regB (IndAddr regC)     -- Store in local memory
+                , Compute Incr regA reg0 regA
+                , Compute Incr regC reg0 regC
+                , Compute Decr regD reg0 regD
+                , Jump (Rel (-18))               -- Back to while
+                , Load (ImmValue (length threadControl)) regD        
+                                                -- return address
+                , Store regD (IndAddr regC)
+                , Compute Incr regC reg0 regC
+                , Store regARP (IndAddr regC)   -- Caller's ARP
+                , Compute Add regC reg0 regARP  -- Set ARP to new scope
+                , Pop regA                      -- pop procedure address
+                , WriteInstr reg0 (DirAddr fork_record_wr)    
+                                                -- Unset wr lock, so another 
+                                                -- thread can be served
                 , Jump (Ind regA)               -- jump to procedure
-                , Nop
-                , Nop
                 ]
-                where
-                    threadControlAddr = global_record_size * (length globals)
             
-            begin_of_code = (lengthNoDebug (threadControl ++ procsCode)) - 8
+            begin_of_code = (lengthNoDebug (threadControl ++ procsCode)) - 5
             (globalAsts, procexprs) = span isGlobal asts
             (procs, exprs) = span isProcedure procexprs
             procsCode = concat $ map (\x -> codeGen x threads) procs
@@ -114,7 +123,8 @@ codeGen (ASTGlobal varType astVar Nothing
         =   [ Load (ImmValue addr) regA         -- Load memory address of global's lock
             , TestAndSet (IndAddr regA)         -- Lock on ready bit
             , Receive regB                      --
-            , Branch regB (Rel (-3))            -- Retry if lock fails
+            , Branch regB (Rel 2)               -- Retry if lock fails
+            , Jump (Rel (-3))                   --
             , Load (ImmValue (addr + global_record_value)) 
                 regC                            -- Load memory address of global value
             , WriteInstr reg0 (IndAddr regC)    -- Write value
@@ -130,9 +140,9 @@ codeGen (ASTGlobal varType astVar (Just astExpr)
             [ Pop (regE)                        -- pop value from expression
             , Load (ImmValue addr) regA         -- Load memory address of global's lock
             , TestAndSet (IndAddr regA)         -- Lock on ready bit
-            , ReadInstr (IndAddr regA)          -- 
             , Receive regB                      --
-            , Branch regB (Rel (-4))            -- Retry if lock fails
+            , Branch regB (Rel (2))             -- Retry if lock fails
+            , Jump (Rel (-3))  
             , Load (ImmValue (addr + global_record_value)) 
                 regC                            -- Load memory address of global value
             , WriteInstr regE (IndAddr regC)    -- Write value
@@ -146,20 +156,22 @@ codeGen (ASTProc pName astArgs astStat
         =   [ Debug ("**p" ++ pName) ] 
             ++ 
             -- PostCall: Load args in local data area
-            [ Load (ImmValue ({-1 + -}proc_arp_argrec_size * (length astArgs))) regA
+            [ Load (ImmValue (1 + proc_arp_argrec_size * (length astArgs))) regA
                     -- Value to align with first variable in AR
                     --   -- plus 1 to skip over return address
             , Compute Sub regARP regA regA
-            , ComputeI Add reg0 1 regD        -- regD is number of arguments already done
+            , Load (ImmValue 1) regD            -- regD is number of arguments already done
             
+            , ComputeI Gt regD (length astArgs) regE -- if all arguments done
+            , Branch regE (Rel 7)               -- jump over folowing code:
             , Load (IndAddr regA) regB          -- Load argument value
             , Compute Add regARP regD regE      -- Load addr in local data area
             , Store regB (IndAddr regE)
             , Compute Incr regD reg0 regD       -- increment arg counter
             , ComputeI Add regA proc_arp_argrec_size regA          
                                                 -- Jump over to next arg's value
-            , ComputeI Lt regD (length astArgs) regE -- not yet all arguments done
-            , Branch regE (Rel (-6))            -- Next argument
+            , Jump (Rel (-7))                   -- Back to while
+            
             ]
             ++ codeGen astStat threads ++       -- Emit procedure contents
             -- PreReturn:
@@ -172,6 +184,8 @@ codeGen (ASTProc pName astArgs astStat
             , Compute Sub regARP regA regA
             , ComputeI Add reg0 1 regD        -- regD is number of arguments already done
             
+            , ComputeI Gt regD (length astArgs) regE -- if all arguments done
+            , Branch regE (Rel (23))            -- Jump over next code:
             , Compute Add regARP regD regE      -- Load addr for value
             , Load (IndAddr regE) regC          -- Load final value of arg
             , Load (IndAddr regA) regB          -- Load local addr record
@@ -180,12 +194,13 @@ codeGen (ASTProc pName astArgs astStat
             , Store regC (IndAddr regB)         -- Save value to local address
             , Compute Incr regA reg0 regA       -- Move argrec pointer to global addr
             , Load (IndAddr regA) regB          -- Load global addr record
-            , Compute Gt regB reg0 regE         -- global addr is a valid address
+            , Compute Lt regB reg0 regE         -- global addr is a valid address
             , Branch regE (Rel 9)               -- 
-            , Load (IndAddr regB) regE          -- Load memory address of global's lock
+            , Compute Add regB reg0 regE        -- Load memory address of global's lock
             , TestAndSet (IndAddr regE)         -- Lock on ready bit
             , Receive regE                      --
-            , Branch regE (Rel (-3))            -- Retry if lock fails
+            , Branch regE (Rel (2))             -- Retry if lock fails
+            , Jump (Rel (-4))
             , ComputeI Add regB global_record_value regB
                                                 -- Load memory address of global value
             , WriteInstr regC (IndAddr regB)    -- Write value
@@ -194,10 +209,9 @@ codeGen (ASTProc pName astArgs astStat
             , WriteInstr reg0 (IndAddr regB)    -- Unlock value
             , Compute Incr regD reg0 regD       -- increment arg counter
             , ComputeI Add regA 2 regA          -- Jump over to next arg's local addr
-            , ComputeI Lt regD (length astArgs) regE -- not yet all arguments done
-            , Branch regE (Rel (-21))           -- Next argument
+            , Jump (Rel (-23))                  -- Back to condition
             ] ++
-            [Compute Decr regARP reg0 regA 
+            [ Compute Decr regARP reg0 regA 
             , Load (IndAddr regA) regE          -- Return address
             , Load (IndAddr regARP) regARP
             , Jump (Ind regE)                   -- Jump to it
@@ -269,27 +283,37 @@ codeGen (ASTWhile astExpr astStat
                     bodyGen = codeGen astStat threads
 codeGen (ASTFork pName astArgs -- TODO: Add code to insert global and local variables to write to
     checkType@(functions, globals, variables)) threads
-        =   [ TestAndSet (DirAddr regA)     -- Grab wr lock
+        =   
+            [ TestAndSet (DirAddr fork_record_wr)     -- Grab wr lock
             , Receive regE
             , Branch regE (Rel 2)           -- successful lock -> +2
             , Jump (Rel (-3))               -- otherwise try again
-            ] ++ (concat $ map (\x -> codeGen x threads) $ astArgs) ++
+            ] ++ (concat $ reverse $ map (\x -> codeGen x threads) $ astArgs) ++
             [ Load (ImmValue (length astArgs)) regD
             , ComputeI Add regD fork_record_args regC
             ]
-            ++ (emitArgRecords astArgs variables globals) ++
+            ++ (emitArgRecords astArgs variables globals threads) ++
             [ WriteInstr regD (DirAddr fork_record_argc)
             , Debug ("**c" ++ pName)        -- line of jump addr. is not known
             , Debug ""
             , Pop regD
             , WriteInstr regD (DirAddr fork_record_jump)
             , WriteInstr reg0 (DirAddr fork_record_rd)
+            
+            , Load (ImmValue fork_record_wr) regB
+                                            -- load write lock address
+            , ReadInstr (IndAddr regB)      -- peek at writeLock
+            , Receive regE
+            , Branch regE (Rel 2)           -- if zero: continue;
+            , Jump (Rel (-3))               -- otherwise wait for thread to start our fork instance
             ]
 codeGen (ASTJoin 
     checkType@(functions, globals, variables)) threads
-        =   [ Compute NEq reg0 regSprID regE
-            , Branch regE (Rel 2)
-            , Debug "***ParallelJoinError***"
+        =   [ Compute Equal reg0 regSprID regE
+            , Branch regE (Rel 4)
+            , Load (ImmValue 2) regA
+            , PrintOut regA
+            , EndProg
             , Load (ImmValue fork_record_size) regB
             , Load (ImmValue 0) regA
             , ReadInstr (IndAddr regB)
@@ -297,21 +321,20 @@ codeGen (ASTJoin
             , Compute Add regA regC regA
             , ComputeI NEq regB (fork_record_size + threads) regE
             , Compute Incr regB reg0 regB
-            , Branch regE (Rel (-6)) 
+            , Branch regE (Rel (-5)) 
             , Compute Equal regA reg0 regE
             , Branch regE (Rel 2)
             , Jump (Rel (-10))
             ]
 codeGen (ASTCall pName astArgs -- TODO: Rewrite stuff so it actally pushes the indexes we need
     checkType@(functions, globals, variables)) threads
-        =   concat ( map (\x -> codeGen x threads) astArgs ) ++
+        =   concat ( reverse $ map (\x -> codeGen x threads) astArgs ) ++
             [ Compute Add regARP reg0 regC    -- Load ARP = regC
-            , ComputeI Add regC (length variables + 1) regC -- Skip local data area
+            , ComputeI Add regC ((length (variables!0)) + 1) regC -- Skip local data area
             , Load (ImmValue (length astArgs)) regD -- Read argcount = regD
             ] 
-            ++ (emitArgRecords astArgs variables globals) ++
-            [ Compute Incr regC reg0 regC
-            , Debug ("**r" ++ pName) -- return address
+            ++ (emitArgRecords astArgs variables globals threads) ++
+            [ Debug ("**r" ++ pName) -- return address
             , Debug ""
             , Pop regD                      --
             , Store regD (IndAddr regC)     -- to ARP
@@ -343,7 +366,8 @@ codeGen (ASTAss astVar astExpr _
             [ Load (ImmValue addr) regA         -- Load memory address of global's lock
             , TestAndSet (IndAddr regA)         -- Lock on ready bit
             , Receive regB                      --
-            , Branch regB (Rel (-3))            -- Retry if lock fails
+            , Branch regB (Rel 2)               -- Retry if lock fails
+            , Jump (Rel (-4))                   -- 
             , Load (ImmValue (addr + global_record_value)) 
                 regC                            -- Load memory address of global value
             , Pop regE                          -- Pop expression value
@@ -366,7 +390,8 @@ codeGen (ASTVar varName
             [ Load (ImmValue addr) regA         -- Load memory address of global's lock
             , TestAndSet (IndAddr regA)         -- Lock on ready bit
             , Receive regB                      --
-            , Branch regB (Rel (-3))            -- Retry if lock fails
+            , Branch regB (Rel (2))
+            , Jump (Rel (-4))                   -- Retry if lock fails
             , Load (ImmValue (addr + global_record_value)) 
                 regC                            -- Load memory address of global value
             , ReadInstr (IndAddr regC)          -- Read value
@@ -459,10 +484,9 @@ codeGen (ASTPrint astExprs
         )
 -- Find the index of a given Global. Used to calculate global address in memory.
 globalIndex :: String -> [VariableType] -> Int
-globalIndex var [] = (-1)
-globalIndex var ((xStr,_):xs)   | var == xStr   = 0
-                                | otherwise     = 1 + globalIndex var xs
-
+globalIndex var xs  | Map.notMember var vars    = -1
+                    | otherwise                 = (Map.findIndex var vars)
+            where vars = Map.fromList xs
 -- Find the memory location of a given variable in local memory and store it in regE.
 getMemAddr :: String -> [[VariableType]] -> [Instruction]
 getMemAddr varStr variables 
@@ -552,24 +576,24 @@ lengthNoDebug (_:xs) = 1 + lengthNoDebug xs
 -- | argument. Argument value MUST be on the stack, and C
 -- | must contain the pointer to where we can write the 
 -- | record.
-emitArgRecords :: [AST] -> [[VariableType]] -> [VariableType] -> [Instruction]
-emitArgRecords [] _ _ = []
-emitArgRecords (x@(ASTVar name _) : xs) variables globals =
+emitArgRecords :: [AST] -> [[VariableType]] -> [VariableType] -> Int -> [Instruction]
+emitArgRecords [] _ _ _ = []
+emitArgRecords (x@(ASTVar name _) : xs) variables globals threads =
     [ Pop regB                      -- Store value
     , Store regB (IndAddr regC)
     , Compute Incr regC reg0 regC   
-    
+    ] 
+    ++ emitLocalArg coords ++ 
+    [ Compute Incr regC reg0 regC 
     , Load (ImmValue (gIndex)) regB
     , Store regB (IndAddr regC)     -- Store global memory pointer in local 
                                     -- memory (if argument has one...)
     , Compute Incr regC reg0 regC
-    ] 
-    ++ emitLocalArg coords ++ 
-    [ Compute Incr regC reg0 regC ]
-    ++ emitArgRecords xs variables globals
+    ]
+    ++ emitArgRecords xs variables globals threads
     where
-        gIndex  | globalIndex name globals == (-1) =
-             fork_record_size + global_record_size * (globalIndex name globals)
+        gIndex  | globalIndex name globals >= 0 =
+             fork_record_size + threads + (global_record_size * (globalIndex name globals))
                 | otherwise = (-1)
         coords = findVar (0,0) name variables
         
@@ -583,7 +607,7 @@ emitArgRecords (x@(ASTVar name _) : xs) variables globals =
             [ ComputeI Add regE (y + 1) regE
             , Store regE (IndAddr regC)
             ])
-emitArgRecords (x : xs) variables globals =
+emitArgRecords (x : xs) variables globals threads =
     [ Pop regB                      -- Store value
     , Store regB (IndAddr regC)
     , Compute Incr regC reg0 regC   
@@ -594,7 +618,7 @@ emitArgRecords (x : xs) variables globals =
     , Load (ImmValue (-1)) regB     -- Store -1 as local memory pointer
     , Store regB (IndAddr regC)
     , Compute Incr regC reg0 regC ]
-    ++ emitArgRecords xs variables globals
+    ++ emitArgRecords xs variables globals threads
         
 
 -- | Builds up the instructions to add the global index of an 
