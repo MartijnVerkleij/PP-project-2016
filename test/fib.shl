@@ -12,4 +12,4 @@ procedure fib(int i, int res) {
 
 int a;
 print (a);
-fib(15, a);
+fib(4, a);

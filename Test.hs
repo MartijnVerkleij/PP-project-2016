@@ -36,6 +36,7 @@ testSingle =    [ "cyclic_recursion"
                 , "call_by_reference"
                 , "blocks"
                 , "stuff"
+                , "simple_proc"
                 ]
 
 testMulti :: [(String, Int)]
@@ -46,11 +47,12 @@ testMulti =     [ ("banking", 4)
 testAll :: [(String, Int)]
 testAll =   single ++ multi
     where
-        single  = map (\x       -> ("test/" ++ x ++ ".txt",1)) testSingle
-        multi   = map (\(x,y)   -> ("test/" ++ x ++ ".txt", y)) testMulti
+        single  = map (\x       -> ("test/" ++ x ++ ".shl",1)) testSingle
+        multi   = map (\(x,y)   -> ("test/" ++ x ++ ".shl", y)) testMulti
 
 testConversion :: String -> String
 testConversion x    = "test/" ++ (alias x) ++ ".shl"
+
 
 alias :: String -> String
 alias x | x `elem` ["cyclic", "cycl"]
@@ -71,7 +73,9 @@ alias x | x `elem` ["cyclic", "cycl"]
             = "call_by_reference"
         | x `elem` ["block"]
             = "blocks"
-        | otherwise                                         
+        | x `elem` ["simplep"]
+            = "simple_proc"
+        | otherwise
             = x
 
 
