@@ -149,7 +149,9 @@ The problem with concurrency was mostly that the direction it was being taken ch
 Call-by-reference became a bit of a problem because of some design flaws. Because of the way our ARs work and the visibility of certain aspects of variables when passed as arguments, changes had to be made to the old design to what it currently is (see \fullref{def:call-by-reference}). These changes caused quite some work during their implementation.
 
 \section{Code Generation}
-%TODO
+During code generation, two big types of problems arose, of which the first one was offset management. SprIL does not know labels as ILOC does, and since our code was generated with a tree, many things as procedure addresses, retrun addresses and the like were not known on the first pass. Furthermore, fixing bugs in logic often messes up offsets in loops, creating their own set of incomprehensible issues.
+
+The second issue was memory management. Not knowing beforehand what you need in an AR does not help when debugging issues with values being read as addresses and the other way around. But by far the most annoying issue I've had was a bug in Sprockell where writes to out-of-bounds addresses to global memory were not protected. Instead, they extended the list, resulting in all variables moving one step. Good luck debugging when one cannot trust the integrity of memory.
 
 
 %------------------------------------------------
@@ -851,7 +853,12 @@ To run a test, simply follow the \texttt{README.md}, using the following path: \
 \chapter{Personal Evaluation}
 \label{personal_evaluation}
 \section{Martijn}
-%TODO somewhere at the end by Martijn
+The project is actually quite fun to do once you have a better understanding of the time needed to deliver a working product. It helps too that stress factors like an FP-resit or falling behind on excercises are just not there. Even though I had to take the CP resit, most other grades were excellent and help in achieving a good average grade. The module as a whole is a lot of work, but is a lot more doable as a second-timer. Grades are better, workload is better. 
+
+I am a great fan of the new functional programming excercises in week 4 and 5, they were a change in pace for us, but gave us the confidence to do this project fully in Haskell, which turned out to be a great choice in terms of motivation and having the overview. With ANTLR I feel like talking to a black box (even though they do roughly the same). The new Logic programming excercises and project are a great addition too, as they show more of the power of logic programming than last year's did.
+
+That's all. As far as I can see we did our best. Let's hope it is enough.
+
 \section{Tim}
 I personally am quite satisfied with the language and compiler we built. It's a lot better than last year's, and think it should be quite usable this time. We decided to focus mostly on a simple set of things we wanted, and I believe we mostly delivered on those things. I know call-by-reference is somewhat iffy, it uses an internal value and only writes it back to the references variable at the end of the procedure, but that should be fine for sequential programs. For parallel programs, just stick with Peterson's algorithm if you need something to be mutually exclusive, which isn't just a single write.
 
