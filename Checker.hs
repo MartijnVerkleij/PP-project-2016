@@ -31,6 +31,10 @@ checker1 (ASTProgram asts _)
                 argPairs        = map getArg args
                 mergedChecks    = mergeFunction (pid, argPairs) checks
                 procedure       = ASTProc pid args stat mergedChecks
+--        function (ASTProgram asts checks) (ASTEnum varName vars)
+--            = ASTProgram (asts ++ [enum]) 
+--            where
+--                enum            = ASTEnum  
         function (ASTProgram asts checks) ast
             = ASTProgram (asts ++ [ast]) checks
 

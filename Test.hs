@@ -117,7 +117,6 @@ ast name = do
     a <- readFile $ testConversion name
     showTree $
         astToRose $
-        checker$
         pTreeToAst $
         parse grammar Program $
         toTokenList $

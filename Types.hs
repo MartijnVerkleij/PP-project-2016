@@ -57,6 +57,7 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Fork                          -- Fork statement
               | Join                          -- Join statement
               | Global                        -- Global keyword
+              | Enum                          -- enum keyword
               | Print
               
               | Program                       -- Program
@@ -76,6 +77,8 @@ type CheckType = ([FunctionType], [VariableType], [[VariableType]])
 data AST = ASTProgram [AST] CheckType
     -- Globals
     | ASTGlobal Alphabet AST (Maybe AST) CheckType
+    -- Enumerations
+    | ASTEnum String [AST] CheckType
     -- Procedures and arguments
     | ASTProc String [AST] AST CheckType
     | ASTArg AST AST CheckType

@@ -18,6 +18,8 @@ pTreeToAst (PNode Global (typ:var:[]))
     = ASTGlobal (getAlphabet (getStr typ)) (pTreeToAst var) Nothing ([],[],[])
 pTreeToAst (PNode Global (typ:var:(PLeaf (Ass,_,_)):expr:[]))
     = ASTGlobal (getAlphabet (getStr typ)) (pTreeToAst var) (Just (pTreeToAst expr)) ([],[],[])
+pTreeToAst (PNode Enum (enum:(PLeaf (Ass,_,_)):(PLeaf (Brace,_,_)):values))
+    = ASTEnum (getStr enum) (map pTreeToAst values) ([],[],[])
 pTreeToAst (PNode Proc (pid:args_expr))
     = ASTProc (getStr pid) (makeAstArg $ init args_expr) expr ([],[],[])
         where
@@ -149,6 +151,8 @@ astToRose (ASTGlobal typeStr ast Nothing _)
     = RoseNode ("global " ++ (getTypeStr typeStr)) [(astToRose ast)]
 astToRose (ASTGlobal typeStr ast1 (Just ast2) _)
     = RoseNode ("global " ++ (getTypeStr typeStr)) $ map astToRose [ast1, ast2]
+astToRose (ASTEnum enum asts _)
+    = RoseNode ("enum " ++ enum) $ map astToRose asts
 astToRose (ASTProc str asts ast _)
     = RoseNode ("procedure " ++ str) $ map astToRose $ asts ++ [ast]
 astToRose (ASTArg ast1 ast2 _)
