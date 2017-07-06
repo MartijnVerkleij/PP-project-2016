@@ -9,7 +9,7 @@ import Debug.Trace
 
 -- Wrapper
 checker :: AST -> AST
-checker ast = checker2 (checker1 ast) ([],[],[[]])
+checker ast = checker2 (checker1 ast) ([],[],[[]],[])
 
 -- First pass
 -- Checks declarations
@@ -17,7 +17,7 @@ checker ast = checker2 (checker1 ast) ([],[],[[]])
 -- Stores functions and their arguments
 checker1 :: AST -> AST
 checker1 (ASTProgram asts _) 
-    = foldl function (ASTProgram [] ([],[],[[]])) asts
+    = foldl function (ASTProgram [] ([],[],[[]],[])) asts
     where
         function :: AST -> AST -> AST
         function (ASTProgram asts checks) (ASTGlobal varType varName ass _) 
@@ -31,10 +31,12 @@ checker1 (ASTProgram asts _)
                 argPairs        = map getArg args
                 mergedChecks    = mergeFunction (pid, argPairs) checks
                 procedure       = ASTProc pid args stat mergedChecks
---        function (ASTProgram asts checks) (ASTEnum varName vars)
---            = ASTProgram (asts ++ [enum]) 
---            where
---                enum            = ASTEnum  
+        function (ASTProgram asts checks) (ASTEnum varName vars _)
+            = ASTProgram (asts ++ [enum]) mergedEnums 
+            where
+                enumStrs        = map getStr vars
+                mergedEnums     = mergeEnum (varName, enumStrs) checks
+                enum            = ASTEnum varName vars mergedEnums
         function (ASTProgram asts checks) ast
             = ASTProgram (asts ++ [ast]) checks
 
@@ -69,11 +71,14 @@ checker2 (ASTGlobal varType varName@(ASTVar varId _) (Just expr) _) check
         exprCheck   = checker2 expr check
 -- Opens new scope and puts its arguments in it as variables
 -- Checks its body
-checker2 (ASTProc pid args body _) check@(f,_,_)
+checker2 (ASTProc pid args body _) check@(f,_,_,_)
     = ASTProc pid args bodyCheck newCheck
     where
         bodyCheck   = checker2 body newCheck
         newCheck    = foldl' addToScope (openScope check) ((Map.fromList f)Map.!pid)
+-- No checks
+checker2 self@(ASTEnum _ _ _) _
+    = self
 -- Opens new scope
 -- Checks its body in order
 checker2 (ASTBlock asts _) check
@@ -145,7 +150,13 @@ checker2 self@(ASTCall pid args _) check
         argsCheck = map (\x -> checker2 x check) args
 -- Check expressions
 checker2 (ASTPrint exprs _) check
-    = ASTPrint (map (\x -> checker2 x check) exprs) check
+    | null types
+        = ASTPrint asts check
+    | otherwise
+        = error $ "Cannot print enumerated value(s) " ++ show types ++"."
+    where
+        types = map getStr (filter (\x -> getExprType x == EnumType) asts)
+        asts = map (\x -> checker2 x check) exprs
 -- Checks: 
 checker2 (ASTExpr expr _ _) check
     = ASTExpr exprCheck (Just (getExprType exprCheck)) check
@@ -207,7 +218,7 @@ matchOpType op exprType
 -- Check whether the length of the arguments matches the length of the declared procedure arguments
 -- Check whether the types of every argument matches
 matchArgs :: String -> [AST] -> CheckType -> Bool
-matchArgs pid args check@(f,g,v)
+matchArgs pid args check@(f,g,v,_)
     = (length argTypes == (length funcTypes)) && (all (==True) $ zipWith (==) argTypes funcTypes)
     where
         argTypes    = map getExprType args
@@ -215,24 +226,24 @@ matchArgs pid args check@(f,g,v)
 
 -- Open a scope
 openScope :: CheckType -> CheckType
-openScope (f,g,v) = (f,g,[]:v)
+openScope (f,g,v,e) = (f,g,[]:v,e)
 
 -- Closes a scope
 closeScope :: CheckType -> CheckType
-closeScope self@(f,g,[])    = error $ "No scopes left to close, in Checker.closeScope, with: " ++ (show self)
-closeScope (f,g,(v:vs))     = (f,g,vs)
+closeScope self@(_,_,[],_)    = error $ "No scopes left to close, in Checker.closeScope, with: " ++ (show self)
+closeScope (f,g,(v:vs),e)     = (f,g,vs,e)
 
 -- Add a variable to the deepest scope
 -- Check whether the name conflicts other declarations, where variable shadowing is allowed for non-global variables
 addToScope :: CheckType -> (String, Alphabet) -> CheckType
-addToScope (f,g,(v:vs)) pair@(id,_) 
+addToScope (f,g,(v:vs),e) pair@(id,_) 
     | Map.member id (Map.fromList g)
         = error $ "A global variable with id " ++ (show id) ++ " has already been declared."
     | Map.member id $ Map.fromList f
         = error $ "A procedure with pid " ++ (show id) ++ " has already been declared."
     | Map.member id (Map.fromList v)
         = error $ "A variable with id " ++ (show id) ++ " has already been declared."
-    | otherwise = (f,g,((v ++ [pair]):vs))
+    | otherwise = (f,g,((v ++ [pair]):vs),e)
 
 -- Return the name of an ASTVar as a string
 getStr :: AST -> String
@@ -262,8 +273,10 @@ getExprType (ASTUnary _ _ (Just typeStr) _) = typeStr
 getExprType (ASTInt _ _)                    = IntType
 getExprType (ASTBool _ _)                   = BoolType
 getExprType (ASTExpr _ (Just typeStr) _)    = typeStr
-getExprType (ASTVar varName (_,g,v))
+getExprType (ASTVar varName (_,g,v,e))
     | Map.member varName (Map.fromList g)   = (Map.fromList g)Map.!varName
+    | elem varName $ concat $ map (\(x,y) -> (x:y)) e 
+                                            = EnumType
     | otherwise                             = iterVar varName v
     where
         iterVar :: String -> [[VariableType]] -> Alphabet
@@ -282,41 +295,61 @@ getAlphabet _       = error "Type not recognised in Checker.getAlphabet"
 -- Checks if the name of the function has been declared already
 -- Adds the FunctionType to the CheckType
 mergeFunction :: FunctionType -> CheckType -> CheckType
-mergeFunction f@(pid,_) (fs,gs,vs)  
+mergeFunction f@(pid,_) (fs,gs,vs,es)  
     | Map.member pid $ Map.fromList fs
         = error $ "A procedure with pid " ++ (show pid) ++ " has already been declared."
     | Map.member pid $ Map.fromList gs 
         = error $ "A global variable with id " ++ (show pid) ++ " has already been declared."
     | elem pid $ Map.keys $ Map.fromList $ concat vs 
         = error $ "A variable with id " ++ (show pid) ++ " has already been declared."
+    | elem pid $ concat $ map (\(x,y) -> (x:y)) es
+        = error $ "A value of an enumeration with id " ++ (show pid) ++ " has already been declared."
     | otherwise 
-        = (fs ++ [f],gs,vs)
+        = (fs ++ [f],gs,vs,es)
 
 -- Checks if the name of the global has been declared already
 -- Adds the VariableType to the CheckType
 mergeGlobal :: VariableType -> CheckType -> CheckType
-mergeGlobal g@(id,_) (fs,gs,vs)
+mergeGlobal g@(id,_) (fs,gs,vs,es)
     | Map.member id $ Map.fromList fs
         = error $ "A procedure with pid " ++ (show id) ++ " has already been declared."
     | Map.member id (Map.fromList gs)
         = error $ "A global variable with id " ++ (show id) ++ " has already been declared."
     | elem id $ Map.keys $ Map.fromList $ concat vs 
         = error $ "A variable with id " ++ (show id) ++ " has already been declared."
+    | elem id $ concat $ map (\(x,y) -> (x:y)) es
+        = error $ "A value of an enumeration with id " ++ (show id) ++ " has already been declared."
     | otherwise
-        =(fs,gs ++ [g],vs)
+        =(fs,gs ++ [g],vs,es)
 
 -- Checks if the name of the variable has been declared already, only considering the deepest scope
 -- Adds the VariableType to the CheckType
 mergeVariable :: VariableType -> CheckType -> CheckType
-mergeVariable v@(id,_) (fs,gs,(scope:scopes))
+mergeVariable v@(id,_) (fs,gs,(scope:scopes),es)
     | Map.member id $ Map.fromList fs
         = error $ "A procedure with pid " ++ (show id) ++ " has already been declared."
     | Map.member id (Map.fromList scope)
         = error $ "A variable with id " ++ (show id) ++ " has already been declared."
     | Map.member id (Map.fromList gs)
         = error $ "A global variable with id " ++ (show id) ++ " has already been declared."
+    | elem id $ concat $ map (\(x,y) -> (x:y)) es
+        = error $ "A value of an enumeration with id " ++ (show id) ++ " has already been declared."
     | otherwise
-        = (fs,gs,((scope ++ [v]):scopes))
+        = (fs,gs,((scope ++ [v]):scopes),es)
+
+mergeEnum :: EnumCheckerType -> CheckType -> CheckType
+mergeEnum e@(name,ids) (fs,gs,vs,es)
+    | any (\id -> Map.member id $ Map.fromList fs) (name:ids)
+        = error $ "A procedure with pid " ++ (show ids) ++ " has already been declared."
+    | any (\id -> elem id $ Map.keys $ Map.fromList $ concat vs ) (name:ids)
+        = error $ "A variable with id " ++ (show ids) ++ " has already been declared."
+    | any (\id -> Map.member id (Map.fromList gs)) (name:ids)
+        = error $ "A global variable with id " ++ (show ids) ++ " has already been declared."
+    | any (\id -> elem id $ concat $ map (\(x,y) -> (x:y)) es) (name:ids)
+        = error $ "A value of an enumeration with id " ++ (show ids) ++ " has already been declared."
+    | otherwise
+        = (fs,gs,vs,es ++ [e])
+
 
 -- Return the type CheckType from any AST
 getCheck :: AST -> CheckType
@@ -327,6 +360,7 @@ getCheck (ASTIf _ _ _ mergedChecks)     = mergedChecks
 getCheck (ASTWhile _ _ mergedChecks)    = mergedChecks
 getCheck (ASTFork _ _ mergedChecks)     = mergedChecks
 getCheck (ASTJoin mergedChecks)         = mergedChecks
+getCheck (ASTEnum _ _ mergedChecks)     = mergedChecks
 getCheck (ASTCall _ _ mergedChecks)     = mergedChecks
 getCheck (ASTPrint _ mergedChecks)      = mergedChecks
 getCheck (ASTExpr _ _ mergedChecks)     = mergedChecks

@@ -36,6 +36,7 @@ testSingle =    [ "cyclic_recursion"    -- Run this one with more local memory
                 , "blocks"
                 , "stuff"
                 , "simple_proc"
+                , "enum"
                 ]
 
 testMulti :: [(String, Int)]
@@ -128,6 +129,17 @@ check name = do
     showTree $
         astToRoseDebug $
         checker $
+        pTreeToAst $
+        parse grammar Program $
+        toTokenList $
+        tokenizer a
+
+check1 :: String -> IO ()
+check1 name = do
+    a <- readFile $ testConversion name
+    showTree $
+        astToRoseDebug $
+        checker1 $
         pTreeToAst $
         parse grammar Program $
         toTokenList $

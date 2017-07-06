@@ -13,7 +13,6 @@ tokenizer [] = []
 
 tokenizer (';':xs)  = (Semi, ";")   : tokenizer xs
 tokenizer (',':xs)  = (Comma, ",")  : tokenizer xs
-tokenizer ('=':xs)  = (Ass, "=")    : tokenizer xs
 
 tokenizer input@(x:xs) 
     | isSpace x             = tokenizer xs
@@ -49,6 +48,8 @@ tokenizer input@(x:xs)
     | isPrefixOf "/*" input =                     tokenizer $ endOfBlock (input \\ "/*")
     
     | elem x "!+-*<>"       = (Op, [x])         : tokenizer xs
+    
+    | x == '='              = (Ass, "=")        : tokenizer xs
     
     | int /= ""             = (IntType, int)    : tokenizer intRest
     | word /= ""            = (Var, word)       : tokenizer wordRest

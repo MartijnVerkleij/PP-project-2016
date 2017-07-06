@@ -1,1 +1,8 @@
 enum bla = {test, test1, test2};
+enum foo = {bar,baz};
+
+bool b = false;
+
+bool a = (test == baz);
+
+print(a);

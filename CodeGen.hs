@@ -8,6 +8,7 @@ import Types
 import Constants
 import Checker
 import Data.Maybe
+import Data.List
 
 import qualified Data.Map.Strict as Map
 
@@ -20,7 +21,7 @@ codeGen' int ast = insertACallPointers (insertFPointers instrss (pPointers, cPoi
 codeGen :: AST -> Int -> [Instruction]
 
 codeGen (ASTProgram asts 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   threadControl 
             ++
             -----------------------------------------
@@ -139,7 +140,7 @@ codeGen (ASTProgram asts
 -- Declares a global in global memory, with its standard initial value .
 -- Globals are saved from memory address 31 upwards, in pairs with a mutation bit. 
 codeGen (ASTGlobal varType astVar Nothing 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   [ Load (ImmValue addr) regA         -- Load memory address of global's lock
             , TestAndSet (IndAddr regA)         -- Lock on ready bit
             , Receive regB                      --
@@ -156,7 +157,7 @@ codeGen (ASTGlobal varType astVar Nothing
             
 -- Same as function above, except that now an expression can be assigned to the variable.
 codeGen (ASTGlobal varType astVar (Just astExpr) 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   (codeGen astExpr threads) ++
             [ Pop (regE)                        -- pop value from expression
             , Load (ImmValue addr) regA         -- Load memory address of global's lock
@@ -172,11 +173,13 @@ codeGen (ASTGlobal varType astVar (Just astExpr)
             where
                 addr = fork_record_size + threads 
                     + (global_record_size * (globalIndex (getStr astVar) globals))
-                    
+               
+codeGen (ASTEnum _ _ _) _
+        = []
                     
 -- Procedure node. Emits post-call and pre-return code that passes through variables.
 codeGen (ASTProc pName astArgs astStat 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   [ Debug ("**p" ++ pName) ] 
             ++ 
             -- PostCall: Load args in local data area
@@ -247,7 +250,7 @@ codeGen (ASTProc pName astArgs astStat
 -- and pushes it to stack. Only found in procedure declarations, so 
 -- it does not return its value, as one might expect.
 codeGen (ASTArg astType astVar 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         = getMemAddr astStr variables ++
             [ Push regE ]
             where
@@ -258,7 +261,7 @@ codeGen (ASTArg astType astVar
 -- higher scope's parent AR, followed by any variables declared 
 -- in this scope.
 codeGen (ASTBlock astStats 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   [ Compute Add regARP reg0 regC      -- Load ARP = regC
             , ComputeI Add regC (length (variables!1) + 1) regC -- Skip local data area
             , Store regARP (IndAddr regC)       -- Caller's ARP
@@ -271,17 +274,17 @@ codeGen (ASTBlock astStats
 -- Declares a variable in the current scope. A free memory address has been created
 -- by the block this variable belongs to, where the value is saved.
 codeGen (ASTDecl vartype astVar@(ASTVar _ _) Nothing 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         = (getMemAddr varNameStr variables) ++  -- 
             [ Store reg0 (IndAddr regE) ]       -- Initialises with 0
                 where 
                     varNameStr = getStr astVar
 codeGen (ASTDecl vartype astVar Nothing 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         = codeGen astVar threads                -- Passed on to AST below, which
                                                 -- is a primitive data type
 codeGen (ASTDecl vartype astVar (Just astExpr) 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   (codeGen astExpr threads) ++        -- Evaluate expression
             (getMemAddr varNameStr variables) ++
             [ Pop regD                          -- pop result
@@ -294,7 +297,7 @@ codeGen (ASTDecl vartype astVar (Just astExpr)
 -- two blocks to execute (then- or else-block). If no second block exists, false
 -- results in the if block will be skipped.
 codeGen (ASTIf astExpr astThen Nothing
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   (codeGen astExpr threads) ++        -- Evaluate expression
             [ Pop regE
             , ComputeI Xor regE 1 regE          -- Invert value of expression to 
@@ -304,7 +307,7 @@ codeGen (ASTIf astExpr astThen Nothing
             ++ thenGen                          -- Content code
                 where thenGen = codeGen astThen threads
 codeGen (ASTIf astExpr astThen (Just astElse) 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   (codeGen astExpr threads) ++        -- Evaluate expression
             [ Pop regE
             , ComputeI Xor regE 1 regE          -- Invert value of expression to 
@@ -322,7 +325,7 @@ codeGen (ASTIf astExpr astThen (Just astElse)
 -- will be executed. The expression is re-evaluated after each execution of the
 -- block.
 codeGen (ASTWhile astExpr astStat 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   exprGen ++
             [ Pop regE
             , ComputeI Xor regE 1 regE
@@ -340,7 +343,7 @@ codeGen (ASTWhile astExpr astStat
 -- after the procedure behind the fork call finishes. This can be ensured with the
 -- join keyword.
 codeGen (ASTFork pName astArgs
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         | threads > 1 =    
             [ TestAndSet (DirAddr fork_record_wr)     -- Grab wr lock
             , Receive regE
@@ -417,7 +420,7 @@ codeGen (ASTFork pName astArgs
 -- Join statement, iterates over all thread's occupation bits and ensures that 
 -- they are all zero before continuing.
 codeGen (ASTJoin 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   [ Compute Equal reg0 regSprID regE
             , Branch regE (Rel 4)
             , Load (ImmValue 2) regA
@@ -441,7 +444,7 @@ codeGen (ASTJoin
 -- argument are handled call-by-reference. Sets up the AR before jumping to the
 -- procedure.
 codeGen (ASTCall pName astArgs -- TODO: Rewrite stuff so it actally pushes the indexes we need
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   concat ( reverse $ map (\x -> codeGen x threads) astArgs ) ++
             [ Compute Add regARP reg0 regC    -- Load ARP = regC
             , ComputeI Add regC ((length (variables!0)) + 1) regC -- Skip local data area
@@ -465,14 +468,14 @@ codeGen (ASTCall pName astArgs -- TODO: Rewrite stuff so it actally pushes the i
 -- Naked expression as a statement. Executes the expression, and pops the value
 -- it produced as it is not needed anymore and would fill up the stack otherwise.
 codeGen (ASTExpr astExpr _ 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   codeGen astExpr threads ++ 
             [ Pop reg0 ]
 
 -- Assignment. Local variables are stored in their declared AR's, global variables
 -- are written (but NOT assigned!) atomically.
 codeGen (ASTAss astVar astExpr _
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         | (findVar (0,0) (getStr astVar) variables) /= ((-1),(-1)) =
             (codeGen astExpr threads) ++ (getMemAddr (getStr astVar) variables) ++
             [ Pop regA -- Expr result
@@ -502,12 +505,15 @@ codeGen (ASTAss astVar astExpr _
 -- A naked variable, as used in expressions. Pushes its value to stack. Global
 -- variables are read atomically.
 codeGen (ASTVar varName 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,enums)) threads
         | (findVar (0,0) varName variables) /= ((-1),(-1)) =
             getMemAddr varName variables ++
             [ Load (IndAddr regE) regD          -- Load variable value from local mem
             , Push regD                         -- Push to stack
             ]
+        | enum > -1 =
+            [ Load (ImmValue enum) regE         -- Load enumeration index value of enum
+            , Push regE ]                       -- push to stack
         | otherwise =
             [ Load (ImmValue addr) regA         -- Load memory address of global's lock
             , TestAndSet (IndAddr regA)         -- Lock on ready bit
@@ -522,20 +528,21 @@ codeGen (ASTVar varName
             , WriteInstr reg0 (IndAddr regA)    -- Unlock value
             ]
             where
+                enum = findEnum varName 0 enums
                 addr = fork_record_size + threads 
                     + (global_record_size * (globalIndex varName globals))
                     
                     
 -- Literal integer value, is pushed to the stack.
 codeGen (ASTInt value 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   [ Load (ImmValue (read value :: Int)) regE  -- Load the integer value read from String
             , Push regE ]                       -- Push to stack
 
 
 -- Literal boolean value, is pushed to the stack.
 codeGen (ASTBool value 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   [ Load (ImmValue bool) regE         -- Load boolean value read from String
             , Push regE ]                       -- Push to stack
             where
@@ -544,14 +551,14 @@ codeGen (ASTBool value
                         "false"   -> 0
                         otherwise -> error "Parse error on boolean when emitting codegen (ASTBool _ _ _)"
 codeGen (ASTType typeStr 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         = [Nop] -- Intentionally left blank; never called.
 
 
 -- Binary operation. Evaluates both expressions in order, calculates the result 
 -- and pushes its result to the stack.
 codeGen (ASTOp astL op astR _
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         =   (codeGen astL threads) ++ 
             (codeGen astR threads) ++
             [ Pop regB                          -- Pop the two arguments
@@ -580,7 +587,7 @@ codeGen (ASTOp astL op astR _
 -- Unary Operator. Evaluates the expression, calculates the result and pushes 
 -- the result to the stack.
 codeGen (ASTUnary op astV _
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
         | op == "!" = 
             (codeGen astV threads) ++   -- compute argument
             [ Pop regA                  -- pop argument
@@ -611,7 +618,7 @@ codeGen (ASTUnary op astV _
 -- self-defined non-standard SprIL instruction PrintOut, that uses trace to print
 -- the value to stdout.
 codeGen (ASTPrint astExprs 
-    checkType@(functions, globals, variables)) threads
+    checkType@(functions, globals, variables,_)) threads
     =   (concat $ map (\x -> codeGen x threads) $reverse astExprs) ++ 
                                             -- Compute arguments (in reverse order
                                             -- because of stack behaviour)
@@ -648,6 +655,17 @@ findVar (x,y) str ([]:scopes) = findVar (x+1,0) str scopes
 findVar (x,y) str (scope@(var@(str2,_):vars):scopes)
     | str == str2   = (x,y)
     | otherwise     = findVar (x,y+1) str (vars:scopes)
+
+-- Find enumeration index value
+-- usage: <enum string> 0 <enumcheckertype>
+findEnum :: String -> Int -> [EnumCheckerType] -> Int
+findEnum str _ []                 
+    = -1
+findEnum str i ((_,enum):enums)   
+    | isJust index  = fromJust index + i
+    | otherwise     = findEnum str (i + length enum) enums
+    where
+        index = elemIndex str enum
 
 -- Prettyprints SprIL code
 sprILprpr :: [Instruction] -> String
