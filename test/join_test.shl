@@ -1,11 +1,16 @@
-global bool forever = true;
+global int after_a_very_long_time = 10000;
 
-procedure neverending(bool j) {
-    while(j){
-    
+procedure ending(int j) {
+    while( (j > 0) ){
+        j = (j-1);
+        
+        if ( (j == 5000) ) {
+            print(j);
+        }
     }
+    
 }
 
-fork neverending(forever);
+fork ending(after_a_very_long_time);
 join;
-print(1);
+print(10000);

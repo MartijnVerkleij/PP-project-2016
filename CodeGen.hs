@@ -1,9 +1,8 @@
 module CodeGen where
 
-import BasicFunctions
-import HardwareTypes
+--import BasicFunctions
+--import HardwareTypes
 import Sprockell
-import System
 import Types
 import Constants
 import Checker
@@ -424,7 +423,7 @@ codeGen (ASTJoin
         =   [ Compute Equal reg0 regSprID regE
             , Branch regE (Rel 4)
             , Load (ImmValue 2) regA
-            , PrintOut regA
+            , WriteInstr regA numberIO
             , EndProg
             , Load (ImmValue fork_record_size) regB
             , Load (ImmValue 0) regA
@@ -494,6 +493,7 @@ codeGen (ASTAss astVar astExpr _
             , Pop regE                          -- Pop expression value
             , WriteInstr regE (IndAddr regC)    -- Write value
             , WriteInstr reg0 (IndAddr regA)    -- Unlock value
+            , Push regE                         -- Push to stack, until assignments are not expressions anymore!
             ]
             where
                 name = (getStr astVar)
@@ -625,7 +625,7 @@ codeGen (ASTPrint astExprs
         (concat $ replicate (length astExprs) -- Replicate the following code for 
                                             -- each expression:
             [ Pop regE                      -- pop argument
-            , PrintOut regE                 -- Print value
+            , WriteInstr regE numberIO
             ]
         )
 -- Find the index of a given Global. Used to calculate global address in memory.

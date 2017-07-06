@@ -1,0 +1,29 @@
+name:                sprockell
+version:             2017.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/leonschoorl/sprockell
+license:             MIT
+license-file:        LICENSE
+author:              Jan Kuper, Martijn Bastiaan, Arjan Boeijink, Leon Schoorl
+-- copyright:
+-- category:
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+library
+  exposed-modules:   Sprockell
+                     Sprockell.BasicFunctions
+                     Sprockell.HardwareTypes
+                     Sprockell.Sprockell
+                     Sprockell.System
+                     Sprockell.Debugger
+                     Sprockell.Simulation
+  -- other-modules:
+  build-depends:       base       >=4.8 && <5,
+                       array      >=0.5 && <0.6,
+                       containers >=0.5 && <0.6,
+                       deepseq    >=1.4 && <1.5
+  hs-source-dirs:      src
+  default-language:    Haskell2010

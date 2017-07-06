@@ -12,11 +12,9 @@ import ASTBuilder
 import Checker
 import CodeGen
 
-import BasicFunctions
-import HardwareTypes
+--import BasicFunctions
+--import HardwareTypes
 import Sprockell
-import System
-import Simulation
 
 
 -- ==================== Lists of Test Files and Conversions ====================
@@ -157,10 +155,10 @@ gen name = do
         toTokenList $
         tokenizer a
 
-run :: String -> IO ()
-run name = do
+runit :: String -> IO ()
+runit name = do
     a <- readFile $ testConversion name
-    sysTest $
+    run $
         replicate ((Map.fromList testAll)Map.!(testConversion name)) $
         codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
         checker $
@@ -172,7 +170,7 @@ run name = do
 debug :: String -> IO ()
 debug name = do
     a <- readFile $ testConversion name
-    runTest $
+    runWithDebugger (debuggerSimplePrint myShow) $
         replicate ((Map.fromList testAll)Map.!(testConversion name)) $
         codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
         checker $
@@ -181,11 +179,12 @@ debug name = do
         toTokenList $
         tokenizer a
 
+{- Dows not work anymore; All run functions are IO() type.
 write :: String -> IO ()
 write name = do
     a <- readFile $ testConversion name
     writeFile ("gen/debug_" ++ (alias name) ++ ".txt") 
-            (runTestStr $
+            (runWithDebugger (debuggerSimplePrint myShow) $
             replicate ((Map.fromList testAll)Map.!(testConversion name)) $
             codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
             checker $
@@ -193,7 +192,7 @@ write name = do
             parse grammar Program $
             toTokenList $
             tokenizer a)
-    putStr (runTestStr $
+    putStr (runWithDebugger (debuggerSimplePrint myShow) $
             replicate ((Map.fromList testAll)Map.!(testConversion name)) $
             codeGen' ((Map.fromList testAll)Map.!(testConversion name)) $
             checker $
@@ -202,7 +201,7 @@ write name = do
             toTokenList $
             tokenizer a)
     
-
+-}
 -- ==================== Checker test ====================
 checkChecker :: IO()
 checkChecker = do

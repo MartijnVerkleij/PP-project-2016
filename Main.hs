@@ -7,7 +7,7 @@ import FP_ParserGen         -- Touching this file leaves you at your own devices
 import ASTBuilder
 import Checker
 import CodeGen
-import Simulation
+--import Simulation
 import System.FilePath
 
 main :: IO()

@@ -1,13 +1,11 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Sprockell where
+module Sprockell.Sprockell where
 
 import Data.Bits
-import Data.Maybe
-import Debug.Trace
 
-import BasicFunctions
-import HardwareTypes
+import Sprockell.BasicFunctions
+import Sprockell.HardwareTypes
 
 {-------------------------------------------------------------
 | SPROCKELL: Simple PROCessor in hasKELL :-)
@@ -15,6 +13,7 @@ import HardwareTypes
 | Initial definition: October 2012, Jan Kuper (j.kuper@utwente.nl)
 | Extensions: June 2015, Martijn Bastiaan, Arjan Boeijink, Jan Kuper, Leon Schoorl
 | Simplification: January 2016, Jan Kuper
+| Further extensions: June 2017, Leon Schoorl
 -------------------------------------------------------------}
 
 -- =====================================================================================
@@ -32,17 +31,20 @@ sprockell instrs sprState reply = (sprState', request)
         SprState{..} = sprState
         MachCode{..} = decode (instrs!pc)
 
-        x            = regbank!regX
-        y            = regbank!regY
+        regbankExtended = regbank ++ [sp,pc] -- allow reading of sp and pc
+
+        (x,y)        = (regbankExtended ! regX , regbankExtended ! regY)
         aluOutput    = alu aluCode x y
         aluIOutput   = alu aluCode x immValue
 
         pc'          = nextPC branch tgtCode (x,reply) (pc,immValue,y)
-        sp'          = nextSP spCode sp
+
+        sp'          | loadReg == regSP = loadValue
+                     | otherwise        = nextSP spCode sp
 
         address      = agu aguCode (addrImm,x,sp)
 
-        loadValue    = load ldCode (immValue, aluOutput, aluIOutput, localMem!address, pc, reply)
+        loadValue    = load ldCode (immValue, aluOutput, aluIOutput, localMem!address, reply)
         regbank'     = regbank <~! (loadReg, loadValue)
 
         localMem'    = store localMem stCode (address,y)
@@ -83,7 +85,8 @@ decode instr = case instr of
   Compute c rx ry toReg       -> nullcode {ldCode=LdAlu, aluCode=c, regX=rx, regY=ry, loadReg=toReg}
 
   ComputeI c rx vy toReg       -> nullcode {ldCode=LdAluI, aluCode=c, regX=rx, regY=vy, immValue=vy, loadReg=toReg}
-                                -- PP26: Added computing with immediate values
+                                  -- PP26: Added computing with immediate values
+
   Jump target                 -> case target of
                                    Abs n       -> nullcode {tgtCode=TAbs, immValue=n}
                                    Rel n       -> nullcode {tgtCode=TRel, immValue=n}
@@ -120,7 +123,7 @@ decode instr = case instr of
                                    DirAddr a   -> nullcode {ioCode=IOWrite, regY=fromReg, ldCode=LdMem, aguCode=AguDir, addrImm=a}
                                    IndAddr p   -> nullcode {ioCode=IOWrite, regY=fromReg, ldCode=LdMem, aguCode=AguInd, regX=p}
 
-  TestAndSet memAddr         -> case memAddr of
+  TestAndSet memAddr          -> case memAddr of
                                    ImmValue n  -> nullcode -- undefined
                                    DirAddr a   -> nullcode {ioCode=IOTest, ldCode=LdMem, aguCode=AguDir, addrImm=a}
                                    IndAddr p   -> nullcode {ioCode=IOTest, ldCode=LdMem, aguCode=AguInd, regX=p}
@@ -128,10 +131,8 @@ decode instr = case instr of
   EndProg                     -> nullcode {tgtCode=TRel, immValue=0}
 
   Nop                         -> nullcode
-  
-  PrintOut reg                -> nullcode {ldCode=LdAlu, aluCode=Prnt, regX=reg, regY=regSprID, loadReg=regSprID}
 
-  Debug s                     -> trace s nullcode       -- only for development purposes
+  Debug _                     -> nullcode       -- only for development purposes
 
 
 {- ===============================================================
@@ -176,8 +177,6 @@ alu :: Operator -> Value -> Value -> Value
 alu op x y = case op of
         Incr   -> x + 1
         Decr   -> x - 1
-        Incr4  -> x + 4
-        Decr4  -> x - 4
         Add    -> x + y
         Sub    -> x - y
         Mul    -> x * y
@@ -192,7 +191,6 @@ alu op x y = case op of
         LShift -> shiftL x (fromIntegral y)
         RShift -> shiftR x (fromIntegral y)
         Xor    -> x `xor` y
-        Prnt   -> trace (">>> " ++ show x) y
         -- Div    -> x `div` y                          -- usable in Haskell, but expensive on hardware
         -- Mod    -> x `mod` y                          -- Ibid
 
@@ -209,18 +207,17 @@ agu aguCode (addrImm,x,sp) = case aguCode of
 -- =====================================================================================
 -- load: calculates the value that has to be put in a register
 -- =====================================================================================
-load :: LdCode -> (Value, Value, Value, Value, Value, Reply) -> Value
-load ldCode (immval,aluOutput,aluIOutput,memval,pc,reply) = case (ldCode, reply) of
+load :: LdCode -> (Value, Value, Value, Value, Reply) -> Value
+load ldCode (immval,aluOutput,aluIOutput,memval,reply) = case (ldCode, reply) of
         (LdImm, Nothing) -> immval
         (LdAlu, Nothing) -> aluOutput
-        (LdAluI, Nothing) -> aluIOutput               -- PP26: Immediate compute
         (LdMem, Nothing) -> memval
-        (LdPC , Nothing) -> pc
+        (LdAluI, Nothing) -> aluIOutput               -- PP26: Immediate compute
 
         (LdInp, Just rx) -> rx
         (LdInp, Nothing) -> 0
 
-        (y    , Just rx) -> error ("Sprockell ignored a system response of value: " ++ show y ++ "," ++show rx)
+        (_    , Just rx) -> error ("Sprockell ignored a system response of value: " ++ show rx)
 
 -- =====================================================================================
 -- store: to store data in local memory
@@ -228,7 +225,7 @@ load ldCode (immval,aluOutput,aluIOutput,memval,pc,reply) = case (ldCode, reply)
 store :: LocalMem -> StCode -> (MemAddr, Value) -> LocalMem
 store mem stCode (address,value) = case stCode of
         StNone -> mem
-        StMem  -> mem <~! (address, value)
+        StMem  -> mem <~ (address, value)
 
 -- =====================================================================================
 -- nextPC: to calculate next program counter
