@@ -43,21 +43,20 @@
 -}
 
 {-# LANGUAGE FlexibleInstances, DeriveGeneric, DeriveAnyClass #-}
-        -- Necessary for function toRoseTree
+-- Necessary for function toRoseTree
 
 module Grammar where
 
 {- ===========================================================================
-Contains example grammar + examples of test definitions
+Contains the grammar + examples of test definitions
 NOTE: Compiler directives above
 =========================================================================== -}
 
-import FPPrac.Trees         -- Contains now also the function toRoseTree. Re-install it!
-import GHC.Generics         -- Necessary for correct function of FPPrac
+import FPPrac.Trees         -- Contains the function toRoseTree.
+import GHC.Generics         -- Necessary for correct function of FPPrac.
 
 import Types                -- Extend the file TypesEtc with your own alphabet
 import FP_ParserGen (parse) -- Touching this file leaves you at your own devices
--- import Tokenizer         -- You'll have to write a file for tokenizing yourself
 
 -- ==========================================================================================================
 -- Example grammar, to illustrate the structure of the definition of the grammar as a function

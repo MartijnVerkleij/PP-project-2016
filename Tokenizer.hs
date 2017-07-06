@@ -4,10 +4,11 @@ import Grammar
 import Types
 import Data.List
 import Data.Char
-import FP_ParserGen         -- Touching this file leaves you at your own devices
+import FP_ParserGen
 import Debug.Trace
 
-
+-- Scans a String for tokens. Returns a list of tuples,
+-- containing the token's alphabet type and the corresponding substring.
 tokenizer :: String -> [(Alphabet,String)]
 tokenizer [] = []
 
@@ -54,24 +55,26 @@ tokenizer input@(x:xs)
     | int /= ""             = (IntType, int)    : tokenizer intRest
     | word /= ""            = (Var, word)       : tokenizer wordRest
     | otherwise             = error ("Lexical error at character \"" ++ [x] ++ 
-                                  "\", left to parse: \"" ++ xs ++ "\"" )
+                                  "\", left to scan: \"" ++ xs ++ "\"" )
         where 
             (word,wordRest)     = span isAlphaNumPlus input
             (int,intRest)       = span isNumber input
-            
+
             endOfLine :: String -> String
             endOfLine []        = []
             endOfLine (x:xs)    | x `elem` "\r\n\f" = xs
                                 | otherwise         = endOfLine xs
+
             endOfBlock :: String -> String
             endOfBlock []       = []
             endOfBlock (x:y:xs) | [x,y] == "*/"     = xs
                                 | otherwise         = endOfBlock (y:xs)
 
--- From series6a
+-- From series6a. Numbers each token with a unique number.
 toTokenList :: [(Alphabet, String)] -> [Token]
 toTokenList tl = zipWith (\ (x,y) z -> (x,y,z) ) tl [0..]
 
+-- Helper function to accept some special characters in some token types.
 isAlphaNumPlus :: Char -> Bool
-isAlphaNumPlus char     | char `elem` "_'@#$`~\"?:." = True
-                        | otherwise                  = isAlphaNum char
+isAlphaNumPlus char     | char `elem` "_'@#$`~\"?:."  = True
+                        | otherwise                   = isAlphaNum char
